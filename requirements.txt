@@ -1,0 +1,28 @@
+# STRIKE//OS PRO - Python Dependencies
+# Generated from verified production environment
+
+fastapi==0.143.0
+uvicorn==0.54.0
+starlette==1.8.0
+pydantic==2.14.1
+pydantic_core==2.50.1
+
+ortools==9.15.6755
+duckdb==1.5.6
+xgboost==3.4.1
+scikit-learn==1.9.1
+scipy==1.18.1
+numpy==2.5.4
+pandas==3.0.6
+polars==2.0.0
+PuLP==4.0.1
+
+requests==2.34.2
+httpx==0.28.1
+urllib3==2.8.0
+python-dotenv==1.2.4
+rich==15.0.0
+click==8.5.0
+tabulate==0.10.0
+Pygments==2.21.0
+

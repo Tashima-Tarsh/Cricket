@@ -1,0 +1,5826 @@
+{
+  "Team 1: Highest Projected Expected Fantasy Points": {
+    "players": [
+      {
+        "id": "ind_samson",
+        "name": "Sanju Samson",
+        "team": "IND",
+        "role": "WK",
+        "credits": 8.0,
+        "batting_style": "RHB",
+        "bowling_style": null,
+        "batting_order_projected": 1,
+        "expected_overs": 0.0,
+        "is_confirmed_xi": true,
+        "projected_ownership": 74.75,
+        "stats": {
+          "matches": 40,
+          "recent_runs": [
+            108,
+            0,
+            111,
+            22,
+            45
+          ],
+          "recent_wickets": [],
+          "recent_fantasy_pts": [
+            158,
+            4,
+            162,
+            34,
+            68
+          ],
+          "avg_fantasy_pts": 78.5,
+          "strike_rate": 168.0,
+          "batting_avg": 35.2,
+          "economy": 0.0
+        },
+        "ceiling_score": 165.0,
+        "floor_score": 14.0,
+        "differential_tag": "Powerplay Opener WK (74.8% Sel, 11% C, 40% DT)",
+        "captain_percentage": 10.95,
+        "dream_team_percentage": 40.0
+      },
+      {
+        "id": "ind_abhishek",
+        "name": "Abhishek Sharma",
+        "team": "IND",
+        "role": "BAT",
+        "credits": 9.0,
+        "batting_style": "LHB",
+        "bowling_style": "Slow left-arm orthodox",
+        "batting_order_projected": 2,
+        "expected_overs": 1.0,
+        "is_confirmed_xi": true,
+        "projected_ownership": 85.84,
+        "stats": {
+          "matches": 20,
+          "recent_runs": [
+            88,
+            47,
+            72,
+            14,
+            31
+          ],
+          "recent_wickets": [
+            0,
+            1,
+            0,
+            1,
+            0
+          ],
+          "recent_fantasy_pts": [
+            134,
+            78,
+            108,
+            22,
+            48
+          ],
+          "avg_fantasy_pts": 78.0,
+          "strike_rate": 185.0,
+          "batting_avg": 37.0,
+          "economy": 8.8
+        },
+        "ceiling_score": 160.0,
+        "floor_score": 18.0,
+        "differential_tag": "Mega Chalk Opener (85.8% Sel, 26.1% C, 80% DT)",
+        "captain_percentage": 26.06,
+        "dream_team_percentage": 80.0
+      },
+      {
+        "id": "ind_ishan",
+        "name": "Ishan Kishan",
+        "team": "IND",
+        "role": "WK",
+        "credits": 8.0,
+        "batting_style": "LHB",
+        "bowling_style": null,
+        "batting_order_projected": 3,
+        "expected_overs": 0.0,
+        "is_confirmed_xi": true,
+        "projected_ownership": 78.43,
+        "stats": {
+          "matches": 34,
+          "recent_runs": [
+            58,
+            24,
+            89,
+            12,
+            41
+          ],
+          "recent_wickets": [],
+          "recent_fantasy_pts": [
+            84,
+            38,
+            122,
+            18,
+            62
+          ],
+          "avg_fantasy_pts": 65.0,
+          "strike_rate": 145.0,
+          "batting_avg": 32.0,
+          "economy": 0.0
+        },
+        "ceiling_score": 135.0,
+        "floor_score": 16.0,
+        "differential_tag": "In-Form Top-Order WK (78.4% Sel, 12.6% C, 80% DT)",
+        "captain_percentage": 12.62,
+        "dream_team_percentage": 80.0
+      },
+      {
+        "id": "ind_shreyas",
+        "name": "Shreyas Iyer",
+        "team": "IND",
+        "role": "BAT",
+        "credits": 8.0,
+        "batting_style": "RHB",
+        "bowling_style": null,
+        "batting_order_projected": 4,
+        "expected_overs": 0.0,
+        "is_confirmed_xi": true,
+        "projected_ownership": 64.33,
+        "stats": {
+          "matches": 53,
+          "recent_runs": [
+            62,
+            102,
+            39,
+            44,
+            55
+          ],
+          "recent_wickets": [],
+          "recent_fantasy_pts": [
+            86,
+            148,
+            52,
+            60,
+            74
+          ],
+          "avg_fantasy_pts": 84.0,
+          "strike_rate": 148.0,
+          "batting_avg": 41.5,
+          "economy": 0.0
+        },
+        "ceiling_score": 155.0,
+        "floor_score": 28.0,
+        "differential_tag": "Middle-Overs Anchor (64.3% Sel, 5.6% C, 40% DT)",
+        "captain_percentage": 5.61,
+        "dream_team_percentage": 40.0
+      },
+      {
+        "id": "ind_tilak",
+        "name": "Tilak Varma",
+        "team": "IND",
+        "role": "BAT",
+        "credits": 7.5,
+        "batting_style": "LHB",
+        "bowling_style": "Right-arm offbreak",
+        "batting_order_projected": 5,
+        "expected_overs": 1.0,
+        "is_confirmed_xi": true,
+        "projected_ownership": 41.94,
+        "stats": {
+          "matches": 26,
+          "recent_runs": [
+            45,
+            107,
+            33,
+            51,
+            19
+          ],
+          "recent_wickets": [
+            0,
+            1,
+            0,
+            0,
+            0
+          ],
+          "recent_fantasy_pts": [
+            60,
+            154,
+            44,
+            72,
+            26
+          ],
+          "avg_fantasy_pts": 71.2,
+          "strike_rate": 152.0,
+          "batting_avg": 43.0,
+          "economy": 7.5
+        },
+        "ceiling_score": 150.0,
+        "floor_score": 22.0,
+        "differential_tag": "High-DT Leverage Batter (80% DT Rate, 7.5 Cr, 41.9% Sel, 1.2% C)",
+        "captain_percentage": 1.23,
+        "dream_team_percentage": 80.0
+      },
+      {
+        "id": "ind_axar",
+        "name": "Axar Patel",
+        "team": "IND",
+        "role": "AR",
+        "credits": 7.0,
+        "batting_style": "LHB",
+        "bowling_style": "Slow left-arm orthodox",
+        "batting_order_projected": 8,
+        "expected_overs": 4.0,
+        "is_confirmed_xi": true,
+        "projected_ownership": 49.45,
+        "stats": {
+          "matches": 62,
+          "recent_runs": [
+            22,
+            18,
+            31,
+            12,
+            28
+          ],
+          "recent_wickets": [
+            2,
+            1,
+            2,
+            1,
+            3
+          ],
+          "recent_fantasy_pts": [
+            84,
+            52,
+            92,
+            46,
+            114
+          ],
+          "avg_fantasy_pts": 77.6,
+          "strike_rate": 140.0,
+          "batting_avg": 24.5,
+          "economy": 7.1
+        },
+        "ceiling_score": 125.0,
+        "floor_score": 30.0,
+        "differential_tag": "Low-Credit AR (7.0 Cr, 49.5% Sel, 1.22% C, 40% DT)",
+        "captain_percentage": 1.22,
+        "dream_team_percentage": 40.0
+      },
+      {
+        "id": "ind_bhuvi",
+        "name": "Bhuvneshwar Kumar",
+        "team": "IND",
+        "role": "BOWL",
+        "credits": 8.0,
+        "batting_style": "RHB",
+        "bowling_style": "Right-arm fast",
+        "batting_order_projected": 11,
+        "expected_overs": 4.0,
+        "is_confirmed_xi": true,
+        "projected_ownership": 26.84,
+        "stats": {
+          "matches": 14,
+          "recent_runs": [
+            0,
+            0,
+            0,
+            1,
+            0
+          ],
+          "recent_wickets": [
+            0,
+            3,
+            2,
+            0,
+            3
+          ],
+          "recent_fantasy_pts": [
+            34,
+            94,
+            66,
+            12,
+            96
+          ],
+          "avg_fantasy_pts": 60.4,
+          "strike_rate": 60.0,
+          "batting_avg": 4.0,
+          "economy": 7.7
+        },
+        "ceiling_score": 145.0,
+        "floor_score": 15.0,
+        "differential_tag": "155kph Express Strike Pacer (8.0 Cr, 26.8% Sel, 0.36% C)",
+        "captain_percentage": 0.36,
+        "dream_team_percentage": 25.0
+      },
+      {
+        "id": "wi_hope",
+        "name": "Shai Hope",
+        "team": "WI",
+        "role": "WK",
+        "credits": 8.5,
+        "batting_style": "RHB",
+        "bowling_style": null,
+        "batting_order_projected": 1,
+        "expected_overs": 0.0,
+        "is_confirmed_xi": true,
+        "projected_ownership": 86.25,
+        "stats": {
+          "matches": 44,
+          "recent_runs": [
+            104,
+            38,
+            71,
+            102,
+            45
+          ],
+          "recent_wickets": [],
+          "recent_fantasy_pts": [
+            152,
+            54,
+            102,
+            146,
+            64
+          ],
+          "avg_fantasy_pts": 103.6,
+          "strike_rate": 146.5,
+          "batting_avg": 48.0,
+          "economy": 0.0
+        },
+        "ceiling_score": 160.0,
+        "floor_score": 30.0,
+        "differential_tag": "Heavy Chalk Opener (86.3% Sel, 23.8% C, 60% DT)",
+        "captain_percentage": 23.82,
+        "dream_team_percentage": 60.0
+      },
+      {
+        "id": "wi_rutherford",
+        "name": "Sherfane Rutherford",
+        "team": "WI",
+        "role": "BAT",
+        "credits": 8.0,
+        "batting_style": "LHB",
+        "bowling_style": "Right-arm medium",
+        "batting_order_projected": 5,
+        "expected_overs": 0.5,
+        "is_confirmed_xi": true,
+        "projected_ownership": 74.98,
+        "stats": {
+          "matches": 30,
+          "recent_runs": [
+            68,
+            44,
+            22,
+            68,
+            15
+          ],
+          "recent_wickets": [
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "recent_fantasy_pts": [
+            96,
+            64,
+            30,
+            96,
+            22
+          ],
+          "avg_fantasy_pts": 61.6,
+          "strike_rate": 190.0,
+          "batting_avg": 42.0,
+          "economy": 9.5
+        },
+        "ceiling_score": 145.0,
+        "floor_score": 18.0,
+        "differential_tag": "In-Form Finisher (8.0 Cr, 75.0% Sel, 3.75% C, 80% DT)",
+        "captain_percentage": 3.75,
+        "dream_team_percentage": 80.0
+      },
+      {
+        "id": "wi_shepherd",
+        "name": "Romario Shepherd",
+        "team": "WI",
+        "role": "AR",
+        "credits": 8.5,
+        "batting_style": "RHB",
+        "bowling_style": "Right-arm fast-medium",
+        "batting_order_projected": 6,
+        "expected_overs": 3.5,
+        "is_confirmed_xi": true,
+        "projected_ownership": 30.18,
+        "stats": {
+          "matches": 46,
+          "recent_runs": [
+            32,
+            14,
+            26,
+            6,
+            39
+          ],
+          "recent_wickets": [
+            2,
+            1,
+            0,
+            3,
+            1
+          ],
+          "recent_fantasy_pts": [
+            88,
+            44,
+            34,
+            102,
+            68
+          ],
+          "avg_fantasy_pts": 67.2,
+          "strike_rate": 162.0,
+          "batting_avg": 23.5,
+          "economy": 9.1
+        },
+        "ceiling_score": 140.0,
+        "floor_score": 20.0,
+        "differential_tag": "Death Overs Pacer & Finisher (8.5 Cr, 30.2% Sel, 0.57% C)",
+        "captain_percentage": 0.57,
+        "dream_team_percentage": 20.0
+      },
+      {
+        "id": "wi_chase",
+        "name": "Roston Chase",
+        "team": "WI",
+        "role": "AR",
+        "credits": 8.0,
+        "batting_style": "RHB",
+        "bowling_style": "Right-arm offbreak",
+        "batting_order_projected": 9,
+        "expected_overs": 4.0,
+        "is_confirmed_xi": true,
+        "projected_ownership": 53.0,
+        "stats": {
+          "matches": 37,
+          "recent_runs": [
+            31,
+            24,
+            46,
+            18,
+            29
+          ],
+          "recent_wickets": [
+            2,
+            1,
+            1,
+            2,
+            1
+          ],
+          "recent_fantasy_pts": [
+            82,
+            54,
+            78,
+            66,
+            62
+          ],
+          "avg_fantasy_pts": 68.4,
+          "strike_rate": 130.0,
+          "batting_avg": 27.0,
+          "economy": 8.48
+        },
+        "ceiling_score": 120.0,
+        "floor_score": 32.0,
+        "differential_tag": "80% DT Rate Multi-Role AR (8.0 Cr, 53.0% Sel, 1.17% C)",
+        "captain_percentage": 1.17,
+        "dream_team_percentage": 80.0
+      }
+    ],
+    "captain": {
+      "id": "wi_hope",
+      "name": "Shai Hope",
+      "team": "WI",
+      "role": "WK",
+      "credits": 8.5,
+      "batting_style": "RHB",
+      "bowling_style": null,
+      "batting_order_projected": 1,
+      "expected_overs": 0.0,
+      "is_confirmed_xi": true,
+      "projected_ownership": 86.25,
+      "stats": {
+        "matches": 44,
+        "recent_runs": [
+          104,
+          38,
+          71,
+          102,
+          45
+        ],
+        "recent_wickets": [],
+        "recent_fantasy_pts": [
+          152,
+          54,
+          102,
+          146,
+          64
+        ],
+        "avg_fantasy_pts": 103.6,
+        "strike_rate": 146.5,
+        "batting_avg": 48.0,
+        "economy": 0.0
+      },
+      "ceiling_score": 160.0,
+      "floor_score": 30.0,
+      "differential_tag": "Heavy Chalk Opener (86.3% Sel, 23.8% C, 60% DT)",
+      "captain_percentage": 23.82,
+      "dream_team_percentage": 60.0
+    },
+    "vice_captain": {
+      "id": "ind_shreyas",
+      "name": "Shreyas Iyer",
+      "team": "IND",
+      "role": "BAT",
+      "credits": 8.0,
+      "batting_style": "RHB",
+      "bowling_style": null,
+      "batting_order_projected": 4,
+      "expected_overs": 0.0,
+      "is_confirmed_xi": true,
+      "projected_ownership": 64.33,
+      "stats": {
+        "matches": 53,
+        "recent_runs": [
+          62,
+          102,
+          39,
+          44,
+          55
+        ],
+        "recent_wickets": [],
+        "recent_fantasy_pts": [
+          86,
+          148,
+          52,
+          60,
+          74
+        ],
+        "avg_fantasy_pts": 84.0,
+        "strike_rate": 148.0,
+        "batting_avg": 41.5,
+        "economy": 0.0
+      },
+      "ceiling_score": 155.0,
+      "floor_score": 28.0,
+      "differential_tag": "Middle-Overs Anchor (64.3% Sel, 5.6% C, 40% DT)",
+      "captain_percentage": 5.61,
+      "dream_team_percentage": 40.0
+    },
+    "total_credits": 88.5
+  },
+  "Team 2: Highest Estimated Single-Entry First-Place Probability": {
+    "players": [
+      {
+        "id": "ind_samson",
+        "name": "Sanju Samson",
+        "team": "IND",
+        "role": "WK",
+        "credits": 8.0,
+        "batting_style": "RHB",
+        "bowling_style": null,
+        "batting_order_projected": 1,
+        "expected_overs": 0.0,
+        "is_confirmed_xi": true,
+        "projected_ownership": 74.75,
+        "stats": {
+          "matches": 40,
+          "recent_runs": [
+            108,
+            0,
+            111,
+            22,
+            45
+          ],
+          "recent_wickets": [],
+          "recent_fantasy_pts": [
+            158,
+            4,
+            162,
+            34,
+            68
+          ],
+          "avg_fantasy_pts": 78.5,
+          "strike_rate": 168.0,
+          "batting_avg": 35.2,
+          "economy": 0.0
+        },
+        "ceiling_score": 165.0,
+        "floor_score": 14.0,
+        "differential_tag": "Powerplay Opener WK (74.8% Sel, 11% C, 40% DT)",
+        "captain_percentage": 10.95,
+        "dream_team_percentage": 40.0
+      },
+      {
+        "id": "ind_shreyas",
+        "name": "Shreyas Iyer",
+        "team": "IND",
+        "role": "BAT",
+        "credits": 8.0,
+        "batting_style": "RHB",
+        "bowling_style": null,
+        "batting_order_projected": 4,
+        "expected_overs": 0.0,
+        "is_confirmed_xi": true,
+        "projected_ownership": 64.33,
+        "stats": {
+          "matches": 53,
+          "recent_runs": [
+            62,
+            102,
+            39,
+            44,
+            55
+          ],
+          "recent_wickets": [],
+          "recent_fantasy_pts": [
+            86,
+            148,
+            52,
+            60,
+            74
+          ],
+          "avg_fantasy_pts": 84.0,
+          "strike_rate": 148.0,
+          "batting_avg": 41.5,
+          "economy": 0.0
+        },
+        "ceiling_score": 155.0,
+        "floor_score": 28.0,
+        "differential_tag": "Middle-Overs Anchor (64.3% Sel, 5.6% C, 40% DT)",
+        "captain_percentage": 5.61,
+        "dream_team_percentage": 40.0
+      },
+      {
+        "id": "ind_tilak",
+        "name": "Tilak Varma",
+        "team": "IND",
+        "role": "BAT",
+        "credits": 7.5,
+        "batting_style": "LHB",
+        "bowling_style": "Right-arm offbreak",
+        "batting_order_projected": 5,
+        "expected_overs": 1.0,
+        "is_confirmed_xi": true,
+        "projected_ownership": 41.94,
+        "stats": {
+          "matches": 26,
+          "recent_runs": [
+            45,
+            107,
+            33,
+            51,
+            19
+          ],
+          "recent_wickets": [
+            0,
+            1,
+            0,
+            0,
+            0
+          ],
+          "recent_fantasy_pts": [
+            60,
+            154,
+            44,
+            72,
+            26
+          ],
+          "avg_fantasy_pts": 71.2,
+          "strike_rate": 152.0,
+          "batting_avg": 43.0,
+          "economy": 7.5
+        },
+        "ceiling_score": 150.0,
+        "floor_score": 22.0,
+        "differential_tag": "High-DT Leverage Batter (80% DT Rate, 7.5 Cr, 41.9% Sel, 1.2% C)",
+        "captain_percentage": 1.23,
+        "dream_team_percentage": 80.0
+      },
+      {
+        "id": "ind_reddy",
+        "name": "Nitish Kumar Reddy",
+        "team": "IND",
+        "role": "AR",
+        "credits": 7.5,
+        "batting_style": "RHB",
+        "bowling_style": "Right-arm medium-fast",
+        "batting_order_projected": 7,
+        "expected_overs": 2.0,
+        "is_confirmed_xi": true,
+        "projected_ownership": 41.26,
+        "stats": {
+          "matches": 12,
+          "recent_runs": [
+            41,
+            15,
+            74,
+            0,
+            22
+          ],
+          "recent_wickets": [
+            2,
+            0,
+            1,
+            2,
+            0
+          ],
+          "recent_fantasy_pts": [
+            78,
+            22,
+            112,
+            54,
+            30
+          ],
+          "avg_fantasy_pts": 59.2,
+          "strike_rate": 156.0,
+          "batting_avg": 31.0,
+          "economy": 8.8
+        },
+        "ceiling_score": 135.0,
+        "floor_score": 15.0,
+        "differential_tag": "Dual-Equity All-Rounder (7.5 Cr, 50% DT Rate, 41.3% Sel, 0.69% C)",
+        "captain_percentage": 0.69,
+        "dream_team_percentage": 50.0
+      },
+      {
+        "id": "ind_bhuvi",
+        "name": "Bhuvneshwar Kumar",
+        "team": "IND",
+        "role": "BOWL",
+        "credits": 8.0,
+        "batting_style": "RHB",
+        "bowling_style": "Right-arm fast",
+        "batting_order_projected": 11,
+        "expected_overs": 4.0,
+        "is_confirmed_xi": true,
+        "projected_ownership": 26.84,
+        "stats": {
+          "matches": 14,
+          "recent_runs": [
+            0,
+            0,
+            0,
+            1,
+            0
+          ],
+          "recent_wickets": [
+            0,
+            3,
+            2,
+            0,
+            3
+          ],
+          "recent_fantasy_pts": [
+            34,
+            94,
+            66,
+            12,
+            96
+          ],
+          "avg_fantasy_pts": 60.4,
+          "strike_rate": 60.0,
+          "batting_avg": 4.0,
+          "economy": 7.7
+        },
+        "ceiling_score": 145.0,
+        "floor_score": 15.0,
+        "differential_tag": "155kph Express Strike Pacer (8.0 Cr, 26.8% Sel, 0.36% C)",
+        "captain_percentage": 0.36,
+        "dream_team_percentage": 25.0
+      },
+      {
+        "id": "wi_powell",
+        "name": "Rovman Powell",
+        "team": "WI",
+        "role": "BAT",
+        "credits": 8.5,
+        "batting_style": "RHB",
+        "bowling_style": "Right-arm medium",
+        "batting_order_projected": 4,
+        "expected_overs": 1.0,
+        "is_confirmed_xi": true,
+        "projected_ownership": 24.11,
+        "stats": {
+          "matches": 80,
+          "recent_runs": [
+            41,
+            18,
+            67,
+            12,
+            52
+          ],
+          "recent_wickets": [
+            0,
+            0,
+            1,
+            0,
+            0
+          ],
+          "recent_fantasy_pts": [
+            58,
+            24,
+            98,
+            16,
+            76
+          ],
+          "avg_fantasy_pts": 54.4,
+          "strike_rate": 168.1,
+          "batting_avg": 26.5,
+          "economy": 9.2
+        },
+        "ceiling_score": 135.0,
+        "floor_score": 12.0,
+        "differential_tag": "Sub-25% Power Finisher Differential (8.5 Cr, 24.1% Sel, 60% DT)",
+        "captain_percentage": 0.63,
+        "dream_team_percentage": 60.0
+      },
+      {
+        "id": "wi_rutherford",
+        "name": "Sherfane Rutherford",
+        "team": "WI",
+        "role": "BAT",
+        "credits": 8.0,
+        "batting_style": "LHB",
+        "bowling_style": "Right-arm medium",
+        "batting_order_projected": 5,
+        "expected_overs": 0.5,
+        "is_confirmed_xi": true,
+        "projected_ownership": 74.98,
+        "stats": {
+          "matches": 30,
+          "recent_runs": [
+            68,
+            44,
+            22,
+            68,
+            15
+          ],
+          "recent_wickets": [
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "recent_fantasy_pts": [
+            96,
+            64,
+            30,
+            96,
+            22
+          ],
+          "avg_fantasy_pts": 61.6,
+          "strike_rate": 190.0,
+          "batting_avg": 42.0,
+          "economy": 9.5
+        },
+        "ceiling_score": 145.0,
+        "floor_score": 18.0,
+        "differential_tag": "In-Form Finisher (8.0 Cr, 75.0% Sel, 3.75% C, 80% DT)",
+        "captain_percentage": 3.75,
+        "dream_team_percentage": 80.0
+      },
+      {
+        "id": "wi_shepherd",
+        "name": "Romario Shepherd",
+        "team": "WI",
+        "role": "AR",
+        "credits": 8.5,
+        "batting_style": "RHB",
+        "bowling_style": "Right-arm fast-medium",
+        "batting_order_projected": 6,
+        "expected_overs": 3.5,
+        "is_confirmed_xi": true,
+        "projected_ownership": 30.18,
+        "stats": {
+          "matches": 46,
+          "recent_runs": [
+            32,
+            14,
+            26,
+            6,
+            39
+          ],
+          "recent_wickets": [
+            2,
+            1,
+            0,
+            3,
+            1
+          ],
+          "recent_fantasy_pts": [
+            88,
+            44,
+            34,
+            102,
+            68
+          ],
+          "avg_fantasy_pts": 67.2,
+          "strike_rate": 162.0,
+          "batting_avg": 23.5,
+          "economy": 9.1
+        },
+        "ceiling_score": 140.0,
+        "floor_score": 20.0,
+        "differential_tag": "Death Overs Pacer & Finisher (8.5 Cr, 30.2% Sel, 0.57% C)",
+        "captain_percentage": 0.57,
+        "dream_team_percentage": 20.0
+      },
+      {
+        "id": "wi_paul",
+        "name": "Keemo Paul",
+        "team": "WI",
+        "role": "AR",
+        "credits": 6.5,
+        "batting_style": "RHB",
+        "bowling_style": "Right-arm fast-medium",
+        "batting_order_projected": 7,
+        "expected_overs": 3.0,
+        "is_confirmed_xi": true,
+        "projected_ownership": 47.57,
+        "stats": {
+          "matches": 29,
+          "recent_runs": [
+            18,
+            12,
+            29,
+            6,
+            21
+          ],
+          "recent_wickets": [
+            1,
+            2,
+            1,
+            0,
+            2
+          ],
+          "recent_fantasy_pts": [
+            48,
+            64,
+            58,
+            12,
+            68
+          ],
+          "avg_fantasy_pts": 50.0,
+          "strike_rate": 136.0,
+          "batting_avg": 19.5,
+          "economy": 8.8
+        },
+        "ceiling_score": 115.0,
+        "floor_score": 14.0,
+        "differential_tag": "Slower Cutters Specialist (6.5 Cr, 47.6% Sel, 1.04% C)",
+        "captain_percentage": 1.04,
+        "dream_team_percentage": 25.0
+      },
+      {
+        "id": "wi_motie",
+        "name": "Gudakesh Motie",
+        "team": "WI",
+        "role": "BOWL",
+        "credits": 7.5,
+        "batting_style": "LHB",
+        "bowling_style": "Slow left-arm orthodox",
+        "batting_order_projected": 10,
+        "expected_overs": 4.0,
+        "is_confirmed_xi": true,
+        "projected_ownership": 19.01,
+        "stats": {
+          "matches": 28,
+          "recent_runs": [
+            0,
+            2,
+            8,
+            0,
+            0
+          ],
+          "recent_wickets": [
+            2,
+            1,
+            3,
+            0,
+            2
+          ],
+          "recent_fantasy_pts": [
+            64,
+            36,
+            92,
+            12,
+            66
+          ],
+          "avg_fantasy_pts": 54.0,
+          "strike_rate": 90.0,
+          "batting_avg": 8.0,
+          "economy": 7.3
+        },
+        "ceiling_score": 110.0,
+        "floor_score": 14.0,
+        "differential_tag": "Sub-20% Spin Differential (7.5 Cr, 19.0% Sel, 0.14% C)",
+        "captain_percentage": 0.14,
+        "dream_team_percentage": 20.0
+      },
+      {
+        "id": "wi_joseph",
+        "name": "Shamar Joseph",
+        "team": "WI",
+        "role": "BOWL",
+        "credits": 7.0,
+        "batting_style": "RHB",
+        "bowling_style": "Right-arm fast",
+        "batting_order_projected": 11,
+        "expected_overs": 4.0,
+        "is_confirmed_xi": true,
+        "projected_ownership": 14.6,
+        "stats": {
+          "matches": 17,
+          "recent_runs": [
+            4,
+            1,
+            0,
+            0,
+            7
+          ],
+          "recent_wickets": [
+            2,
+            3,
+            1,
+            2,
+            0
+          ],
+          "recent_fantasy_pts": [
+            62,
+            94,
+            36,
+            68,
+            10
+          ],
+          "avg_fantasy_pts": 54.0,
+          "strike_rate": 85.0,
+          "batting_avg": 5.0,
+          "economy": 8.9
+        },
+        "ceiling_score": 135.0,
+        "floor_score": 10.0,
+        "differential_tag": "Super Differential Strike Pacer (7.0 Cr, 14.6% Sel, 40% DT, 59.6% Pacer Pitch)",
+        "captain_percentage": 0.17,
+        "dream_team_percentage": 40.0
+      }
+    ],
+    "captain": {
+      "id": "wi_joseph",
+      "name": "Shamar Joseph",
+      "team": "WI",
+      "role": "BOWL",
+      "credits": 7.0,
+      "batting_style": "RHB",
+      "bowling_style": "Right-arm fast",
+      "batting_order_projected": 11,
+      "expected_overs": 4.0,
+      "is_confirmed_xi": true,
+      "projected_ownership": 14.6,
+      "stats": {
+        "matches": 17,
+        "recent_runs": [
+          4,
+          1,
+          0,
+          0,
+          7
+        ],
+        "recent_wickets": [
+          2,
+          3,
+          1,
+          2,
+          0
+        ],
+        "recent_fantasy_pts": [
+          62,
+          94,
+          36,
+          68,
+          10
+        ],
+        "avg_fantasy_pts": 54.0,
+        "strike_rate": 85.0,
+        "batting_avg": 5.0,
+        "economy": 8.9
+      },
+      "ceiling_score": 135.0,
+      "floor_score": 10.0,
+      "differential_tag": "Super Differential Strike Pacer (7.0 Cr, 14.6% Sel, 40% DT, 59.6% Pacer Pitch)",
+      "captain_percentage": 0.17,
+      "dream_team_percentage": 40.0
+    },
+    "vice_captain": {
+      "id": "wi_powell",
+      "name": "Rovman Powell",
+      "team": "WI",
+      "role": "BAT",
+      "credits": 8.5,
+      "batting_style": "RHB",
+      "bowling_style": "Right-arm medium",
+      "batting_order_projected": 4,
+      "expected_overs": 1.0,
+      "is_confirmed_xi": true,
+      "projected_ownership": 24.11,
+      "stats": {
+        "matches": 80,
+        "recent_runs": [
+          41,
+          18,
+          67,
+          12,
+          52
+        ],
+        "recent_wickets": [
+          0,
+          0,
+          1,
+          0,
+          0
+        ],
+        "recent_fantasy_pts": [
+          58,
+          24,
+          98,
+          16,
+          76
+        ],
+        "avg_fantasy_pts": 54.4,
+        "strike_rate": 168.1,
+        "batting_avg": 26.5,
+        "economy": 9.2
+      },
+      "ceiling_score": 135.0,
+      "floor_score": 12.0,
+      "differential_tag": "Sub-25% Power Finisher Differential (8.5 Cr, 24.1% Sel, 60% DT)",
+      "captain_percentage": 0.63,
+      "dream_team_percentage": 60.0
+    },
+    "total_credits": 85.0
+  },
+  "Team 3: Strongest Upside Under High-Scoring Match Scenario": {
+    "players": [
+      {
+        "id": "ind_samson",
+        "name": "Sanju Samson",
+        "team": "IND",
+        "role": "WK",
+        "credits": 8.0,
+        "batting_style": "RHB",
+        "bowling_style": null,
+        "batting_order_projected": 1,
+        "expected_overs": 0.0,
+        "is_confirmed_xi": true,
+        "projected_ownership": 74.75,
+        "stats": {
+          "matches": 40,
+          "recent_runs": [
+            108,
+            0,
+            111,
+            22,
+            45
+          ],
+          "recent_wickets": [],
+          "recent_fantasy_pts": [
+            158,
+            4,
+            162,
+            34,
+            68
+          ],
+          "avg_fantasy_pts": 78.5,
+          "strike_rate": 168.0,
+          "batting_avg": 35.2,
+          "economy": 0.0
+        },
+        "ceiling_score": 165.0,
+        "floor_score": 14.0,
+        "differential_tag": "Powerplay Opener WK (74.8% Sel, 11% C, 40% DT)",
+        "captain_percentage": 10.95,
+        "dream_team_percentage": 40.0
+      },
+      {
+        "id": "ind_abhishek",
+        "name": "Abhishek Sharma",
+        "team": "IND",
+        "role": "BAT",
+        "credits": 9.0,
+        "batting_style": "LHB",
+        "bowling_style": "Slow left-arm orthodox",
+        "batting_order_projected": 2,
+        "expected_overs": 1.0,
+        "is_confirmed_xi": true,
+        "projected_ownership": 85.84,
+        "stats": {
+          "matches": 20,
+          "recent_runs": [
+            88,
+            47,
+            72,
+            14,
+            31
+          ],
+          "recent_wickets": [
+            0,
+            1,
+            0,
+            1,
+            0
+          ],
+          "recent_fantasy_pts": [
+            134,
+            78,
+            108,
+            22,
+            48
+          ],
+          "avg_fantasy_pts": 78.0,
+          "strike_rate": 185.0,
+          "batting_avg": 37.0,
+          "economy": 8.8
+        },
+        "ceiling_score": 160.0,
+        "floor_score": 18.0,
+        "differential_tag": "Mega Chalk Opener (85.8% Sel, 26.1% C, 80% DT)",
+        "captain_percentage": 26.06,
+        "dream_team_percentage": 80.0
+      },
+      {
+        "id": "ind_ishan",
+        "name": "Ishan Kishan",
+        "team": "IND",
+        "role": "WK",
+        "credits": 8.0,
+        "batting_style": "LHB",
+        "bowling_style": null,
+        "batting_order_projected": 3,
+        "expected_overs": 0.0,
+        "is_confirmed_xi": true,
+        "projected_ownership": 78.43,
+        "stats": {
+          "matches": 34,
+          "recent_runs": [
+            58,
+            24,
+            89,
+            12,
+            41
+          ],
+          "recent_wickets": [],
+          "recent_fantasy_pts": [
+            84,
+            38,
+            122,
+            18,
+            62
+          ],
+          "avg_fantasy_pts": 65.0,
+          "strike_rate": 145.0,
+          "batting_avg": 32.0,
+          "economy": 0.0
+        },
+        "ceiling_score": 135.0,
+        "floor_score": 16.0,
+        "differential_tag": "In-Form Top-Order WK (78.4% Sel, 12.6% C, 80% DT)",
+        "captain_percentage": 12.62,
+        "dream_team_percentage": 80.0
+      },
+      {
+        "id": "ind_shreyas",
+        "name": "Shreyas Iyer",
+        "team": "IND",
+        "role": "BAT",
+        "credits": 8.0,
+        "batting_style": "RHB",
+        "bowling_style": null,
+        "batting_order_projected": 4,
+        "expected_overs": 0.0,
+        "is_confirmed_xi": true,
+        "projected_ownership": 64.33,
+        "stats": {
+          "matches": 53,
+          "recent_runs": [
+            62,
+            102,
+            39,
+            44,
+            55
+          ],
+          "recent_wickets": [],
+          "recent_fantasy_pts": [
+            86,
+            148,
+            52,
+            60,
+            74
+          ],
+          "avg_fantasy_pts": 84.0,
+          "strike_rate": 148.0,
+          "batting_avg": 41.5,
+          "economy": 0.0
+        },
+        "ceiling_score": 155.0,
+        "floor_score": 28.0,
+        "differential_tag": "Middle-Overs Anchor (64.3% Sel, 5.6% C, 40% DT)",
+        "captain_percentage": 5.61,
+        "dream_team_percentage": 40.0
+      },
+      {
+        "id": "ind_tilak",
+        "name": "Tilak Varma",
+        "team": "IND",
+        "role": "BAT",
+        "credits": 7.5,
+        "batting_style": "LHB",
+        "bowling_style": "Right-arm offbreak",
+        "batting_order_projected": 5,
+        "expected_overs": 1.0,
+        "is_confirmed_xi": true,
+        "projected_ownership": 41.94,
+        "stats": {
+          "matches": 26,
+          "recent_runs": [
+            45,
+            107,
+            33,
+            51,
+            19
+          ],
+          "recent_wickets": [
+            0,
+            1,
+            0,
+            0,
+            0
+          ],
+          "recent_fantasy_pts": [
+            60,
+            154,
+            44,
+            72,
+            26
+          ],
+          "avg_fantasy_pts": 71.2,
+          "strike_rate": 152.0,
+          "batting_avg": 43.0,
+          "economy": 7.5
+        },
+        "ceiling_score": 150.0,
+        "floor_score": 22.0,
+        "differential_tag": "High-DT Leverage Batter (80% DT Rate, 7.5 Cr, 41.9% Sel, 1.2% C)",
+        "captain_percentage": 1.23,
+        "dream_team_percentage": 80.0
+      },
+      {
+        "id": "wi_hope",
+        "name": "Shai Hope",
+        "team": "WI",
+        "role": "WK",
+        "credits": 8.5,
+        "batting_style": "RHB",
+        "bowling_style": null,
+        "batting_order_projected": 1,
+        "expected_overs": 0.0,
+        "is_confirmed_xi": true,
+        "projected_ownership": 86.25,
+        "stats": {
+          "matches": 44,
+          "recent_runs": [
+            104,
+            38,
+            71,
+            102,
+            45
+          ],
+          "recent_wickets": [],
+          "recent_fantasy_pts": [
+            152,
+            54,
+            102,
+            146,
+            64
+          ],
+          "avg_fantasy_pts": 103.6,
+          "strike_rate": 146.5,
+          "batting_avg": 48.0,
+          "economy": 0.0
+        },
+        "ceiling_score": 160.0,
+        "floor_score": 30.0,
+        "differential_tag": "Heavy Chalk Opener (86.3% Sel, 23.8% C, 60% DT)",
+        "captain_percentage": 23.82,
+        "dream_team_percentage": 60.0
+      },
+      {
+        "id": "wi_hetmyer",
+        "name": "Shimron Hetmyer",
+        "team": "WI",
+        "role": "BAT",
+        "credits": 9.0,
+        "batting_style": "LHB",
+        "bowling_style": null,
+        "batting_order_projected": 3,
+        "expected_overs": 0.0,
+        "is_confirmed_xi": true,
+        "projected_ownership": 69.26,
+        "stats": {
+          "matches": 64,
+          "recent_runs": [
+            28,
+            56,
+            14,
+            61,
+            8
+          ],
+          "recent_wickets": [],
+          "recent_fantasy_pts": [
+            38,
+            82,
+            20,
+            88,
+            12
+          ],
+          "avg_fantasy_pts": 48.0,
+          "strike_rate": 158.0,
+          "batting_avg": 25.2,
+          "economy": 0.0
+        },
+        "ceiling_score": 140.0,
+        "floor_score": 10.0,
+        "differential_tag": "Power Hitter (9.0 Cr, 69.3% Sel, 2.01% C, 60% DT)",
+        "captain_percentage": 2.01,
+        "dream_team_percentage": 60.0
+      },
+      {
+        "id": "wi_powell",
+        "name": "Rovman Powell",
+        "team": "WI",
+        "role": "BAT",
+        "credits": 8.5,
+        "batting_style": "RHB",
+        "bowling_style": "Right-arm medium",
+        "batting_order_projected": 4,
+        "expected_overs": 1.0,
+        "is_confirmed_xi": true,
+        "projected_ownership": 24.11,
+        "stats": {
+          "matches": 80,
+          "recent_runs": [
+            41,
+            18,
+            67,
+            12,
+            52
+          ],
+          "recent_wickets": [
+            0,
+            0,
+            1,
+            0,
+            0
+          ],
+          "recent_fantasy_pts": [
+            58,
+            24,
+            98,
+            16,
+            76
+          ],
+          "avg_fantasy_pts": 54.4,
+          "strike_rate": 168.1,
+          "batting_avg": 26.5,
+          "economy": 9.2
+        },
+        "ceiling_score": 135.0,
+        "floor_score": 12.0,
+        "differential_tag": "Sub-25% Power Finisher Differential (8.5 Cr, 24.1% Sel, 60% DT)",
+        "captain_percentage": 0.63,
+        "dream_team_percentage": 60.0
+      },
+      {
+        "id": "wi_rutherford",
+        "name": "Sherfane Rutherford",
+        "team": "WI",
+        "role": "BAT",
+        "credits": 8.0,
+        "batting_style": "LHB",
+        "bowling_style": "Right-arm medium",
+        "batting_order_projected": 5,
+        "expected_overs": 0.5,
+        "is_confirmed_xi": true,
+        "projected_ownership": 74.98,
+        "stats": {
+          "matches": 30,
+          "recent_runs": [
+            68,
+            44,
+            22,
+            68,
+            15
+          ],
+          "recent_wickets": [
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "recent_fantasy_pts": [
+            96,
+            64,
+            30,
+            96,
+            22
+          ],
+          "avg_fantasy_pts": 61.6,
+          "strike_rate": 190.0,
+          "batting_avg": 42.0,
+          "economy": 9.5
+        },
+        "ceiling_score": 145.0,
+        "floor_score": 18.0,
+        "differential_tag": "In-Form Finisher (8.0 Cr, 75.0% Sel, 3.75% C, 80% DT)",
+        "captain_percentage": 3.75,
+        "dream_team_percentage": 80.0
+      },
+      {
+        "id": "wi_shepherd",
+        "name": "Romario Shepherd",
+        "team": "WI",
+        "role": "AR",
+        "credits": 8.5,
+        "batting_style": "RHB",
+        "bowling_style": "Right-arm fast-medium",
+        "batting_order_projected": 6,
+        "expected_overs": 3.5,
+        "is_confirmed_xi": true,
+        "projected_ownership": 30.18,
+        "stats": {
+          "matches": 46,
+          "recent_runs": [
+            32,
+            14,
+            26,
+            6,
+            39
+          ],
+          "recent_wickets": [
+            2,
+            1,
+            0,
+            3,
+            1
+          ],
+          "recent_fantasy_pts": [
+            88,
+            44,
+            34,
+            102,
+            68
+          ],
+          "avg_fantasy_pts": 67.2,
+          "strike_rate": 162.0,
+          "batting_avg": 23.5,
+          "economy": 9.1
+        },
+        "ceiling_score": 140.0,
+        "floor_score": 20.0,
+        "differential_tag": "Death Overs Pacer & Finisher (8.5 Cr, 30.2% Sel, 0.57% C)",
+        "captain_percentage": 0.57,
+        "dream_team_percentage": 20.0
+      },
+      {
+        "id": "wi_joseph",
+        "name": "Shamar Joseph",
+        "team": "WI",
+        "role": "BOWL",
+        "credits": 7.0,
+        "batting_style": "RHB",
+        "bowling_style": "Right-arm fast",
+        "batting_order_projected": 11,
+        "expected_overs": 4.0,
+        "is_confirmed_xi": true,
+        "projected_ownership": 14.6,
+        "stats": {
+          "matches": 17,
+          "recent_runs": [
+            4,
+            1,
+            0,
+            0,
+            7
+          ],
+          "recent_wickets": [
+            2,
+            3,
+            1,
+            2,
+            0
+          ],
+          "recent_fantasy_pts": [
+            62,
+            94,
+            36,
+            68,
+            10
+          ],
+          "avg_fantasy_pts": 54.0,
+          "strike_rate": 85.0,
+          "batting_avg": 5.0,
+          "economy": 8.9
+        },
+        "ceiling_score": 135.0,
+        "floor_score": 10.0,
+        "differential_tag": "Super Differential Strike Pacer (7.0 Cr, 14.6% Sel, 40% DT, 59.6% Pacer Pitch)",
+        "captain_percentage": 0.17,
+        "dream_team_percentage": 40.0
+      }
+    ],
+    "captain": {
+      "id": "ind_samson",
+      "name": "Sanju Samson",
+      "team": "IND",
+      "role": "WK",
+      "credits": 8.0,
+      "batting_style": "RHB",
+      "bowling_style": null,
+      "batting_order_projected": 1,
+      "expected_overs": 0.0,
+      "is_confirmed_xi": true,
+      "projected_ownership": 74.75,
+      "stats": {
+        "matches": 40,
+        "recent_runs": [
+          108,
+          0,
+          111,
+          22,
+          45
+        ],
+        "recent_wickets": [],
+        "recent_fantasy_pts": [
+          158,
+          4,
+          162,
+          34,
+          68
+        ],
+        "avg_fantasy_pts": 78.5,
+        "strike_rate": 168.0,
+        "batting_avg": 35.2,
+        "economy": 0.0
+      },
+      "ceiling_score": 165.0,
+      "floor_score": 14.0,
+      "differential_tag": "Powerplay Opener WK (74.8% Sel, 11% C, 40% DT)",
+      "captain_percentage": 10.95,
+      "dream_team_percentage": 40.0
+    },
+    "vice_captain": {
+      "id": "wi_hope",
+      "name": "Shai Hope",
+      "team": "WI",
+      "role": "WK",
+      "credits": 8.5,
+      "batting_style": "RHB",
+      "bowling_style": null,
+      "batting_order_projected": 1,
+      "expected_overs": 0.0,
+      "is_confirmed_xi": true,
+      "projected_ownership": 86.25,
+      "stats": {
+        "matches": 44,
+        "recent_runs": [
+          104,
+          38,
+          71,
+          102,
+          45
+        ],
+        "recent_wickets": [],
+        "recent_fantasy_pts": [
+          152,
+          54,
+          102,
+          146,
+          64
+        ],
+        "avg_fantasy_pts": 103.6,
+        "strike_rate": 146.5,
+        "batting_avg": 48.0,
+        "economy": 0.0
+      },
+      "ceiling_score": 160.0,
+      "floor_score": 30.0,
+      "differential_tag": "Heavy Chalk Opener (86.3% Sel, 23.8% C, 60% DT)",
+      "captain_percentage": 23.82,
+      "dream_team_percentage": 60.0
+    },
+    "total_credits": 90.0
+  },
+  "Team 4: Strongest Upside Under Low-Scoring Match Scenario": {
+    "players": [
+      {
+        "id": "ind_ishan",
+        "name": "Ishan Kishan",
+        "team": "IND",
+        "role": "WK",
+        "credits": 8.0,
+        "batting_style": "LHB",
+        "bowling_style": null,
+        "batting_order_projected": 3,
+        "expected_overs": 0.0,
+        "is_confirmed_xi": true,
+        "projected_ownership": 78.43,
+        "stats": {
+          "matches": 34,
+          "recent_runs": [
+            58,
+            24,
+            89,
+            12,
+            41
+          ],
+          "recent_wickets": [],
+          "recent_fantasy_pts": [
+            84,
+            38,
+            122,
+            18,
+            62
+          ],
+          "avg_fantasy_pts": 65.0,
+          "strike_rate": 145.0,
+          "batting_avg": 32.0,
+          "economy": 0.0
+        },
+        "ceiling_score": 135.0,
+        "floor_score": 16.0,
+        "differential_tag": "In-Form Top-Order WK (78.4% Sel, 12.6% C, 80% DT)",
+        "captain_percentage": 12.62,
+        "dream_team_percentage": 80.0
+      },
+      {
+        "id": "ind_tilak",
+        "name": "Tilak Varma",
+        "team": "IND",
+        "role": "BAT",
+        "credits": 7.5,
+        "batting_style": "LHB",
+        "bowling_style": "Right-arm offbreak",
+        "batting_order_projected": 5,
+        "expected_overs": 1.0,
+        "is_confirmed_xi": true,
+        "projected_ownership": 41.94,
+        "stats": {
+          "matches": 26,
+          "recent_runs": [
+            45,
+            107,
+            33,
+            51,
+            19
+          ],
+          "recent_wickets": [
+            0,
+            1,
+            0,
+            0,
+            0
+          ],
+          "recent_fantasy_pts": [
+            60,
+            154,
+            44,
+            72,
+            26
+          ],
+          "avg_fantasy_pts": 71.2,
+          "strike_rate": 152.0,
+          "batting_avg": 43.0,
+          "economy": 7.5
+        },
+        "ceiling_score": 150.0,
+        "floor_score": 22.0,
+        "differential_tag": "High-DT Leverage Batter (80% DT Rate, 7.5 Cr, 41.9% Sel, 1.2% C)",
+        "captain_percentage": 1.23,
+        "dream_team_percentage": 80.0
+      },
+      {
+        "id": "ind_naman",
+        "name": "Naman Dhir",
+        "team": "IND",
+        "role": "AR",
+        "credits": 8.5,
+        "batting_style": "RHB",
+        "bowling_style": "Right-arm offbreak",
+        "batting_order_projected": 6,
+        "expected_overs": 1.0,
+        "is_confirmed_xi": true,
+        "projected_ownership": 27.41,
+        "stats": {
+          "matches": 9,
+          "recent_runs": [
+            34,
+            18,
+            42,
+            11,
+            25
+          ],
+          "recent_wickets": [
+            1,
+            0,
+            0,
+            1,
+            0
+          ],
+          "recent_fantasy_pts": [
+            52,
+            24,
+            62,
+            16,
+            38
+          ],
+          "avg_fantasy_pts": 38.4,
+          "strike_rate": 172.0,
+          "batting_avg": 27.5,
+          "economy": 8.5
+        },
+        "ceiling_score": 110.0,
+        "floor_score": 10.0,
+        "differential_tag": "Sub-30% Differential AR (27.4% Sel, 50% DT Rate, 0.65% C)",
+        "captain_percentage": 0.65,
+        "dream_team_percentage": 50.0
+      },
+      {
+        "id": "ind_reddy",
+        "name": "Nitish Kumar Reddy",
+        "team": "IND",
+        "role": "AR",
+        "credits": 7.5,
+        "batting_style": "RHB",
+        "bowling_style": "Right-arm medium-fast",
+        "batting_order_projected": 7,
+        "expected_overs": 2.0,
+        "is_confirmed_xi": true,
+        "projected_ownership": 41.26,
+        "stats": {
+          "matches": 12,
+          "recent_runs": [
+            41,
+            15,
+            74,
+            0,
+            22
+          ],
+          "recent_wickets": [
+            2,
+            0,
+            1,
+            2,
+            0
+          ],
+          "recent_fantasy_pts": [
+            78,
+            22,
+            112,
+            54,
+            30
+          ],
+          "avg_fantasy_pts": 59.2,
+          "strike_rate": 156.0,
+          "batting_avg": 31.0,
+          "economy": 8.8
+        },
+        "ceiling_score": 135.0,
+        "floor_score": 15.0,
+        "differential_tag": "Dual-Equity All-Rounder (7.5 Cr, 50% DT Rate, 41.3% Sel, 0.69% C)",
+        "captain_percentage": 0.69,
+        "dream_team_percentage": 50.0
+      },
+      {
+        "id": "ind_axar",
+        "name": "Axar Patel",
+        "team": "IND",
+        "role": "AR",
+        "credits": 7.0,
+        "batting_style": "LHB",
+        "bowling_style": "Slow left-arm orthodox",
+        "batting_order_projected": 8,
+        "expected_overs": 4.0,
+        "is_confirmed_xi": true,
+        "projected_ownership": 49.45,
+        "stats": {
+          "matches": 62,
+          "recent_runs": [
+            22,
+            18,
+            31,
+            12,
+            28
+          ],
+          "recent_wickets": [
+            2,
+            1,
+            2,
+            1,
+            3
+          ],
+          "recent_fantasy_pts": [
+            84,
+            52,
+            92,
+            46,
+            114
+          ],
+          "avg_fantasy_pts": 77.6,
+          "strike_rate": 140.0,
+          "batting_avg": 24.5,
+          "economy": 7.1
+        },
+        "ceiling_score": 125.0,
+        "floor_score": 30.0,
+        "differential_tag": "Low-Credit AR (7.0 Cr, 49.5% Sel, 1.22% C, 40% DT)",
+        "captain_percentage": 1.22,
+        "dream_team_percentage": 40.0
+      },
+      {
+        "id": "ind_arshdeep",
+        "name": "Arshdeep Singh",
+        "team": "IND",
+        "role": "BOWL",
+        "credits": 8.5,
+        "batting_style": "RHB",
+        "bowling_style": "Left-arm medium-fast",
+        "batting_order_projected": 9,
+        "expected_overs": 4.0,
+        "is_confirmed_xi": true,
+        "projected_ownership": 63.19,
+        "stats": {
+          "matches": 32,
+          "recent_runs": [
+            0,
+            2,
+            0,
+            0,
+            0
+          ],
+          "recent_wickets": [
+            2,
+            3,
+            1,
+            0,
+            2
+          ],
+          "recent_fantasy_pts": [
+            64,
+            98,
+            34,
+            10,
+            62
+          ],
+          "avg_fantasy_pts": 53.6,
+          "strike_rate": 80.0,
+          "batting_avg": 6.0,
+          "economy": 7.4,
+          "death_overs_rate": 0.45
+        },
+        "ceiling_score": 120.0,
+        "floor_score": 16.0,
+        "differential_tag": "Death Overs Pacer (8.5 Cr, 63.2% Sel, 59.6% Pacer Pitch)",
+        "captain_percentage": 0.95,
+        "dream_team_percentage": 40.0
+      },
+      {
+        "id": "ind_prince",
+        "name": "Prince Yadav",
+        "team": "IND",
+        "role": "BOWL",
+        "credits": 7.0,
+        "batting_style": "RHB",
+        "bowling_style": "Right-arm medium-fast",
+        "batting_order_projected": 10,
+        "expected_overs": 3.0,
+        "is_confirmed_xi": true,
+        "projected_ownership": 24.28,
+        "stats": {
+          "matches": 5,
+          "recent_runs": [
+            0,
+            4,
+            1,
+            0,
+            0
+          ],
+          "recent_wickets": [
+            1,
+            2,
+            0,
+            1,
+            1
+          ],
+          "recent_fantasy_pts": [
+            34,
+            58,
+            8,
+            32,
+            28
+          ],
+          "avg_fantasy_pts": 32.0,
+          "strike_rate": 80.0,
+          "batting_avg": 5.0,
+          "economy": 8.6
+        },
+        "ceiling_score": 85.0,
+        "floor_score": 8.0,
+        "differential_tag": "Golden Differential Pacer (7.0 Cr, 24.3% Sel, 0.30% C)",
+        "captain_percentage": 0.3,
+        "dream_team_percentage": 0.0
+      },
+      {
+        "id": "ind_bhuvi",
+        "name": "Bhuvneshwar Kumar",
+        "team": "IND",
+        "role": "BOWL",
+        "credits": 8.0,
+        "batting_style": "RHB",
+        "bowling_style": "Right-arm fast",
+        "batting_order_projected": 11,
+        "expected_overs": 4.0,
+        "is_confirmed_xi": true,
+        "projected_ownership": 26.84,
+        "stats": {
+          "matches": 14,
+          "recent_runs": [
+            0,
+            0,
+            0,
+            1,
+            0
+          ],
+          "recent_wickets": [
+            0,
+            3,
+            2,
+            0,
+            3
+          ],
+          "recent_fantasy_pts": [
+            34,
+            94,
+            66,
+            12,
+            96
+          ],
+          "avg_fantasy_pts": 60.4,
+          "strike_rate": 60.0,
+          "batting_avg": 4.0,
+          "economy": 7.7
+        },
+        "ceiling_score": 145.0,
+        "floor_score": 15.0,
+        "differential_tag": "155kph Express Strike Pacer (8.0 Cr, 26.8% Sel, 0.36% C)",
+        "captain_percentage": 0.36,
+        "dream_team_percentage": 25.0
+      },
+      {
+        "id": "wi_chase",
+        "name": "Roston Chase",
+        "team": "WI",
+        "role": "AR",
+        "credits": 8.0,
+        "batting_style": "RHB",
+        "bowling_style": "Right-arm offbreak",
+        "batting_order_projected": 9,
+        "expected_overs": 4.0,
+        "is_confirmed_xi": true,
+        "projected_ownership": 53.0,
+        "stats": {
+          "matches": 37,
+          "recent_runs": [
+            31,
+            24,
+            46,
+            18,
+            29
+          ],
+          "recent_wickets": [
+            2,
+            1,
+            1,
+            2,
+            1
+          ],
+          "recent_fantasy_pts": [
+            82,
+            54,
+            78,
+            66,
+            62
+          ],
+          "avg_fantasy_pts": 68.4,
+          "strike_rate": 130.0,
+          "batting_avg": 27.0,
+          "economy": 8.48
+        },
+        "ceiling_score": 120.0,
+        "floor_score": 32.0,
+        "differential_tag": "80% DT Rate Multi-Role AR (8.0 Cr, 53.0% Sel, 1.17% C)",
+        "captain_percentage": 1.17,
+        "dream_team_percentage": 80.0
+      },
+      {
+        "id": "wi_motie",
+        "name": "Gudakesh Motie",
+        "team": "WI",
+        "role": "BOWL",
+        "credits": 7.5,
+        "batting_style": "LHB",
+        "bowling_style": "Slow left-arm orthodox",
+        "batting_order_projected": 10,
+        "expected_overs": 4.0,
+        "is_confirmed_xi": true,
+        "projected_ownership": 19.01,
+        "stats": {
+          "matches": 28,
+          "recent_runs": [
+            0,
+            2,
+            8,
+            0,
+            0
+          ],
+          "recent_wickets": [
+            2,
+            1,
+            3,
+            0,
+            2
+          ],
+          "recent_fantasy_pts": [
+            64,
+            36,
+            92,
+            12,
+            66
+          ],
+          "avg_fantasy_pts": 54.0,
+          "strike_rate": 90.0,
+          "batting_avg": 8.0,
+          "economy": 7.3
+        },
+        "ceiling_score": 110.0,
+        "floor_score": 14.0,
+        "differential_tag": "Sub-20% Spin Differential (7.5 Cr, 19.0% Sel, 0.14% C)",
+        "captain_percentage": 0.14,
+        "dream_team_percentage": 20.0
+      },
+      {
+        "id": "wi_joseph",
+        "name": "Shamar Joseph",
+        "team": "WI",
+        "role": "BOWL",
+        "credits": 7.0,
+        "batting_style": "RHB",
+        "bowling_style": "Right-arm fast",
+        "batting_order_projected": 11,
+        "expected_overs": 4.0,
+        "is_confirmed_xi": true,
+        "projected_ownership": 14.6,
+        "stats": {
+          "matches": 17,
+          "recent_runs": [
+            4,
+            1,
+            0,
+            0,
+            7
+          ],
+          "recent_wickets": [
+            2,
+            3,
+            1,
+            2,
+            0
+          ],
+          "recent_fantasy_pts": [
+            62,
+            94,
+            36,
+            68,
+            10
+          ],
+          "avg_fantasy_pts": 54.0,
+          "strike_rate": 85.0,
+          "batting_avg": 5.0,
+          "economy": 8.9
+        },
+        "ceiling_score": 135.0,
+        "floor_score": 10.0,
+        "differential_tag": "Super Differential Strike Pacer (7.0 Cr, 14.6% Sel, 40% DT, 59.6% Pacer Pitch)",
+        "captain_percentage": 0.17,
+        "dream_team_percentage": 40.0
+      }
+    ],
+    "captain": {
+      "id": "wi_joseph",
+      "name": "Shamar Joseph",
+      "team": "WI",
+      "role": "BOWL",
+      "credits": 7.0,
+      "batting_style": "RHB",
+      "bowling_style": "Right-arm fast",
+      "batting_order_projected": 11,
+      "expected_overs": 4.0,
+      "is_confirmed_xi": true,
+      "projected_ownership": 14.6,
+      "stats": {
+        "matches": 17,
+        "recent_runs": [
+          4,
+          1,
+          0,
+          0,
+          7
+        ],
+        "recent_wickets": [
+          2,
+          3,
+          1,
+          2,
+          0
+        ],
+        "recent_fantasy_pts": [
+          62,
+          94,
+          36,
+          68,
+          10
+        ],
+        "avg_fantasy_pts": 54.0,
+        "strike_rate": 85.0,
+        "batting_avg": 5.0,
+        "economy": 8.9
+      },
+      "ceiling_score": 135.0,
+      "floor_score": 10.0,
+      "differential_tag": "Super Differential Strike Pacer (7.0 Cr, 14.6% Sel, 40% DT, 59.6% Pacer Pitch)",
+      "captain_percentage": 0.17,
+      "dream_team_percentage": 40.0
+    },
+    "vice_captain": {
+      "id": "ind_arshdeep",
+      "name": "Arshdeep Singh",
+      "team": "IND",
+      "role": "BOWL",
+      "credits": 8.5,
+      "batting_style": "RHB",
+      "bowling_style": "Left-arm medium-fast",
+      "batting_order_projected": 9,
+      "expected_overs": 4.0,
+      "is_confirmed_xi": true,
+      "projected_ownership": 63.19,
+      "stats": {
+        "matches": 32,
+        "recent_runs": [
+          0,
+          2,
+          0,
+          0,
+          0
+        ],
+        "recent_wickets": [
+          2,
+          3,
+          1,
+          0,
+          2
+        ],
+        "recent_fantasy_pts": [
+          64,
+          98,
+          34,
+          10,
+          62
+        ],
+        "avg_fantasy_pts": 53.6,
+        "strike_rate": 80.0,
+        "batting_avg": 6.0,
+        "economy": 7.4,
+        "death_overs_rate": 0.45
+      },
+      "ceiling_score": 120.0,
+      "floor_score": 16.0,
+      "differential_tag": "Death Overs Pacer (8.5 Cr, 63.2% Sel, 59.6% Pacer Pitch)",
+      "captain_percentage": 0.95,
+      "dream_team_percentage": 40.0
+    },
+    "total_credits": 84.5
+  },
+  "Team 5: Strongest Lineup for a Pace-Dominant Match": {
+    "players": [
+      {
+        "id": "ind_samson",
+        "name": "Sanju Samson",
+        "team": "IND",
+        "role": "WK",
+        "credits": 8.0,
+        "batting_style": "RHB",
+        "bowling_style": null,
+        "batting_order_projected": 1,
+        "expected_overs": 0.0,
+        "is_confirmed_xi": true,
+        "projected_ownership": 74.75,
+        "stats": {
+          "matches": 40,
+          "recent_runs": [
+            108,
+            0,
+            111,
+            22,
+            45
+          ],
+          "recent_wickets": [],
+          "recent_fantasy_pts": [
+            158,
+            4,
+            162,
+            34,
+            68
+          ],
+          "avg_fantasy_pts": 78.5,
+          "strike_rate": 168.0,
+          "batting_avg": 35.2,
+          "economy": 0.0
+        },
+        "ceiling_score": 165.0,
+        "floor_score": 14.0,
+        "differential_tag": "Powerplay Opener WK (74.8% Sel, 11% C, 40% DT)",
+        "captain_percentage": 10.95,
+        "dream_team_percentage": 40.0
+      },
+      {
+        "id": "ind_shreyas",
+        "name": "Shreyas Iyer",
+        "team": "IND",
+        "role": "BAT",
+        "credits": 8.0,
+        "batting_style": "RHB",
+        "bowling_style": null,
+        "batting_order_projected": 4,
+        "expected_overs": 0.0,
+        "is_confirmed_xi": true,
+        "projected_ownership": 64.33,
+        "stats": {
+          "matches": 53,
+          "recent_runs": [
+            62,
+            102,
+            39,
+            44,
+            55
+          ],
+          "recent_wickets": [],
+          "recent_fantasy_pts": [
+            86,
+            148,
+            52,
+            60,
+            74
+          ],
+          "avg_fantasy_pts": 84.0,
+          "strike_rate": 148.0,
+          "batting_avg": 41.5,
+          "economy": 0.0
+        },
+        "ceiling_score": 155.0,
+        "floor_score": 28.0,
+        "differential_tag": "Middle-Overs Anchor (64.3% Sel, 5.6% C, 40% DT)",
+        "captain_percentage": 5.61,
+        "dream_team_percentage": 40.0
+      },
+      {
+        "id": "ind_tilak",
+        "name": "Tilak Varma",
+        "team": "IND",
+        "role": "BAT",
+        "credits": 7.5,
+        "batting_style": "LHB",
+        "bowling_style": "Right-arm offbreak",
+        "batting_order_projected": 5,
+        "expected_overs": 1.0,
+        "is_confirmed_xi": true,
+        "projected_ownership": 41.94,
+        "stats": {
+          "matches": 26,
+          "recent_runs": [
+            45,
+            107,
+            33,
+            51,
+            19
+          ],
+          "recent_wickets": [
+            0,
+            1,
+            0,
+            0,
+            0
+          ],
+          "recent_fantasy_pts": [
+            60,
+            154,
+            44,
+            72,
+            26
+          ],
+          "avg_fantasy_pts": 71.2,
+          "strike_rate": 152.0,
+          "batting_avg": 43.0,
+          "economy": 7.5
+        },
+        "ceiling_score": 150.0,
+        "floor_score": 22.0,
+        "differential_tag": "High-DT Leverage Batter (80% DT Rate, 7.5 Cr, 41.9% Sel, 1.2% C)",
+        "captain_percentage": 1.23,
+        "dream_team_percentage": 80.0
+      },
+      {
+        "id": "ind_reddy",
+        "name": "Nitish Kumar Reddy",
+        "team": "IND",
+        "role": "AR",
+        "credits": 7.5,
+        "batting_style": "RHB",
+        "bowling_style": "Right-arm medium-fast",
+        "batting_order_projected": 7,
+        "expected_overs": 2.0,
+        "is_confirmed_xi": true,
+        "projected_ownership": 41.26,
+        "stats": {
+          "matches": 12,
+          "recent_runs": [
+            41,
+            15,
+            74,
+            0,
+            22
+          ],
+          "recent_wickets": [
+            2,
+            0,
+            1,
+            2,
+            0
+          ],
+          "recent_fantasy_pts": [
+            78,
+            22,
+            112,
+            54,
+            30
+          ],
+          "avg_fantasy_pts": 59.2,
+          "strike_rate": 156.0,
+          "batting_avg": 31.0,
+          "economy": 8.8
+        },
+        "ceiling_score": 135.0,
+        "floor_score": 15.0,
+        "differential_tag": "Dual-Equity All-Rounder (7.5 Cr, 50% DT Rate, 41.3% Sel, 0.69% C)",
+        "captain_percentage": 0.69,
+        "dream_team_percentage": 50.0
+      },
+      {
+        "id": "ind_arshdeep",
+        "name": "Arshdeep Singh",
+        "team": "IND",
+        "role": "BOWL",
+        "credits": 8.5,
+        "batting_style": "RHB",
+        "bowling_style": "Left-arm medium-fast",
+        "batting_order_projected": 9,
+        "expected_overs": 4.0,
+        "is_confirmed_xi": true,
+        "projected_ownership": 63.19,
+        "stats": {
+          "matches": 32,
+          "recent_runs": [
+            0,
+            2,
+            0,
+            0,
+            0
+          ],
+          "recent_wickets": [
+            2,
+            3,
+            1,
+            0,
+            2
+          ],
+          "recent_fantasy_pts": [
+            64,
+            98,
+            34,
+            10,
+            62
+          ],
+          "avg_fantasy_pts": 53.6,
+          "strike_rate": 80.0,
+          "batting_avg": 6.0,
+          "economy": 7.4,
+          "death_overs_rate": 0.45
+        },
+        "ceiling_score": 120.0,
+        "floor_score": 16.0,
+        "differential_tag": "Death Overs Pacer (8.5 Cr, 63.2% Sel, 59.6% Pacer Pitch)",
+        "captain_percentage": 0.95,
+        "dream_team_percentage": 40.0
+      },
+      {
+        "id": "ind_bhuvi",
+        "name": "Bhuvneshwar Kumar",
+        "team": "IND",
+        "role": "BOWL",
+        "credits": 8.0,
+        "batting_style": "RHB",
+        "bowling_style": "Right-arm fast",
+        "batting_order_projected": 11,
+        "expected_overs": 4.0,
+        "is_confirmed_xi": true,
+        "projected_ownership": 26.84,
+        "stats": {
+          "matches": 14,
+          "recent_runs": [
+            0,
+            0,
+            0,
+            1,
+            0
+          ],
+          "recent_wickets": [
+            0,
+            3,
+            2,
+            0,
+            3
+          ],
+          "recent_fantasy_pts": [
+            34,
+            94,
+            66,
+            12,
+            96
+          ],
+          "avg_fantasy_pts": 60.4,
+          "strike_rate": 60.0,
+          "batting_avg": 4.0,
+          "economy": 7.7
+        },
+        "ceiling_score": 145.0,
+        "floor_score": 15.0,
+        "differential_tag": "155kph Express Strike Pacer (8.0 Cr, 26.8% Sel, 0.36% C)",
+        "captain_percentage": 0.36,
+        "dream_team_percentage": 25.0
+      },
+      {
+        "id": "wi_powell",
+        "name": "Rovman Powell",
+        "team": "WI",
+        "role": "BAT",
+        "credits": 8.5,
+        "batting_style": "RHB",
+        "bowling_style": "Right-arm medium",
+        "batting_order_projected": 4,
+        "expected_overs": 1.0,
+        "is_confirmed_xi": true,
+        "projected_ownership": 24.11,
+        "stats": {
+          "matches": 80,
+          "recent_runs": [
+            41,
+            18,
+            67,
+            12,
+            52
+          ],
+          "recent_wickets": [
+            0,
+            0,
+            1,
+            0,
+            0
+          ],
+          "recent_fantasy_pts": [
+            58,
+            24,
+            98,
+            16,
+            76
+          ],
+          "avg_fantasy_pts": 54.4,
+          "strike_rate": 168.1,
+          "batting_avg": 26.5,
+          "economy": 9.2
+        },
+        "ceiling_score": 135.0,
+        "floor_score": 12.0,
+        "differential_tag": "Sub-25% Power Finisher Differential (8.5 Cr, 24.1% Sel, 60% DT)",
+        "captain_percentage": 0.63,
+        "dream_team_percentage": 60.0
+      },
+      {
+        "id": "wi_rutherford",
+        "name": "Sherfane Rutherford",
+        "team": "WI",
+        "role": "BAT",
+        "credits": 8.0,
+        "batting_style": "LHB",
+        "bowling_style": "Right-arm medium",
+        "batting_order_projected": 5,
+        "expected_overs": 0.5,
+        "is_confirmed_xi": true,
+        "projected_ownership": 74.98,
+        "stats": {
+          "matches": 30,
+          "recent_runs": [
+            68,
+            44,
+            22,
+            68,
+            15
+          ],
+          "recent_wickets": [
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "recent_fantasy_pts": [
+            96,
+            64,
+            30,
+            96,
+            22
+          ],
+          "avg_fantasy_pts": 61.6,
+          "strike_rate": 190.0,
+          "batting_avg": 42.0,
+          "economy": 9.5
+        },
+        "ceiling_score": 145.0,
+        "floor_score": 18.0,
+        "differential_tag": "In-Form Finisher (8.0 Cr, 75.0% Sel, 3.75% C, 80% DT)",
+        "captain_percentage": 3.75,
+        "dream_team_percentage": 80.0
+      },
+      {
+        "id": "wi_shepherd",
+        "name": "Romario Shepherd",
+        "team": "WI",
+        "role": "AR",
+        "credits": 8.5,
+        "batting_style": "RHB",
+        "bowling_style": "Right-arm fast-medium",
+        "batting_order_projected": 6,
+        "expected_overs": 3.5,
+        "is_confirmed_xi": true,
+        "projected_ownership": 30.18,
+        "stats": {
+          "matches": 46,
+          "recent_runs": [
+            32,
+            14,
+            26,
+            6,
+            39
+          ],
+          "recent_wickets": [
+            2,
+            1,
+            0,
+            3,
+            1
+          ],
+          "recent_fantasy_pts": [
+            88,
+            44,
+            34,
+            102,
+            68
+          ],
+          "avg_fantasy_pts": 67.2,
+          "strike_rate": 162.0,
+          "batting_avg": 23.5,
+          "economy": 9.1
+        },
+        "ceiling_score": 140.0,
+        "floor_score": 20.0,
+        "differential_tag": "Death Overs Pacer & Finisher (8.5 Cr, 30.2% Sel, 0.57% C)",
+        "captain_percentage": 0.57,
+        "dream_team_percentage": 20.0
+      },
+      {
+        "id": "wi_paul",
+        "name": "Keemo Paul",
+        "team": "WI",
+        "role": "AR",
+        "credits": 6.5,
+        "batting_style": "RHB",
+        "bowling_style": "Right-arm fast-medium",
+        "batting_order_projected": 7,
+        "expected_overs": 3.0,
+        "is_confirmed_xi": true,
+        "projected_ownership": 47.57,
+        "stats": {
+          "matches": 29,
+          "recent_runs": [
+            18,
+            12,
+            29,
+            6,
+            21
+          ],
+          "recent_wickets": [
+            1,
+            2,
+            1,
+            0,
+            2
+          ],
+          "recent_fantasy_pts": [
+            48,
+            64,
+            58,
+            12,
+            68
+          ],
+          "avg_fantasy_pts": 50.0,
+          "strike_rate": 136.0,
+          "batting_avg": 19.5,
+          "economy": 8.8
+        },
+        "ceiling_score": 115.0,
+        "floor_score": 14.0,
+        "differential_tag": "Slower Cutters Specialist (6.5 Cr, 47.6% Sel, 1.04% C)",
+        "captain_percentage": 1.04,
+        "dream_team_percentage": 25.0
+      },
+      {
+        "id": "wi_joseph",
+        "name": "Shamar Joseph",
+        "team": "WI",
+        "role": "BOWL",
+        "credits": 7.0,
+        "batting_style": "RHB",
+        "bowling_style": "Right-arm fast",
+        "batting_order_projected": 11,
+        "expected_overs": 4.0,
+        "is_confirmed_xi": true,
+        "projected_ownership": 14.6,
+        "stats": {
+          "matches": 17,
+          "recent_runs": [
+            4,
+            1,
+            0,
+            0,
+            7
+          ],
+          "recent_wickets": [
+            2,
+            3,
+            1,
+            2,
+            0
+          ],
+          "recent_fantasy_pts": [
+            62,
+            94,
+            36,
+            68,
+            10
+          ],
+          "avg_fantasy_pts": 54.0,
+          "strike_rate": 85.0,
+          "batting_avg": 5.0,
+          "economy": 8.9
+        },
+        "ceiling_score": 135.0,
+        "floor_score": 10.0,
+        "differential_tag": "Super Differential Strike Pacer (7.0 Cr, 14.6% Sel, 40% DT, 59.6% Pacer Pitch)",
+        "captain_percentage": 0.17,
+        "dream_team_percentage": 40.0
+      }
+    ],
+    "captain": {
+      "id": "ind_bhuvi",
+      "name": "Bhuvneshwar Kumar",
+      "team": "IND",
+      "role": "BOWL",
+      "credits": 8.0,
+      "batting_style": "RHB",
+      "bowling_style": "Right-arm fast",
+      "batting_order_projected": 11,
+      "expected_overs": 4.0,
+      "is_confirmed_xi": true,
+      "projected_ownership": 26.84,
+      "stats": {
+        "matches": 14,
+        "recent_runs": [
+          0,
+          0,
+          0,
+          1,
+          0
+        ],
+        "recent_wickets": [
+          0,
+          3,
+          2,
+          0,
+          3
+        ],
+        "recent_fantasy_pts": [
+          34,
+          94,
+          66,
+          12,
+          96
+        ],
+        "avg_fantasy_pts": 60.4,
+        "strike_rate": 60.0,
+        "batting_avg": 4.0,
+        "economy": 7.7
+      },
+      "ceiling_score": 145.0,
+      "floor_score": 15.0,
+      "differential_tag": "155kph Express Strike Pacer (8.0 Cr, 26.8% Sel, 0.36% C)",
+      "captain_percentage": 0.36,
+      "dream_team_percentage": 25.0
+    },
+    "vice_captain": {
+      "id": "wi_rutherford",
+      "name": "Sherfane Rutherford",
+      "team": "WI",
+      "role": "BAT",
+      "credits": 8.0,
+      "batting_style": "LHB",
+      "bowling_style": "Right-arm medium",
+      "batting_order_projected": 5,
+      "expected_overs": 0.5,
+      "is_confirmed_xi": true,
+      "projected_ownership": 74.98,
+      "stats": {
+        "matches": 30,
+        "recent_runs": [
+          68,
+          44,
+          22,
+          68,
+          15
+        ],
+        "recent_wickets": [
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "recent_fantasy_pts": [
+          96,
+          64,
+          30,
+          96,
+          22
+        ],
+        "avg_fantasy_pts": 61.6,
+        "strike_rate": 190.0,
+        "batting_avg": 42.0,
+        "economy": 9.5
+      },
+      "ceiling_score": 145.0,
+      "floor_score": 18.0,
+      "differential_tag": "In-Form Finisher (8.0 Cr, 75.0% Sel, 3.75% C, 80% DT)",
+      "captain_percentage": 3.75,
+      "dream_team_percentage": 80.0
+    },
+    "total_credits": 86.0
+  },
+  "Team 6: Strongest Lineup for a Spin-Dominant Match": {
+    "players": [
+      {
+        "id": "ind_samson",
+        "name": "Sanju Samson",
+        "team": "IND",
+        "role": "WK",
+        "credits": 8.0,
+        "batting_style": "RHB",
+        "bowling_style": null,
+        "batting_order_projected": 1,
+        "expected_overs": 0.0,
+        "is_confirmed_xi": true,
+        "projected_ownership": 74.75,
+        "stats": {
+          "matches": 40,
+          "recent_runs": [
+            108,
+            0,
+            111,
+            22,
+            45
+          ],
+          "recent_wickets": [],
+          "recent_fantasy_pts": [
+            158,
+            4,
+            162,
+            34,
+            68
+          ],
+          "avg_fantasy_pts": 78.5,
+          "strike_rate": 168.0,
+          "batting_avg": 35.2,
+          "economy": 0.0
+        },
+        "ceiling_score": 165.0,
+        "floor_score": 14.0,
+        "differential_tag": "Powerplay Opener WK (74.8% Sel, 11% C, 40% DT)",
+        "captain_percentage": 10.95,
+        "dream_team_percentage": 40.0
+      },
+      {
+        "id": "ind_abhishek",
+        "name": "Abhishek Sharma",
+        "team": "IND",
+        "role": "BAT",
+        "credits": 9.0,
+        "batting_style": "LHB",
+        "bowling_style": "Slow left-arm orthodox",
+        "batting_order_projected": 2,
+        "expected_overs": 1.0,
+        "is_confirmed_xi": true,
+        "projected_ownership": 85.84,
+        "stats": {
+          "matches": 20,
+          "recent_runs": [
+            88,
+            47,
+            72,
+            14,
+            31
+          ],
+          "recent_wickets": [
+            0,
+            1,
+            0,
+            1,
+            0
+          ],
+          "recent_fantasy_pts": [
+            134,
+            78,
+            108,
+            22,
+            48
+          ],
+          "avg_fantasy_pts": 78.0,
+          "strike_rate": 185.0,
+          "batting_avg": 37.0,
+          "economy": 8.8
+        },
+        "ceiling_score": 160.0,
+        "floor_score": 18.0,
+        "differential_tag": "Mega Chalk Opener (85.8% Sel, 26.1% C, 80% DT)",
+        "captain_percentage": 26.06,
+        "dream_team_percentage": 80.0
+      },
+      {
+        "id": "ind_shreyas",
+        "name": "Shreyas Iyer",
+        "team": "IND",
+        "role": "BAT",
+        "credits": 8.0,
+        "batting_style": "RHB",
+        "bowling_style": null,
+        "batting_order_projected": 4,
+        "expected_overs": 0.0,
+        "is_confirmed_xi": true,
+        "projected_ownership": 64.33,
+        "stats": {
+          "matches": 53,
+          "recent_runs": [
+            62,
+            102,
+            39,
+            44,
+            55
+          ],
+          "recent_wickets": [],
+          "recent_fantasy_pts": [
+            86,
+            148,
+            52,
+            60,
+            74
+          ],
+          "avg_fantasy_pts": 84.0,
+          "strike_rate": 148.0,
+          "batting_avg": 41.5,
+          "economy": 0.0
+        },
+        "ceiling_score": 155.0,
+        "floor_score": 28.0,
+        "differential_tag": "Middle-Overs Anchor (64.3% Sel, 5.6% C, 40% DT)",
+        "captain_percentage": 5.61,
+        "dream_team_percentage": 40.0
+      },
+      {
+        "id": "ind_tilak",
+        "name": "Tilak Varma",
+        "team": "IND",
+        "role": "BAT",
+        "credits": 7.5,
+        "batting_style": "LHB",
+        "bowling_style": "Right-arm offbreak",
+        "batting_order_projected": 5,
+        "expected_overs": 1.0,
+        "is_confirmed_xi": true,
+        "projected_ownership": 41.94,
+        "stats": {
+          "matches": 26,
+          "recent_runs": [
+            45,
+            107,
+            33,
+            51,
+            19
+          ],
+          "recent_wickets": [
+            0,
+            1,
+            0,
+            0,
+            0
+          ],
+          "recent_fantasy_pts": [
+            60,
+            154,
+            44,
+            72,
+            26
+          ],
+          "avg_fantasy_pts": 71.2,
+          "strike_rate": 152.0,
+          "batting_avg": 43.0,
+          "economy": 7.5
+        },
+        "ceiling_score": 150.0,
+        "floor_score": 22.0,
+        "differential_tag": "High-DT Leverage Batter (80% DT Rate, 7.5 Cr, 41.9% Sel, 1.2% C)",
+        "captain_percentage": 1.23,
+        "dream_team_percentage": 80.0
+      },
+      {
+        "id": "ind_axar",
+        "name": "Axar Patel",
+        "team": "IND",
+        "role": "AR",
+        "credits": 7.0,
+        "batting_style": "LHB",
+        "bowling_style": "Slow left-arm orthodox",
+        "batting_order_projected": 8,
+        "expected_overs": 4.0,
+        "is_confirmed_xi": true,
+        "projected_ownership": 49.45,
+        "stats": {
+          "matches": 62,
+          "recent_runs": [
+            22,
+            18,
+            31,
+            12,
+            28
+          ],
+          "recent_wickets": [
+            2,
+            1,
+            2,
+            1,
+            3
+          ],
+          "recent_fantasy_pts": [
+            84,
+            52,
+            92,
+            46,
+            114
+          ],
+          "avg_fantasy_pts": 77.6,
+          "strike_rate": 140.0,
+          "batting_avg": 24.5,
+          "economy": 7.1
+        },
+        "ceiling_score": 125.0,
+        "floor_score": 30.0,
+        "differential_tag": "Low-Credit AR (7.0 Cr, 49.5% Sel, 1.22% C, 40% DT)",
+        "captain_percentage": 1.22,
+        "dream_team_percentage": 40.0
+      },
+      {
+        "id": "ind_bhuvi",
+        "name": "Bhuvneshwar Kumar",
+        "team": "IND",
+        "role": "BOWL",
+        "credits": 8.0,
+        "batting_style": "RHB",
+        "bowling_style": "Right-arm fast",
+        "batting_order_projected": 11,
+        "expected_overs": 4.0,
+        "is_confirmed_xi": true,
+        "projected_ownership": 26.84,
+        "stats": {
+          "matches": 14,
+          "recent_runs": [
+            0,
+            0,
+            0,
+            1,
+            0
+          ],
+          "recent_wickets": [
+            0,
+            3,
+            2,
+            0,
+            3
+          ],
+          "recent_fantasy_pts": [
+            34,
+            94,
+            66,
+            12,
+            96
+          ],
+          "avg_fantasy_pts": 60.4,
+          "strike_rate": 60.0,
+          "batting_avg": 4.0,
+          "economy": 7.7
+        },
+        "ceiling_score": 145.0,
+        "floor_score": 15.0,
+        "differential_tag": "155kph Express Strike Pacer (8.0 Cr, 26.8% Sel, 0.36% C)",
+        "captain_percentage": 0.36,
+        "dream_team_percentage": 25.0
+      },
+      {
+        "id": "wi_hope",
+        "name": "Shai Hope",
+        "team": "WI",
+        "role": "WK",
+        "credits": 8.5,
+        "batting_style": "RHB",
+        "bowling_style": null,
+        "batting_order_projected": 1,
+        "expected_overs": 0.0,
+        "is_confirmed_xi": true,
+        "projected_ownership": 86.25,
+        "stats": {
+          "matches": 44,
+          "recent_runs": [
+            104,
+            38,
+            71,
+            102,
+            45
+          ],
+          "recent_wickets": [],
+          "recent_fantasy_pts": [
+            152,
+            54,
+            102,
+            146,
+            64
+          ],
+          "avg_fantasy_pts": 103.6,
+          "strike_rate": 146.5,
+          "batting_avg": 48.0,
+          "economy": 0.0
+        },
+        "ceiling_score": 160.0,
+        "floor_score": 30.0,
+        "differential_tag": "Heavy Chalk Opener (86.3% Sel, 23.8% C, 60% DT)",
+        "captain_percentage": 23.82,
+        "dream_team_percentage": 60.0
+      },
+      {
+        "id": "wi_rutherford",
+        "name": "Sherfane Rutherford",
+        "team": "WI",
+        "role": "BAT",
+        "credits": 8.0,
+        "batting_style": "LHB",
+        "bowling_style": "Right-arm medium",
+        "batting_order_projected": 5,
+        "expected_overs": 0.5,
+        "is_confirmed_xi": true,
+        "projected_ownership": 74.98,
+        "stats": {
+          "matches": 30,
+          "recent_runs": [
+            68,
+            44,
+            22,
+            68,
+            15
+          ],
+          "recent_wickets": [
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "recent_fantasy_pts": [
+            96,
+            64,
+            30,
+            96,
+            22
+          ],
+          "avg_fantasy_pts": 61.6,
+          "strike_rate": 190.0,
+          "batting_avg": 42.0,
+          "economy": 9.5
+        },
+        "ceiling_score": 145.0,
+        "floor_score": 18.0,
+        "differential_tag": "In-Form Finisher (8.0 Cr, 75.0% Sel, 3.75% C, 80% DT)",
+        "captain_percentage": 3.75,
+        "dream_team_percentage": 80.0
+      },
+      {
+        "id": "wi_shepherd",
+        "name": "Romario Shepherd",
+        "team": "WI",
+        "role": "AR",
+        "credits": 8.5,
+        "batting_style": "RHB",
+        "bowling_style": "Right-arm fast-medium",
+        "batting_order_projected": 6,
+        "expected_overs": 3.5,
+        "is_confirmed_xi": true,
+        "projected_ownership": 30.18,
+        "stats": {
+          "matches": 46,
+          "recent_runs": [
+            32,
+            14,
+            26,
+            6,
+            39
+          ],
+          "recent_wickets": [
+            2,
+            1,
+            0,
+            3,
+            1
+          ],
+          "recent_fantasy_pts": [
+            88,
+            44,
+            34,
+            102,
+            68
+          ],
+          "avg_fantasy_pts": 67.2,
+          "strike_rate": 162.0,
+          "batting_avg": 23.5,
+          "economy": 9.1
+        },
+        "ceiling_score": 140.0,
+        "floor_score": 20.0,
+        "differential_tag": "Death Overs Pacer & Finisher (8.5 Cr, 30.2% Sel, 0.57% C)",
+        "captain_percentage": 0.57,
+        "dream_team_percentage": 20.0
+      },
+      {
+        "id": "wi_motie",
+        "name": "Gudakesh Motie",
+        "team": "WI",
+        "role": "BOWL",
+        "credits": 7.5,
+        "batting_style": "LHB",
+        "bowling_style": "Slow left-arm orthodox",
+        "batting_order_projected": 10,
+        "expected_overs": 4.0,
+        "is_confirmed_xi": true,
+        "projected_ownership": 19.01,
+        "stats": {
+          "matches": 28,
+          "recent_runs": [
+            0,
+            2,
+            8,
+            0,
+            0
+          ],
+          "recent_wickets": [
+            2,
+            1,
+            3,
+            0,
+            2
+          ],
+          "recent_fantasy_pts": [
+            64,
+            36,
+            92,
+            12,
+            66
+          ],
+          "avg_fantasy_pts": 54.0,
+          "strike_rate": 90.0,
+          "batting_avg": 8.0,
+          "economy": 7.3
+        },
+        "ceiling_score": 110.0,
+        "floor_score": 14.0,
+        "differential_tag": "Sub-20% Spin Differential (7.5 Cr, 19.0% Sel, 0.14% C)",
+        "captain_percentage": 0.14,
+        "dream_team_percentage": 20.0
+      },
+      {
+        "id": "wi_joseph",
+        "name": "Shamar Joseph",
+        "team": "WI",
+        "role": "BOWL",
+        "credits": 7.0,
+        "batting_style": "RHB",
+        "bowling_style": "Right-arm fast",
+        "batting_order_projected": 11,
+        "expected_overs": 4.0,
+        "is_confirmed_xi": true,
+        "projected_ownership": 14.6,
+        "stats": {
+          "matches": 17,
+          "recent_runs": [
+            4,
+            1,
+            0,
+            0,
+            7
+          ],
+          "recent_wickets": [
+            2,
+            3,
+            1,
+            2,
+            0
+          ],
+          "recent_fantasy_pts": [
+            62,
+            94,
+            36,
+            68,
+            10
+          ],
+          "avg_fantasy_pts": 54.0,
+          "strike_rate": 85.0,
+          "batting_avg": 5.0,
+          "economy": 8.9
+        },
+        "ceiling_score": 135.0,
+        "floor_score": 10.0,
+        "differential_tag": "Super Differential Strike Pacer (7.0 Cr, 14.6% Sel, 40% DT, 59.6% Pacer Pitch)",
+        "captain_percentage": 0.17,
+        "dream_team_percentage": 40.0
+      }
+    ],
+    "captain": {
+      "id": "ind_abhishek",
+      "name": "Abhishek Sharma",
+      "team": "IND",
+      "role": "BAT",
+      "credits": 9.0,
+      "batting_style": "LHB",
+      "bowling_style": "Slow left-arm orthodox",
+      "batting_order_projected": 2,
+      "expected_overs": 1.0,
+      "is_confirmed_xi": true,
+      "projected_ownership": 85.84,
+      "stats": {
+        "matches": 20,
+        "recent_runs": [
+          88,
+          47,
+          72,
+          14,
+          31
+        ],
+        "recent_wickets": [
+          0,
+          1,
+          0,
+          1,
+          0
+        ],
+        "recent_fantasy_pts": [
+          134,
+          78,
+          108,
+          22,
+          48
+        ],
+        "avg_fantasy_pts": 78.0,
+        "strike_rate": 185.0,
+        "batting_avg": 37.0,
+        "economy": 8.8
+      },
+      "ceiling_score": 160.0,
+      "floor_score": 18.0,
+      "differential_tag": "Mega Chalk Opener (85.8% Sel, 26.1% C, 80% DT)",
+      "captain_percentage": 26.06,
+      "dream_team_percentage": 80.0
+    },
+    "vice_captain": {
+      "id": "ind_axar",
+      "name": "Axar Patel",
+      "team": "IND",
+      "role": "AR",
+      "credits": 7.0,
+      "batting_style": "LHB",
+      "bowling_style": "Slow left-arm orthodox",
+      "batting_order_projected": 8,
+      "expected_overs": 4.0,
+      "is_confirmed_xi": true,
+      "projected_ownership": 49.45,
+      "stats": {
+        "matches": 62,
+        "recent_runs": [
+          22,
+          18,
+          31,
+          12,
+          28
+        ],
+        "recent_wickets": [
+          2,
+          1,
+          2,
+          1,
+          3
+        ],
+        "recent_fantasy_pts": [
+          84,
+          52,
+          92,
+          46,
+          114
+        ],
+        "avg_fantasy_pts": 77.6,
+        "strike_rate": 140.0,
+        "batting_avg": 24.5,
+        "economy": 7.1
+      },
+      "ceiling_score": 125.0,
+      "floor_score": 30.0,
+      "differential_tag": "Low-Credit AR (7.0 Cr, 49.5% Sel, 1.22% C, 40% DT)",
+      "captain_percentage": 1.22,
+      "dream_team_percentage": 40.0
+    },
+    "total_credits": 87.0
+  },
+  "Team 7: Strongest Lineup if India Bats First": {
+    "players": [
+      {
+        "id": "ind_samson",
+        "name": "Sanju Samson",
+        "team": "IND",
+        "role": "WK",
+        "credits": 8.0,
+        "batting_style": "RHB",
+        "bowling_style": null,
+        "batting_order_projected": 1,
+        "expected_overs": 0.0,
+        "is_confirmed_xi": true,
+        "projected_ownership": 74.75,
+        "stats": {
+          "matches": 40,
+          "recent_runs": [
+            108,
+            0,
+            111,
+            22,
+            45
+          ],
+          "recent_wickets": [],
+          "recent_fantasy_pts": [
+            158,
+            4,
+            162,
+            34,
+            68
+          ],
+          "avg_fantasy_pts": 78.5,
+          "strike_rate": 168.0,
+          "batting_avg": 35.2,
+          "economy": 0.0
+        },
+        "ceiling_score": 165.0,
+        "floor_score": 14.0,
+        "differential_tag": "Powerplay Opener WK (74.8% Sel, 11% C, 40% DT)",
+        "captain_percentage": 10.95,
+        "dream_team_percentage": 40.0
+      },
+      {
+        "id": "ind_abhishek",
+        "name": "Abhishek Sharma",
+        "team": "IND",
+        "role": "BAT",
+        "credits": 9.0,
+        "batting_style": "LHB",
+        "bowling_style": "Slow left-arm orthodox",
+        "batting_order_projected": 2,
+        "expected_overs": 1.0,
+        "is_confirmed_xi": true,
+        "projected_ownership": 85.84,
+        "stats": {
+          "matches": 20,
+          "recent_runs": [
+            88,
+            47,
+            72,
+            14,
+            31
+          ],
+          "recent_wickets": [
+            0,
+            1,
+            0,
+            1,
+            0
+          ],
+          "recent_fantasy_pts": [
+            134,
+            78,
+            108,
+            22,
+            48
+          ],
+          "avg_fantasy_pts": 78.0,
+          "strike_rate": 185.0,
+          "batting_avg": 37.0,
+          "economy": 8.8
+        },
+        "ceiling_score": 160.0,
+        "floor_score": 18.0,
+        "differential_tag": "Mega Chalk Opener (85.8% Sel, 26.1% C, 80% DT)",
+        "captain_percentage": 26.06,
+        "dream_team_percentage": 80.0
+      },
+      {
+        "id": "ind_ishan",
+        "name": "Ishan Kishan",
+        "team": "IND",
+        "role": "WK",
+        "credits": 8.0,
+        "batting_style": "LHB",
+        "bowling_style": null,
+        "batting_order_projected": 3,
+        "expected_overs": 0.0,
+        "is_confirmed_xi": true,
+        "projected_ownership": 78.43,
+        "stats": {
+          "matches": 34,
+          "recent_runs": [
+            58,
+            24,
+            89,
+            12,
+            41
+          ],
+          "recent_wickets": [],
+          "recent_fantasy_pts": [
+            84,
+            38,
+            122,
+            18,
+            62
+          ],
+          "avg_fantasy_pts": 65.0,
+          "strike_rate": 145.0,
+          "batting_avg": 32.0,
+          "economy": 0.0
+        },
+        "ceiling_score": 135.0,
+        "floor_score": 16.0,
+        "differential_tag": "In-Form Top-Order WK (78.4% Sel, 12.6% C, 80% DT)",
+        "captain_percentage": 12.62,
+        "dream_team_percentage": 80.0
+      },
+      {
+        "id": "ind_shreyas",
+        "name": "Shreyas Iyer",
+        "team": "IND",
+        "role": "BAT",
+        "credits": 8.0,
+        "batting_style": "RHB",
+        "bowling_style": null,
+        "batting_order_projected": 4,
+        "expected_overs": 0.0,
+        "is_confirmed_xi": true,
+        "projected_ownership": 64.33,
+        "stats": {
+          "matches": 53,
+          "recent_runs": [
+            62,
+            102,
+            39,
+            44,
+            55
+          ],
+          "recent_wickets": [],
+          "recent_fantasy_pts": [
+            86,
+            148,
+            52,
+            60,
+            74
+          ],
+          "avg_fantasy_pts": 84.0,
+          "strike_rate": 148.0,
+          "batting_avg": 41.5,
+          "economy": 0.0
+        },
+        "ceiling_score": 155.0,
+        "floor_score": 28.0,
+        "differential_tag": "Middle-Overs Anchor (64.3% Sel, 5.6% C, 40% DT)",
+        "captain_percentage": 5.61,
+        "dream_team_percentage": 40.0
+      },
+      {
+        "id": "ind_arshdeep",
+        "name": "Arshdeep Singh",
+        "team": "IND",
+        "role": "BOWL",
+        "credits": 8.5,
+        "batting_style": "RHB",
+        "bowling_style": "Left-arm medium-fast",
+        "batting_order_projected": 9,
+        "expected_overs": 4.0,
+        "is_confirmed_xi": true,
+        "projected_ownership": 63.19,
+        "stats": {
+          "matches": 32,
+          "recent_runs": [
+            0,
+            2,
+            0,
+            0,
+            0
+          ],
+          "recent_wickets": [
+            2,
+            3,
+            1,
+            0,
+            2
+          ],
+          "recent_fantasy_pts": [
+            64,
+            98,
+            34,
+            10,
+            62
+          ],
+          "avg_fantasy_pts": 53.6,
+          "strike_rate": 80.0,
+          "batting_avg": 6.0,
+          "economy": 7.4,
+          "death_overs_rate": 0.45
+        },
+        "ceiling_score": 120.0,
+        "floor_score": 16.0,
+        "differential_tag": "Death Overs Pacer (8.5 Cr, 63.2% Sel, 59.6% Pacer Pitch)",
+        "captain_percentage": 0.95,
+        "dream_team_percentage": 40.0
+      },
+      {
+        "id": "ind_prince",
+        "name": "Prince Yadav",
+        "team": "IND",
+        "role": "BOWL",
+        "credits": 7.0,
+        "batting_style": "RHB",
+        "bowling_style": "Right-arm medium-fast",
+        "batting_order_projected": 10,
+        "expected_overs": 3.0,
+        "is_confirmed_xi": true,
+        "projected_ownership": 24.28,
+        "stats": {
+          "matches": 5,
+          "recent_runs": [
+            0,
+            4,
+            1,
+            0,
+            0
+          ],
+          "recent_wickets": [
+            1,
+            2,
+            0,
+            1,
+            1
+          ],
+          "recent_fantasy_pts": [
+            34,
+            58,
+            8,
+            32,
+            28
+          ],
+          "avg_fantasy_pts": 32.0,
+          "strike_rate": 80.0,
+          "batting_avg": 5.0,
+          "economy": 8.6
+        },
+        "ceiling_score": 85.0,
+        "floor_score": 8.0,
+        "differential_tag": "Golden Differential Pacer (7.0 Cr, 24.3% Sel, 0.30% C)",
+        "captain_percentage": 0.3,
+        "dream_team_percentage": 0.0
+      },
+      {
+        "id": "ind_bhuvi",
+        "name": "Bhuvneshwar Kumar",
+        "team": "IND",
+        "role": "BOWL",
+        "credits": 8.0,
+        "batting_style": "RHB",
+        "bowling_style": "Right-arm fast",
+        "batting_order_projected": 11,
+        "expected_overs": 4.0,
+        "is_confirmed_xi": true,
+        "projected_ownership": 26.84,
+        "stats": {
+          "matches": 14,
+          "recent_runs": [
+            0,
+            0,
+            0,
+            1,
+            0
+          ],
+          "recent_wickets": [
+            0,
+            3,
+            2,
+            0,
+            3
+          ],
+          "recent_fantasy_pts": [
+            34,
+            94,
+            66,
+            12,
+            96
+          ],
+          "avg_fantasy_pts": 60.4,
+          "strike_rate": 60.0,
+          "batting_avg": 4.0,
+          "economy": 7.7
+        },
+        "ceiling_score": 145.0,
+        "floor_score": 15.0,
+        "differential_tag": "155kph Express Strike Pacer (8.0 Cr, 26.8% Sel, 0.36% C)",
+        "captain_percentage": 0.36,
+        "dream_team_percentage": 25.0
+      },
+      {
+        "id": "wi_paul",
+        "name": "Keemo Paul",
+        "team": "WI",
+        "role": "AR",
+        "credits": 6.5,
+        "batting_style": "RHB",
+        "bowling_style": "Right-arm fast-medium",
+        "batting_order_projected": 7,
+        "expected_overs": 3.0,
+        "is_confirmed_xi": true,
+        "projected_ownership": 47.57,
+        "stats": {
+          "matches": 29,
+          "recent_runs": [
+            18,
+            12,
+            29,
+            6,
+            21
+          ],
+          "recent_wickets": [
+            1,
+            2,
+            1,
+            0,
+            2
+          ],
+          "recent_fantasy_pts": [
+            48,
+            64,
+            58,
+            12,
+            68
+          ],
+          "avg_fantasy_pts": 50.0,
+          "strike_rate": 136.0,
+          "batting_avg": 19.5,
+          "economy": 8.8
+        },
+        "ceiling_score": 115.0,
+        "floor_score": 14.0,
+        "differential_tag": "Slower Cutters Specialist (6.5 Cr, 47.6% Sel, 1.04% C)",
+        "captain_percentage": 1.04,
+        "dream_team_percentage": 25.0
+      },
+      {
+        "id": "wi_springer",
+        "name": "Shamar Springer",
+        "team": "WI",
+        "role": "AR",
+        "credits": 6.0,
+        "batting_style": "RHB",
+        "bowling_style": "Right-arm medium-fast",
+        "batting_order_projected": 8,
+        "expected_overs": 2.5,
+        "is_confirmed_xi": true,
+        "projected_ownership": 44.25,
+        "stats": {
+          "matches": 8,
+          "recent_runs": [
+            14,
+            8,
+            22,
+            0,
+            11
+          ],
+          "recent_wickets": [
+            2,
+            1,
+            0,
+            2,
+            1
+          ],
+          "recent_fantasy_pts": [
+            62,
+            34,
+            26,
+            58,
+            38
+          ],
+          "avg_fantasy_pts": 43.6,
+          "strike_rate": 128.0,
+          "batting_avg": 16.0,
+          "economy": 8.7
+        },
+        "ceiling_score": 95.0,
+        "floor_score": 10.0,
+        "differential_tag": "Ultra Low-Credit Dual-Equity AR (6.0 Cr, 44.3% Sel, 40% DT)",
+        "captain_percentage": 0.98,
+        "dream_team_percentage": 40.0
+      },
+      {
+        "id": "wi_motie",
+        "name": "Gudakesh Motie",
+        "team": "WI",
+        "role": "BOWL",
+        "credits": 7.5,
+        "batting_style": "LHB",
+        "bowling_style": "Slow left-arm orthodox",
+        "batting_order_projected": 10,
+        "expected_overs": 4.0,
+        "is_confirmed_xi": true,
+        "projected_ownership": 19.01,
+        "stats": {
+          "matches": 28,
+          "recent_runs": [
+            0,
+            2,
+            8,
+            0,
+            0
+          ],
+          "recent_wickets": [
+            2,
+            1,
+            3,
+            0,
+            2
+          ],
+          "recent_fantasy_pts": [
+            64,
+            36,
+            92,
+            12,
+            66
+          ],
+          "avg_fantasy_pts": 54.0,
+          "strike_rate": 90.0,
+          "batting_avg": 8.0,
+          "economy": 7.3
+        },
+        "ceiling_score": 110.0,
+        "floor_score": 14.0,
+        "differential_tag": "Sub-20% Spin Differential (7.5 Cr, 19.0% Sel, 0.14% C)",
+        "captain_percentage": 0.14,
+        "dream_team_percentage": 20.0
+      },
+      {
+        "id": "wi_joseph",
+        "name": "Shamar Joseph",
+        "team": "WI",
+        "role": "BOWL",
+        "credits": 7.0,
+        "batting_style": "RHB",
+        "bowling_style": "Right-arm fast",
+        "batting_order_projected": 11,
+        "expected_overs": 4.0,
+        "is_confirmed_xi": true,
+        "projected_ownership": 14.6,
+        "stats": {
+          "matches": 17,
+          "recent_runs": [
+            4,
+            1,
+            0,
+            0,
+            7
+          ],
+          "recent_wickets": [
+            2,
+            3,
+            1,
+            2,
+            0
+          ],
+          "recent_fantasy_pts": [
+            62,
+            94,
+            36,
+            68,
+            10
+          ],
+          "avg_fantasy_pts": 54.0,
+          "strike_rate": 85.0,
+          "batting_avg": 5.0,
+          "economy": 8.9
+        },
+        "ceiling_score": 135.0,
+        "floor_score": 10.0,
+        "differential_tag": "Super Differential Strike Pacer (7.0 Cr, 14.6% Sel, 40% DT, 59.6% Pacer Pitch)",
+        "captain_percentage": 0.17,
+        "dream_team_percentage": 40.0
+      }
+    ],
+    "captain": {
+      "id": "ind_abhishek",
+      "name": "Abhishek Sharma",
+      "team": "IND",
+      "role": "BAT",
+      "credits": 9.0,
+      "batting_style": "LHB",
+      "bowling_style": "Slow left-arm orthodox",
+      "batting_order_projected": 2,
+      "expected_overs": 1.0,
+      "is_confirmed_xi": true,
+      "projected_ownership": 85.84,
+      "stats": {
+        "matches": 20,
+        "recent_runs": [
+          88,
+          47,
+          72,
+          14,
+          31
+        ],
+        "recent_wickets": [
+          0,
+          1,
+          0,
+          1,
+          0
+        ],
+        "recent_fantasy_pts": [
+          134,
+          78,
+          108,
+          22,
+          48
+        ],
+        "avg_fantasy_pts": 78.0,
+        "strike_rate": 185.0,
+        "batting_avg": 37.0,
+        "economy": 8.8
+      },
+      "ceiling_score": 160.0,
+      "floor_score": 18.0,
+      "differential_tag": "Mega Chalk Opener (85.8% Sel, 26.1% C, 80% DT)",
+      "captain_percentage": 26.06,
+      "dream_team_percentage": 80.0
+    },
+    "vice_captain": {
+      "id": "ind_samson",
+      "name": "Sanju Samson",
+      "team": "IND",
+      "role": "WK",
+      "credits": 8.0,
+      "batting_style": "RHB",
+      "bowling_style": null,
+      "batting_order_projected": 1,
+      "expected_overs": 0.0,
+      "is_confirmed_xi": true,
+      "projected_ownership": 74.75,
+      "stats": {
+        "matches": 40,
+        "recent_runs": [
+          108,
+          0,
+          111,
+          22,
+          45
+        ],
+        "recent_wickets": [],
+        "recent_fantasy_pts": [
+          158,
+          4,
+          162,
+          34,
+          68
+        ],
+        "avg_fantasy_pts": 78.5,
+        "strike_rate": 168.0,
+        "batting_avg": 35.2,
+        "economy": 0.0
+      },
+      "ceiling_score": 165.0,
+      "floor_score": 14.0,
+      "differential_tag": "Powerplay Opener WK (74.8% Sel, 11% C, 40% DT)",
+      "captain_percentage": 10.95,
+      "dream_team_percentage": 40.0
+    },
+    "total_credits": 83.5
+  },
+  "Team 8: Strongest Lineup if West Indies Bats First": {
+    "players": [
+      {
+        "id": "ind_samson",
+        "name": "Sanju Samson",
+        "team": "IND",
+        "role": "WK",
+        "credits": 8.0,
+        "batting_style": "RHB",
+        "bowling_style": null,
+        "batting_order_projected": 1,
+        "expected_overs": 0.0,
+        "is_confirmed_xi": true,
+        "projected_ownership": 74.75,
+        "stats": {
+          "matches": 40,
+          "recent_runs": [
+            108,
+            0,
+            111,
+            22,
+            45
+          ],
+          "recent_wickets": [],
+          "recent_fantasy_pts": [
+            158,
+            4,
+            162,
+            34,
+            68
+          ],
+          "avg_fantasy_pts": 78.5,
+          "strike_rate": 168.0,
+          "batting_avg": 35.2,
+          "economy": 0.0
+        },
+        "ceiling_score": 165.0,
+        "floor_score": 14.0,
+        "differential_tag": "Powerplay Opener WK (74.8% Sel, 11% C, 40% DT)",
+        "captain_percentage": 10.95,
+        "dream_team_percentage": 40.0
+      },
+      {
+        "id": "ind_abhishek",
+        "name": "Abhishek Sharma",
+        "team": "IND",
+        "role": "BAT",
+        "credits": 9.0,
+        "batting_style": "LHB",
+        "bowling_style": "Slow left-arm orthodox",
+        "batting_order_projected": 2,
+        "expected_overs": 1.0,
+        "is_confirmed_xi": true,
+        "projected_ownership": 85.84,
+        "stats": {
+          "matches": 20,
+          "recent_runs": [
+            88,
+            47,
+            72,
+            14,
+            31
+          ],
+          "recent_wickets": [
+            0,
+            1,
+            0,
+            1,
+            0
+          ],
+          "recent_fantasy_pts": [
+            134,
+            78,
+            108,
+            22,
+            48
+          ],
+          "avg_fantasy_pts": 78.0,
+          "strike_rate": 185.0,
+          "batting_avg": 37.0,
+          "economy": 8.8
+        },
+        "ceiling_score": 160.0,
+        "floor_score": 18.0,
+        "differential_tag": "Mega Chalk Opener (85.8% Sel, 26.1% C, 80% DT)",
+        "captain_percentage": 26.06,
+        "dream_team_percentage": 80.0
+      },
+      {
+        "id": "ind_ishan",
+        "name": "Ishan Kishan",
+        "team": "IND",
+        "role": "WK",
+        "credits": 8.0,
+        "batting_style": "LHB",
+        "bowling_style": null,
+        "batting_order_projected": 3,
+        "expected_overs": 0.0,
+        "is_confirmed_xi": true,
+        "projected_ownership": 78.43,
+        "stats": {
+          "matches": 34,
+          "recent_runs": [
+            58,
+            24,
+            89,
+            12,
+            41
+          ],
+          "recent_wickets": [],
+          "recent_fantasy_pts": [
+            84,
+            38,
+            122,
+            18,
+            62
+          ],
+          "avg_fantasy_pts": 65.0,
+          "strike_rate": 145.0,
+          "batting_avg": 32.0,
+          "economy": 0.0
+        },
+        "ceiling_score": 135.0,
+        "floor_score": 16.0,
+        "differential_tag": "In-Form Top-Order WK (78.4% Sel, 12.6% C, 80% DT)",
+        "captain_percentage": 12.62,
+        "dream_team_percentage": 80.0
+      },
+      {
+        "id": "ind_prince",
+        "name": "Prince Yadav",
+        "team": "IND",
+        "role": "BOWL",
+        "credits": 7.0,
+        "batting_style": "RHB",
+        "bowling_style": "Right-arm medium-fast",
+        "batting_order_projected": 10,
+        "expected_overs": 3.0,
+        "is_confirmed_xi": true,
+        "projected_ownership": 24.28,
+        "stats": {
+          "matches": 5,
+          "recent_runs": [
+            0,
+            4,
+            1,
+            0,
+            0
+          ],
+          "recent_wickets": [
+            1,
+            2,
+            0,
+            1,
+            1
+          ],
+          "recent_fantasy_pts": [
+            34,
+            58,
+            8,
+            32,
+            28
+          ],
+          "avg_fantasy_pts": 32.0,
+          "strike_rate": 80.0,
+          "batting_avg": 5.0,
+          "economy": 8.6
+        },
+        "ceiling_score": 85.0,
+        "floor_score": 8.0,
+        "differential_tag": "Golden Differential Pacer (7.0 Cr, 24.3% Sel, 0.30% C)",
+        "captain_percentage": 0.3,
+        "dream_team_percentage": 0.0
+      },
+      {
+        "id": "wi_hope",
+        "name": "Shai Hope",
+        "team": "WI",
+        "role": "WK",
+        "credits": 8.5,
+        "batting_style": "RHB",
+        "bowling_style": null,
+        "batting_order_projected": 1,
+        "expected_overs": 0.0,
+        "is_confirmed_xi": true,
+        "projected_ownership": 86.25,
+        "stats": {
+          "matches": 44,
+          "recent_runs": [
+            104,
+            38,
+            71,
+            102,
+            45
+          ],
+          "recent_wickets": [],
+          "recent_fantasy_pts": [
+            152,
+            54,
+            102,
+            146,
+            64
+          ],
+          "avg_fantasy_pts": 103.6,
+          "strike_rate": 146.5,
+          "batting_avg": 48.0,
+          "economy": 0.0
+        },
+        "ceiling_score": 160.0,
+        "floor_score": 30.0,
+        "differential_tag": "Heavy Chalk Opener (86.3% Sel, 23.8% C, 60% DT)",
+        "captain_percentage": 23.82,
+        "dream_team_percentage": 60.0
+      },
+      {
+        "id": "wi_powell",
+        "name": "Rovman Powell",
+        "team": "WI",
+        "role": "BAT",
+        "credits": 8.5,
+        "batting_style": "RHB",
+        "bowling_style": "Right-arm medium",
+        "batting_order_projected": 4,
+        "expected_overs": 1.0,
+        "is_confirmed_xi": true,
+        "projected_ownership": 24.11,
+        "stats": {
+          "matches": 80,
+          "recent_runs": [
+            41,
+            18,
+            67,
+            12,
+            52
+          ],
+          "recent_wickets": [
+            0,
+            0,
+            1,
+            0,
+            0
+          ],
+          "recent_fantasy_pts": [
+            58,
+            24,
+            98,
+            16,
+            76
+          ],
+          "avg_fantasy_pts": 54.4,
+          "strike_rate": 168.1,
+          "batting_avg": 26.5,
+          "economy": 9.2
+        },
+        "ceiling_score": 135.0,
+        "floor_score": 12.0,
+        "differential_tag": "Sub-25% Power Finisher Differential (8.5 Cr, 24.1% Sel, 60% DT)",
+        "captain_percentage": 0.63,
+        "dream_team_percentage": 60.0
+      },
+      {
+        "id": "wi_rutherford",
+        "name": "Sherfane Rutherford",
+        "team": "WI",
+        "role": "BAT",
+        "credits": 8.0,
+        "batting_style": "LHB",
+        "bowling_style": "Right-arm medium",
+        "batting_order_projected": 5,
+        "expected_overs": 0.5,
+        "is_confirmed_xi": true,
+        "projected_ownership": 74.98,
+        "stats": {
+          "matches": 30,
+          "recent_runs": [
+            68,
+            44,
+            22,
+            68,
+            15
+          ],
+          "recent_wickets": [
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "recent_fantasy_pts": [
+            96,
+            64,
+            30,
+            96,
+            22
+          ],
+          "avg_fantasy_pts": 61.6,
+          "strike_rate": 190.0,
+          "batting_avg": 42.0,
+          "economy": 9.5
+        },
+        "ceiling_score": 145.0,
+        "floor_score": 18.0,
+        "differential_tag": "In-Form Finisher (8.0 Cr, 75.0% Sel, 3.75% C, 80% DT)",
+        "captain_percentage": 3.75,
+        "dream_team_percentage": 80.0
+      },
+      {
+        "id": "wi_shepherd",
+        "name": "Romario Shepherd",
+        "team": "WI",
+        "role": "AR",
+        "credits": 8.5,
+        "batting_style": "RHB",
+        "bowling_style": "Right-arm fast-medium",
+        "batting_order_projected": 6,
+        "expected_overs": 3.5,
+        "is_confirmed_xi": true,
+        "projected_ownership": 30.18,
+        "stats": {
+          "matches": 46,
+          "recent_runs": [
+            32,
+            14,
+            26,
+            6,
+            39
+          ],
+          "recent_wickets": [
+            2,
+            1,
+            0,
+            3,
+            1
+          ],
+          "recent_fantasy_pts": [
+            88,
+            44,
+            34,
+            102,
+            68
+          ],
+          "avg_fantasy_pts": 67.2,
+          "strike_rate": 162.0,
+          "batting_avg": 23.5,
+          "economy": 9.1
+        },
+        "ceiling_score": 140.0,
+        "floor_score": 20.0,
+        "differential_tag": "Death Overs Pacer & Finisher (8.5 Cr, 30.2% Sel, 0.57% C)",
+        "captain_percentage": 0.57,
+        "dream_team_percentage": 20.0
+      },
+      {
+        "id": "wi_chase",
+        "name": "Roston Chase",
+        "team": "WI",
+        "role": "AR",
+        "credits": 8.0,
+        "batting_style": "RHB",
+        "bowling_style": "Right-arm offbreak",
+        "batting_order_projected": 9,
+        "expected_overs": 4.0,
+        "is_confirmed_xi": true,
+        "projected_ownership": 53.0,
+        "stats": {
+          "matches": 37,
+          "recent_runs": [
+            31,
+            24,
+            46,
+            18,
+            29
+          ],
+          "recent_wickets": [
+            2,
+            1,
+            1,
+            2,
+            1
+          ],
+          "recent_fantasy_pts": [
+            82,
+            54,
+            78,
+            66,
+            62
+          ],
+          "avg_fantasy_pts": 68.4,
+          "strike_rate": 130.0,
+          "batting_avg": 27.0,
+          "economy": 8.48
+        },
+        "ceiling_score": 120.0,
+        "floor_score": 32.0,
+        "differential_tag": "80% DT Rate Multi-Role AR (8.0 Cr, 53.0% Sel, 1.17% C)",
+        "captain_percentage": 1.17,
+        "dream_team_percentage": 80.0
+      },
+      {
+        "id": "wi_motie",
+        "name": "Gudakesh Motie",
+        "team": "WI",
+        "role": "BOWL",
+        "credits": 7.5,
+        "batting_style": "LHB",
+        "bowling_style": "Slow left-arm orthodox",
+        "batting_order_projected": 10,
+        "expected_overs": 4.0,
+        "is_confirmed_xi": true,
+        "projected_ownership": 19.01,
+        "stats": {
+          "matches": 28,
+          "recent_runs": [
+            0,
+            2,
+            8,
+            0,
+            0
+          ],
+          "recent_wickets": [
+            2,
+            1,
+            3,
+            0,
+            2
+          ],
+          "recent_fantasy_pts": [
+            64,
+            36,
+            92,
+            12,
+            66
+          ],
+          "avg_fantasy_pts": 54.0,
+          "strike_rate": 90.0,
+          "batting_avg": 8.0,
+          "economy": 7.3
+        },
+        "ceiling_score": 110.0,
+        "floor_score": 14.0,
+        "differential_tag": "Sub-20% Spin Differential (7.5 Cr, 19.0% Sel, 0.14% C)",
+        "captain_percentage": 0.14,
+        "dream_team_percentage": 20.0
+      },
+      {
+        "id": "wi_joseph",
+        "name": "Shamar Joseph",
+        "team": "WI",
+        "role": "BOWL",
+        "credits": 7.0,
+        "batting_style": "RHB",
+        "bowling_style": "Right-arm fast",
+        "batting_order_projected": 11,
+        "expected_overs": 4.0,
+        "is_confirmed_xi": true,
+        "projected_ownership": 14.6,
+        "stats": {
+          "matches": 17,
+          "recent_runs": [
+            4,
+            1,
+            0,
+            0,
+            7
+          ],
+          "recent_wickets": [
+            2,
+            3,
+            1,
+            2,
+            0
+          ],
+          "recent_fantasy_pts": [
+            62,
+            94,
+            36,
+            68,
+            10
+          ],
+          "avg_fantasy_pts": 54.0,
+          "strike_rate": 85.0,
+          "batting_avg": 5.0,
+          "economy": 8.9
+        },
+        "ceiling_score": 135.0,
+        "floor_score": 10.0,
+        "differential_tag": "Super Differential Strike Pacer (7.0 Cr, 14.6% Sel, 40% DT, 59.6% Pacer Pitch)",
+        "captain_percentage": 0.17,
+        "dream_team_percentage": 40.0
+      }
+    ],
+    "captain": {
+      "id": "wi_motie",
+      "name": "Gudakesh Motie",
+      "team": "WI",
+      "role": "BOWL",
+      "credits": 7.5,
+      "batting_style": "LHB",
+      "bowling_style": "Slow left-arm orthodox",
+      "batting_order_projected": 10,
+      "expected_overs": 4.0,
+      "is_confirmed_xi": true,
+      "projected_ownership": 19.01,
+      "stats": {
+        "matches": 28,
+        "recent_runs": [
+          0,
+          2,
+          8,
+          0,
+          0
+        ],
+        "recent_wickets": [
+          2,
+          1,
+          3,
+          0,
+          2
+        ],
+        "recent_fantasy_pts": [
+          64,
+          36,
+          92,
+          12,
+          66
+        ],
+        "avg_fantasy_pts": 54.0,
+        "strike_rate": 90.0,
+        "batting_avg": 8.0,
+        "economy": 7.3
+      },
+      "ceiling_score": 110.0,
+      "floor_score": 14.0,
+      "differential_tag": "Sub-20% Spin Differential (7.5 Cr, 19.0% Sel, 0.14% C)",
+      "captain_percentage": 0.14,
+      "dream_team_percentage": 20.0
+    },
+    "vice_captain": {
+      "id": "wi_joseph",
+      "name": "Shamar Joseph",
+      "team": "WI",
+      "role": "BOWL",
+      "credits": 7.0,
+      "batting_style": "RHB",
+      "bowling_style": "Right-arm fast",
+      "batting_order_projected": 11,
+      "expected_overs": 4.0,
+      "is_confirmed_xi": true,
+      "projected_ownership": 14.6,
+      "stats": {
+        "matches": 17,
+        "recent_runs": [
+          4,
+          1,
+          0,
+          0,
+          7
+        ],
+        "recent_wickets": [
+          2,
+          3,
+          1,
+          2,
+          0
+        ],
+        "recent_fantasy_pts": [
+          62,
+          94,
+          36,
+          68,
+          10
+        ],
+        "avg_fantasy_pts": 54.0,
+        "strike_rate": 85.0,
+        "batting_avg": 5.0,
+        "economy": 8.9
+      },
+      "ceiling_score": 135.0,
+      "floor_score": 10.0,
+      "differential_tag": "Super Differential Strike Pacer (7.0 Cr, 14.6% Sel, 40% DT, 59.6% Pacer Pitch)",
+      "captain_percentage": 0.17,
+      "dream_team_percentage": 40.0
+    },
+    "total_credits": 88.0
+  },
+  "Team 9: Strongest Lineup for a Shortened Match (DLS)": {
+    "players": [
+      {
+        "id": "ind_samson",
+        "name": "Sanju Samson",
+        "team": "IND",
+        "role": "WK",
+        "credits": 8.0,
+        "batting_style": "RHB",
+        "bowling_style": null,
+        "batting_order_projected": 1,
+        "expected_overs": 0.0,
+        "is_confirmed_xi": true,
+        "projected_ownership": 74.75,
+        "stats": {
+          "matches": 40,
+          "recent_runs": [
+            108,
+            0,
+            111,
+            22,
+            45
+          ],
+          "recent_wickets": [],
+          "recent_fantasy_pts": [
+            158,
+            4,
+            162,
+            34,
+            68
+          ],
+          "avg_fantasy_pts": 78.5,
+          "strike_rate": 168.0,
+          "batting_avg": 35.2,
+          "economy": 0.0
+        },
+        "ceiling_score": 165.0,
+        "floor_score": 14.0,
+        "differential_tag": "Powerplay Opener WK (74.8% Sel, 11% C, 40% DT)",
+        "captain_percentage": 10.95,
+        "dream_team_percentage": 40.0
+      },
+      {
+        "id": "ind_abhishek",
+        "name": "Abhishek Sharma",
+        "team": "IND",
+        "role": "BAT",
+        "credits": 9.0,
+        "batting_style": "LHB",
+        "bowling_style": "Slow left-arm orthodox",
+        "batting_order_projected": 2,
+        "expected_overs": 1.0,
+        "is_confirmed_xi": true,
+        "projected_ownership": 85.84,
+        "stats": {
+          "matches": 20,
+          "recent_runs": [
+            88,
+            47,
+            72,
+            14,
+            31
+          ],
+          "recent_wickets": [
+            0,
+            1,
+            0,
+            1,
+            0
+          ],
+          "recent_fantasy_pts": [
+            134,
+            78,
+            108,
+            22,
+            48
+          ],
+          "avg_fantasy_pts": 78.0,
+          "strike_rate": 185.0,
+          "batting_avg": 37.0,
+          "economy": 8.8
+        },
+        "ceiling_score": 160.0,
+        "floor_score": 18.0,
+        "differential_tag": "Mega Chalk Opener (85.8% Sel, 26.1% C, 80% DT)",
+        "captain_percentage": 26.06,
+        "dream_team_percentage": 80.0
+      },
+      {
+        "id": "ind_ishan",
+        "name": "Ishan Kishan",
+        "team": "IND",
+        "role": "WK",
+        "credits": 8.0,
+        "batting_style": "LHB",
+        "bowling_style": null,
+        "batting_order_projected": 3,
+        "expected_overs": 0.0,
+        "is_confirmed_xi": true,
+        "projected_ownership": 78.43,
+        "stats": {
+          "matches": 34,
+          "recent_runs": [
+            58,
+            24,
+            89,
+            12,
+            41
+          ],
+          "recent_wickets": [],
+          "recent_fantasy_pts": [
+            84,
+            38,
+            122,
+            18,
+            62
+          ],
+          "avg_fantasy_pts": 65.0,
+          "strike_rate": 145.0,
+          "batting_avg": 32.0,
+          "economy": 0.0
+        },
+        "ceiling_score": 135.0,
+        "floor_score": 16.0,
+        "differential_tag": "In-Form Top-Order WK (78.4% Sel, 12.6% C, 80% DT)",
+        "captain_percentage": 12.62,
+        "dream_team_percentage": 80.0
+      },
+      {
+        "id": "ind_reddy",
+        "name": "Nitish Kumar Reddy",
+        "team": "IND",
+        "role": "AR",
+        "credits": 7.5,
+        "batting_style": "RHB",
+        "bowling_style": "Right-arm medium-fast",
+        "batting_order_projected": 7,
+        "expected_overs": 2.0,
+        "is_confirmed_xi": true,
+        "projected_ownership": 41.26,
+        "stats": {
+          "matches": 12,
+          "recent_runs": [
+            41,
+            15,
+            74,
+            0,
+            22
+          ],
+          "recent_wickets": [
+            2,
+            0,
+            1,
+            2,
+            0
+          ],
+          "recent_fantasy_pts": [
+            78,
+            22,
+            112,
+            54,
+            30
+          ],
+          "avg_fantasy_pts": 59.2,
+          "strike_rate": 156.0,
+          "batting_avg": 31.0,
+          "economy": 8.8
+        },
+        "ceiling_score": 135.0,
+        "floor_score": 15.0,
+        "differential_tag": "Dual-Equity All-Rounder (7.5 Cr, 50% DT Rate, 41.3% Sel, 0.69% C)",
+        "captain_percentage": 0.69,
+        "dream_team_percentage": 50.0
+      },
+      {
+        "id": "ind_axar",
+        "name": "Axar Patel",
+        "team": "IND",
+        "role": "AR",
+        "credits": 7.0,
+        "batting_style": "LHB",
+        "bowling_style": "Slow left-arm orthodox",
+        "batting_order_projected": 8,
+        "expected_overs": 4.0,
+        "is_confirmed_xi": true,
+        "projected_ownership": 49.45,
+        "stats": {
+          "matches": 62,
+          "recent_runs": [
+            22,
+            18,
+            31,
+            12,
+            28
+          ],
+          "recent_wickets": [
+            2,
+            1,
+            2,
+            1,
+            3
+          ],
+          "recent_fantasy_pts": [
+            84,
+            52,
+            92,
+            46,
+            114
+          ],
+          "avg_fantasy_pts": 77.6,
+          "strike_rate": 140.0,
+          "batting_avg": 24.5,
+          "economy": 7.1
+        },
+        "ceiling_score": 125.0,
+        "floor_score": 30.0,
+        "differential_tag": "Low-Credit AR (7.0 Cr, 49.5% Sel, 1.22% C, 40% DT)",
+        "captain_percentage": 1.22,
+        "dream_team_percentage": 40.0
+      },
+      {
+        "id": "ind_prince",
+        "name": "Prince Yadav",
+        "team": "IND",
+        "role": "BOWL",
+        "credits": 7.0,
+        "batting_style": "RHB",
+        "bowling_style": "Right-arm medium-fast",
+        "batting_order_projected": 10,
+        "expected_overs": 3.0,
+        "is_confirmed_xi": true,
+        "projected_ownership": 24.28,
+        "stats": {
+          "matches": 5,
+          "recent_runs": [
+            0,
+            4,
+            1,
+            0,
+            0
+          ],
+          "recent_wickets": [
+            1,
+            2,
+            0,
+            1,
+            1
+          ],
+          "recent_fantasy_pts": [
+            34,
+            58,
+            8,
+            32,
+            28
+          ],
+          "avg_fantasy_pts": 32.0,
+          "strike_rate": 80.0,
+          "batting_avg": 5.0,
+          "economy": 8.6
+        },
+        "ceiling_score": 85.0,
+        "floor_score": 8.0,
+        "differential_tag": "Golden Differential Pacer (7.0 Cr, 24.3% Sel, 0.30% C)",
+        "captain_percentage": 0.3,
+        "dream_team_percentage": 0.0
+      },
+      {
+        "id": "wi_hope",
+        "name": "Shai Hope",
+        "team": "WI",
+        "role": "WK",
+        "credits": 8.5,
+        "batting_style": "RHB",
+        "bowling_style": null,
+        "batting_order_projected": 1,
+        "expected_overs": 0.0,
+        "is_confirmed_xi": true,
+        "projected_ownership": 86.25,
+        "stats": {
+          "matches": 44,
+          "recent_runs": [
+            104,
+            38,
+            71,
+            102,
+            45
+          ],
+          "recent_wickets": [],
+          "recent_fantasy_pts": [
+            152,
+            54,
+            102,
+            146,
+            64
+          ],
+          "avg_fantasy_pts": 103.6,
+          "strike_rate": 146.5,
+          "batting_avg": 48.0,
+          "economy": 0.0
+        },
+        "ceiling_score": 160.0,
+        "floor_score": 30.0,
+        "differential_tag": "Heavy Chalk Opener (86.3% Sel, 23.8% C, 60% DT)",
+        "captain_percentage": 23.82,
+        "dream_team_percentage": 60.0
+      },
+      {
+        "id": "wi_andrew",
+        "name": "Jewel Andrew",
+        "team": "WI",
+        "role": "WK",
+        "credits": 6.0,
+        "batting_style": "RHB",
+        "bowling_style": null,
+        "batting_order_projected": 2,
+        "expected_overs": 0.0,
+        "is_confirmed_xi": true,
+        "projected_ownership": 27.68,
+        "stats": {
+          "matches": 5,
+          "recent_runs": [
+            22,
+            15,
+            34,
+            8,
+            12
+          ],
+          "recent_wickets": [],
+          "recent_fantasy_pts": [
+            30,
+            20,
+            48,
+            12,
+            18
+          ],
+          "avg_fantasy_pts": 25.6,
+          "strike_rate": 135.0,
+          "batting_avg": 18.2,
+          "economy": 0.0
+        },
+        "ceiling_score": 95.0,
+        "floor_score": 6.0,
+        "differential_tag": "Ultra Low-Credit WK Enabler (6.0 Cr, 27.7% Sel, 1.91% C)",
+        "captain_percentage": 1.91,
+        "dream_team_percentage": 20.0
+      },
+      {
+        "id": "wi_hetmyer",
+        "name": "Shimron Hetmyer",
+        "team": "WI",
+        "role": "BAT",
+        "credits": 9.0,
+        "batting_style": "LHB",
+        "bowling_style": null,
+        "batting_order_projected": 3,
+        "expected_overs": 0.0,
+        "is_confirmed_xi": true,
+        "projected_ownership": 69.26,
+        "stats": {
+          "matches": 64,
+          "recent_runs": [
+            28,
+            56,
+            14,
+            61,
+            8
+          ],
+          "recent_wickets": [],
+          "recent_fantasy_pts": [
+            38,
+            82,
+            20,
+            88,
+            12
+          ],
+          "avg_fantasy_pts": 48.0,
+          "strike_rate": 158.0,
+          "batting_avg": 25.2,
+          "economy": 0.0
+        },
+        "ceiling_score": 140.0,
+        "floor_score": 10.0,
+        "differential_tag": "Power Hitter (9.0 Cr, 69.3% Sel, 2.01% C, 60% DT)",
+        "captain_percentage": 2.01,
+        "dream_team_percentage": 60.0
+      },
+      {
+        "id": "wi_motie",
+        "name": "Gudakesh Motie",
+        "team": "WI",
+        "role": "BOWL",
+        "credits": 7.5,
+        "batting_style": "LHB",
+        "bowling_style": "Slow left-arm orthodox",
+        "batting_order_projected": 10,
+        "expected_overs": 4.0,
+        "is_confirmed_xi": true,
+        "projected_ownership": 19.01,
+        "stats": {
+          "matches": 28,
+          "recent_runs": [
+            0,
+            2,
+            8,
+            0,
+            0
+          ],
+          "recent_wickets": [
+            2,
+            1,
+            3,
+            0,
+            2
+          ],
+          "recent_fantasy_pts": [
+            64,
+            36,
+            92,
+            12,
+            66
+          ],
+          "avg_fantasy_pts": 54.0,
+          "strike_rate": 90.0,
+          "batting_avg": 8.0,
+          "economy": 7.3
+        },
+        "ceiling_score": 110.0,
+        "floor_score": 14.0,
+        "differential_tag": "Sub-20% Spin Differential (7.5 Cr, 19.0% Sel, 0.14% C)",
+        "captain_percentage": 0.14,
+        "dream_team_percentage": 20.0
+      },
+      {
+        "id": "wi_joseph",
+        "name": "Shamar Joseph",
+        "team": "WI",
+        "role": "BOWL",
+        "credits": 7.0,
+        "batting_style": "RHB",
+        "bowling_style": "Right-arm fast",
+        "batting_order_projected": 11,
+        "expected_overs": 4.0,
+        "is_confirmed_xi": true,
+        "projected_ownership": 14.6,
+        "stats": {
+          "matches": 17,
+          "recent_runs": [
+            4,
+            1,
+            0,
+            0,
+            7
+          ],
+          "recent_wickets": [
+            2,
+            3,
+            1,
+            2,
+            0
+          ],
+          "recent_fantasy_pts": [
+            62,
+            94,
+            36,
+            68,
+            10
+          ],
+          "avg_fantasy_pts": 54.0,
+          "strike_rate": 85.0,
+          "batting_avg": 5.0,
+          "economy": 8.9
+        },
+        "ceiling_score": 135.0,
+        "floor_score": 10.0,
+        "differential_tag": "Super Differential Strike Pacer (7.0 Cr, 14.6% Sel, 40% DT, 59.6% Pacer Pitch)",
+        "captain_percentage": 0.17,
+        "dream_team_percentage": 40.0
+      }
+    ],
+    "captain": {
+      "id": "ind_abhishek",
+      "name": "Abhishek Sharma",
+      "team": "IND",
+      "role": "BAT",
+      "credits": 9.0,
+      "batting_style": "LHB",
+      "bowling_style": "Slow left-arm orthodox",
+      "batting_order_projected": 2,
+      "expected_overs": 1.0,
+      "is_confirmed_xi": true,
+      "projected_ownership": 85.84,
+      "stats": {
+        "matches": 20,
+        "recent_runs": [
+          88,
+          47,
+          72,
+          14,
+          31
+        ],
+        "recent_wickets": [
+          0,
+          1,
+          0,
+          1,
+          0
+        ],
+        "recent_fantasy_pts": [
+          134,
+          78,
+          108,
+          22,
+          48
+        ],
+        "avg_fantasy_pts": 78.0,
+        "strike_rate": 185.0,
+        "batting_avg": 37.0,
+        "economy": 8.8
+      },
+      "ceiling_score": 160.0,
+      "floor_score": 18.0,
+      "differential_tag": "Mega Chalk Opener (85.8% Sel, 26.1% C, 80% DT)",
+      "captain_percentage": 26.06,
+      "dream_team_percentage": 80.0
+    },
+    "vice_captain": {
+      "id": "ind_samson",
+      "name": "Sanju Samson",
+      "team": "IND",
+      "role": "WK",
+      "credits": 8.0,
+      "batting_style": "RHB",
+      "bowling_style": null,
+      "batting_order_projected": 1,
+      "expected_overs": 0.0,
+      "is_confirmed_xi": true,
+      "projected_ownership": 74.75,
+      "stats": {
+        "matches": 40,
+        "recent_runs": [
+          108,
+          0,
+          111,
+          22,
+          45
+        ],
+        "recent_wickets": [],
+        "recent_fantasy_pts": [
+          158,
+          4,
+          162,
+          34,
+          68
+        ],
+        "avg_fantasy_pts": 78.5,
+        "strike_rate": 168.0,
+        "batting_avg": 35.2,
+        "economy": 0.0
+      },
+      "ceiling_score": 165.0,
+      "floor_score": 14.0,
+      "differential_tag": "Powerplay Opener WK (74.8% Sel, 11% C, 40% DT)",
+      "captain_percentage": 10.95,
+      "dream_team_percentage": 40.0
+    },
+    "total_credits": 84.5
+  },
+  "Team 10: Strongest Differentiated Lineup (Anti-Chalk Leverage)": {
+    "players": [
+      {
+        "id": "ind_tilak",
+        "name": "Tilak Varma",
+        "team": "IND",
+        "role": "BAT",
+        "credits": 7.5,
+        "batting_style": "LHB",
+        "bowling_style": "Right-arm offbreak",
+        "batting_order_projected": 5,
+        "expected_overs": 1.0,
+        "is_confirmed_xi": true,
+        "projected_ownership": 41.94,
+        "stats": {
+          "matches": 26,
+          "recent_runs": [
+            45,
+            107,
+            33,
+            51,
+            19
+          ],
+          "recent_wickets": [
+            0,
+            1,
+            0,
+            0,
+            0
+          ],
+          "recent_fantasy_pts": [
+            60,
+            154,
+            44,
+            72,
+            26
+          ],
+          "avg_fantasy_pts": 71.2,
+          "strike_rate": 152.0,
+          "batting_avg": 43.0,
+          "economy": 7.5
+        },
+        "ceiling_score": 150.0,
+        "floor_score": 22.0,
+        "differential_tag": "High-DT Leverage Batter (80% DT Rate, 7.5 Cr, 41.9% Sel, 1.2% C)",
+        "captain_percentage": 1.23,
+        "dream_team_percentage": 80.0
+      },
+      {
+        "id": "ind_naman",
+        "name": "Naman Dhir",
+        "team": "IND",
+        "role": "AR",
+        "credits": 8.5,
+        "batting_style": "RHB",
+        "bowling_style": "Right-arm offbreak",
+        "batting_order_projected": 6,
+        "expected_overs": 1.0,
+        "is_confirmed_xi": true,
+        "projected_ownership": 27.41,
+        "stats": {
+          "matches": 9,
+          "recent_runs": [
+            34,
+            18,
+            42,
+            11,
+            25
+          ],
+          "recent_wickets": [
+            1,
+            0,
+            0,
+            1,
+            0
+          ],
+          "recent_fantasy_pts": [
+            52,
+            24,
+            62,
+            16,
+            38
+          ],
+          "avg_fantasy_pts": 38.4,
+          "strike_rate": 172.0,
+          "batting_avg": 27.5,
+          "economy": 8.5
+        },
+        "ceiling_score": 110.0,
+        "floor_score": 10.0,
+        "differential_tag": "Sub-30% Differential AR (27.4% Sel, 50% DT Rate, 0.65% C)",
+        "captain_percentage": 0.65,
+        "dream_team_percentage": 50.0
+      },
+      {
+        "id": "ind_reddy",
+        "name": "Nitish Kumar Reddy",
+        "team": "IND",
+        "role": "AR",
+        "credits": 7.5,
+        "batting_style": "RHB",
+        "bowling_style": "Right-arm medium-fast",
+        "batting_order_projected": 7,
+        "expected_overs": 2.0,
+        "is_confirmed_xi": true,
+        "projected_ownership": 41.26,
+        "stats": {
+          "matches": 12,
+          "recent_runs": [
+            41,
+            15,
+            74,
+            0,
+            22
+          ],
+          "recent_wickets": [
+            2,
+            0,
+            1,
+            2,
+            0
+          ],
+          "recent_fantasy_pts": [
+            78,
+            22,
+            112,
+            54,
+            30
+          ],
+          "avg_fantasy_pts": 59.2,
+          "strike_rate": 156.0,
+          "batting_avg": 31.0,
+          "economy": 8.8
+        },
+        "ceiling_score": 135.0,
+        "floor_score": 15.0,
+        "differential_tag": "Dual-Equity All-Rounder (7.5 Cr, 50% DT Rate, 41.3% Sel, 0.69% C)",
+        "captain_percentage": 0.69,
+        "dream_team_percentage": 50.0
+      },
+      {
+        "id": "ind_axar",
+        "name": "Axar Patel",
+        "team": "IND",
+        "role": "AR",
+        "credits": 7.0,
+        "batting_style": "LHB",
+        "bowling_style": "Slow left-arm orthodox",
+        "batting_order_projected": 8,
+        "expected_overs": 4.0,
+        "is_confirmed_xi": true,
+        "projected_ownership": 49.45,
+        "stats": {
+          "matches": 62,
+          "recent_runs": [
+            22,
+            18,
+            31,
+            12,
+            28
+          ],
+          "recent_wickets": [
+            2,
+            1,
+            2,
+            1,
+            3
+          ],
+          "recent_fantasy_pts": [
+            84,
+            52,
+            92,
+            46,
+            114
+          ],
+          "avg_fantasy_pts": 77.6,
+          "strike_rate": 140.0,
+          "batting_avg": 24.5,
+          "economy": 7.1
+        },
+        "ceiling_score": 125.0,
+        "floor_score": 30.0,
+        "differential_tag": "Low-Credit AR (7.0 Cr, 49.5% Sel, 1.22% C, 40% DT)",
+        "captain_percentage": 1.22,
+        "dream_team_percentage": 40.0
+      },
+      {
+        "id": "ind_prince",
+        "name": "Prince Yadav",
+        "team": "IND",
+        "role": "BOWL",
+        "credits": 7.0,
+        "batting_style": "RHB",
+        "bowling_style": "Right-arm medium-fast",
+        "batting_order_projected": 10,
+        "expected_overs": 3.0,
+        "is_confirmed_xi": true,
+        "projected_ownership": 24.28,
+        "stats": {
+          "matches": 5,
+          "recent_runs": [
+            0,
+            4,
+            1,
+            0,
+            0
+          ],
+          "recent_wickets": [
+            1,
+            2,
+            0,
+            1,
+            1
+          ],
+          "recent_fantasy_pts": [
+            34,
+            58,
+            8,
+            32,
+            28
+          ],
+          "avg_fantasy_pts": 32.0,
+          "strike_rate": 80.0,
+          "batting_avg": 5.0,
+          "economy": 8.6
+        },
+        "ceiling_score": 85.0,
+        "floor_score": 8.0,
+        "differential_tag": "Golden Differential Pacer (7.0 Cr, 24.3% Sel, 0.30% C)",
+        "captain_percentage": 0.3,
+        "dream_team_percentage": 0.0
+      },
+      {
+        "id": "ind_bhuvi",
+        "name": "Bhuvneshwar Kumar",
+        "team": "IND",
+        "role": "BOWL",
+        "credits": 8.0,
+        "batting_style": "RHB",
+        "bowling_style": "Right-arm fast",
+        "batting_order_projected": 11,
+        "expected_overs": 4.0,
+        "is_confirmed_xi": true,
+        "projected_ownership": 26.84,
+        "stats": {
+          "matches": 14,
+          "recent_runs": [
+            0,
+            0,
+            0,
+            1,
+            0
+          ],
+          "recent_wickets": [
+            0,
+            3,
+            2,
+            0,
+            3
+          ],
+          "recent_fantasy_pts": [
+            34,
+            94,
+            66,
+            12,
+            96
+          ],
+          "avg_fantasy_pts": 60.4,
+          "strike_rate": 60.0,
+          "batting_avg": 4.0,
+          "economy": 7.7
+        },
+        "ceiling_score": 145.0,
+        "floor_score": 15.0,
+        "differential_tag": "155kph Express Strike Pacer (8.0 Cr, 26.8% Sel, 0.36% C)",
+        "captain_percentage": 0.36,
+        "dream_team_percentage": 25.0
+      },
+      {
+        "id": "wi_andrew",
+        "name": "Jewel Andrew",
+        "team": "WI",
+        "role": "WK",
+        "credits": 6.0,
+        "batting_style": "RHB",
+        "bowling_style": null,
+        "batting_order_projected": 2,
+        "expected_overs": 0.0,
+        "is_confirmed_xi": true,
+        "projected_ownership": 27.68,
+        "stats": {
+          "matches": 5,
+          "recent_runs": [
+            22,
+            15,
+            34,
+            8,
+            12
+          ],
+          "recent_wickets": [],
+          "recent_fantasy_pts": [
+            30,
+            20,
+            48,
+            12,
+            18
+          ],
+          "avg_fantasy_pts": 25.6,
+          "strike_rate": 135.0,
+          "batting_avg": 18.2,
+          "economy": 0.0
+        },
+        "ceiling_score": 95.0,
+        "floor_score": 6.0,
+        "differential_tag": "Ultra Low-Credit WK Enabler (6.0 Cr, 27.7% Sel, 1.91% C)",
+        "captain_percentage": 1.91,
+        "dream_team_percentage": 20.0
+      },
+      {
+        "id": "wi_powell",
+        "name": "Rovman Powell",
+        "team": "WI",
+        "role": "BAT",
+        "credits": 8.5,
+        "batting_style": "RHB",
+        "bowling_style": "Right-arm medium",
+        "batting_order_projected": 4,
+        "expected_overs": 1.0,
+        "is_confirmed_xi": true,
+        "projected_ownership": 24.11,
+        "stats": {
+          "matches": 80,
+          "recent_runs": [
+            41,
+            18,
+            67,
+            12,
+            52
+          ],
+          "recent_wickets": [
+            0,
+            0,
+            1,
+            0,
+            0
+          ],
+          "recent_fantasy_pts": [
+            58,
+            24,
+            98,
+            16,
+            76
+          ],
+          "avg_fantasy_pts": 54.4,
+          "strike_rate": 168.1,
+          "batting_avg": 26.5,
+          "economy": 9.2
+        },
+        "ceiling_score": 135.0,
+        "floor_score": 12.0,
+        "differential_tag": "Sub-25% Power Finisher Differential (8.5 Cr, 24.1% Sel, 60% DT)",
+        "captain_percentage": 0.63,
+        "dream_team_percentage": 60.0
+      },
+      {
+        "id": "wi_shepherd",
+        "name": "Romario Shepherd",
+        "team": "WI",
+        "role": "AR",
+        "credits": 8.5,
+        "batting_style": "RHB",
+        "bowling_style": "Right-arm fast-medium",
+        "batting_order_projected": 6,
+        "expected_overs": 3.5,
+        "is_confirmed_xi": true,
+        "projected_ownership": 30.18,
+        "stats": {
+          "matches": 46,
+          "recent_runs": [
+            32,
+            14,
+            26,
+            6,
+            39
+          ],
+          "recent_wickets": [
+            2,
+            1,
+            0,
+            3,
+            1
+          ],
+          "recent_fantasy_pts": [
+            88,
+            44,
+            34,
+            102,
+            68
+          ],
+          "avg_fantasy_pts": 67.2,
+          "strike_rate": 162.0,
+          "batting_avg": 23.5,
+          "economy": 9.1
+        },
+        "ceiling_score": 140.0,
+        "floor_score": 20.0,
+        "differential_tag": "Death Overs Pacer & Finisher (8.5 Cr, 30.2% Sel, 0.57% C)",
+        "captain_percentage": 0.57,
+        "dream_team_percentage": 20.0
+      },
+      {
+        "id": "wi_motie",
+        "name": "Gudakesh Motie",
+        "team": "WI",
+        "role": "BOWL",
+        "credits": 7.5,
+        "batting_style": "LHB",
+        "bowling_style": "Slow left-arm orthodox",
+        "batting_order_projected": 10,
+        "expected_overs": 4.0,
+        "is_confirmed_xi": true,
+        "projected_ownership": 19.01,
+        "stats": {
+          "matches": 28,
+          "recent_runs": [
+            0,
+            2,
+            8,
+            0,
+            0
+          ],
+          "recent_wickets": [
+            2,
+            1,
+            3,
+            0,
+            2
+          ],
+          "recent_fantasy_pts": [
+            64,
+            36,
+            92,
+            12,
+            66
+          ],
+          "avg_fantasy_pts": 54.0,
+          "strike_rate": 90.0,
+          "batting_avg": 8.0,
+          "economy": 7.3
+        },
+        "ceiling_score": 110.0,
+        "floor_score": 14.0,
+        "differential_tag": "Sub-20% Spin Differential (7.5 Cr, 19.0% Sel, 0.14% C)",
+        "captain_percentage": 0.14,
+        "dream_team_percentage": 20.0
+      },
+      {
+        "id": "wi_joseph",
+        "name": "Shamar Joseph",
+        "team": "WI",
+        "role": "BOWL",
+        "credits": 7.0,
+        "batting_style": "RHB",
+        "bowling_style": "Right-arm fast",
+        "batting_order_projected": 11,
+        "expected_overs": 4.0,
+        "is_confirmed_xi": true,
+        "projected_ownership": 14.6,
+        "stats": {
+          "matches": 17,
+          "recent_runs": [
+            4,
+            1,
+            0,
+            0,
+            7
+          ],
+          "recent_wickets": [
+            2,
+            3,
+            1,
+            2,
+            0
+          ],
+          "recent_fantasy_pts": [
+            62,
+            94,
+            36,
+            68,
+            10
+          ],
+          "avg_fantasy_pts": 54.0,
+          "strike_rate": 85.0,
+          "batting_avg": 5.0,
+          "economy": 8.9
+        },
+        "ceiling_score": 135.0,
+        "floor_score": 10.0,
+        "differential_tag": "Super Differential Strike Pacer (7.0 Cr, 14.6% Sel, 40% DT, 59.6% Pacer Pitch)",
+        "captain_percentage": 0.17,
+        "dream_team_percentage": 40.0
+      }
+    ],
+    "captain": {
+      "id": "wi_joseph",
+      "name": "Shamar Joseph",
+      "team": "WI",
+      "role": "BOWL",
+      "credits": 7.0,
+      "batting_style": "RHB",
+      "bowling_style": "Right-arm fast",
+      "batting_order_projected": 11,
+      "expected_overs": 4.0,
+      "is_confirmed_xi": true,
+      "projected_ownership": 14.6,
+      "stats": {
+        "matches": 17,
+        "recent_runs": [
+          4,
+          1,
+          0,
+          0,
+          7
+        ],
+        "recent_wickets": [
+          2,
+          3,
+          1,
+          2,
+          0
+        ],
+        "recent_fantasy_pts": [
+          62,
+          94,
+          36,
+          68,
+          10
+        ],
+        "avg_fantasy_pts": 54.0,
+        "strike_rate": 85.0,
+        "batting_avg": 5.0,
+        "economy": 8.9
+      },
+      "ceiling_score": 135.0,
+      "floor_score": 10.0,
+      "differential_tag": "Super Differential Strike Pacer (7.0 Cr, 14.6% Sel, 40% DT, 59.6% Pacer Pitch)",
+      "captain_percentage": 0.17,
+      "dream_team_percentage": 40.0
+    },
+    "vice_captain": {
+      "id": "ind_bhuvi",
+      "name": "Bhuvneshwar Kumar",
+      "team": "IND",
+      "role": "BOWL",
+      "credits": 8.0,
+      "batting_style": "RHB",
+      "bowling_style": "Right-arm fast",
+      "batting_order_projected": 11,
+      "expected_overs": 4.0,
+      "is_confirmed_xi": true,
+      "projected_ownership": 26.84,
+      "stats": {
+        "matches": 14,
+        "recent_runs": [
+          0,
+          0,
+          0,
+          1,
+          0
+        ],
+        "recent_wickets": [
+          0,
+          3,
+          2,
+          0,
+          3
+        ],
+        "recent_fantasy_pts": [
+          34,
+          94,
+          66,
+          12,
+          96
+        ],
+        "avg_fantasy_pts": 60.4,
+        "strike_rate": 60.0,
+        "batting_avg": 4.0,
+        "economy": 7.7
+      },
+      "ceiling_score": 145.0,
+      "floor_score": 15.0,
+      "differential_tag": "155kph Express Strike Pacer (8.0 Cr, 26.8% Sel, 0.36% C)",
+      "captain_percentage": 0.36,
+      "dream_team_percentage": 25.0
+    },
+    "total_credits": 83.0
+  }
+}

@@ -1,0 +1,32 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "strike-os"
+version = "3.0.0"
+description = "STRIKE//OS PRO - Institutional Cricket Intelligence, Tactical Simulation & Grand League Analytics Workstation"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "fastapi>=0.115.0",
+    "uvicorn>=0.30.0",
+    "pydantic>=2.8.0",
+    "ortools>=9.10.0",
+    "duckdb>=1.0.0",
+    "xgboost>=2.1.0",
+    "scikit-learn>=1.5.0",
+    "scipy>=1.13.0",
+    "numpy>=1.26.0",
+    "pandas>=2.2.0",
+    "requests>=2.32.0",
+    "python-dotenv>=1.0.0",
+    "rich>=13.7.0"
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+    "httpx>=0.27.0"
+]
+

@@ -1,0 +1,106 @@
+================================================================================
+430,000-SPOT MEGA CONTEST INTELLIGENCE (INDIA VS WEST INDIES - 4TH T20I)
+Venue: Rajiv Gandhi International Stadium, Hyderabad | Match Time: 7:00 PM IST
+================================================================================
+
+📢 OFFICIAL LIVE TOSS & CONDITIONS:
+- INDIA WON TOSS & OPTED TO BOWL FIRST (FIELD).
+- WEST INDIES ARE BATTING FIRST.
+- Pitch: 80% Red Soil (steep bounce) + 20% Black Soil (binding). Average 24 sixes.
+- Short square boundaries: 64m & 67m; straight boundary: 75m.
+- WI Team News: Pooran & Sampson OUT; Romario Shepherd & Jewel Andrew IN.
+- Anti-Duplication Rule: Abhishek Sharma & Arshdeep Singh STRICTLY locked out of C/VC to prevent 150,000 crowd duplicate trap.
+
+================================================================================
+⚡ FAST WICKET FALLING & BOWLING MATCHUP SIMULATION
+================================================================================
+1. WEST INDIES 1ST INNINGS BATTING: Projected 181/7 in 20.0 Overs (Range: 176 - 188)
+   - Powerplay (Overs 1-6): 48/2
+     * Over 2.4: Shai Hope (c Samson b Arshdeep) -> Left-arm angle across off
+     * Over 4.3: Jewel Andrew (c Tilak b Mayank) -> 151kph steep red-soil bouncer
+   - Middle Overs (Overs 7-15): 119/4
+     * Over 9.5: Rovman Powell (b Axar) -> Arm-ball skids low on cracks (Powell strikes at only 105 vs spin)
+     * Over 13.2: Shimron Hetmyer (c Sub b Nitish Reddy) -> Caught targeting 75m boundary
+   - Death Overs (Overs 16-20): 181/7
+     * Shepherd (44 off 21) & Rutherford (34 off 18) clear 64m boundaries
+     * Over 17.4: Rutherford b Mayank (150kph yorker); Over 19.3: Keemo Paul b Arshdeep
+
+2. INDIA 2ND INNINGS CHASE (UNDER DEW): Projected 184/3 in 18.4 Overs (Wins by 7 Wkts)
+   - Powerplay Chase (Overs 1-6): 56/1
+     * Abhishek Sharma fires 32 off 15 balls on short 64m boundary
+     * Over 4.1: Abhishek (c Powell b Shamar Joseph) -> 148kph steep bouncer catches top edge
+   - Middle Overs Chase (Overs 7-15): 142/3
+     * Over 9.4: Ishan Kishan (lbw b Shepherd) -> Slower dipping knuckle-ball for 34 (22)
+     * Over 14.2: Shreyas Iyer (c Hope b Motie) -> Caught behind for 18
+   - Clinical Finish (Overs 16-18.4): 184/3
+     * Sanju Samson (62* off 39) & Tilak Varma (48* off 28) seal victory under heavy dew
+     * India LOSES ONLY 3 WICKETS to complete the chase!
+
+================================================================================
+💎 HIGH-LEVERAGE DIFFERENTIAL PICKS FROM BOTH TEAMS
+================================================================================
+- India: Mayank Yadav (28.5% own), Nitish Kumar Reddy (32.0% own), Tilak Varma (44.0% own)
+- West Indies: Shamar Joseph (36.0% own), Sherfane Rutherford (29.0% own), Keemo Paul (24.0% own), Jewel Andrew (15.5% own)
+
+--------------------------------------------------------------------------------
+TEAM 1: Team 1: India Dew Chasing Masterclass (Strict 6 IND : 5 WI)
+--------------------------------------------------------------------------------
+CAPTAIN (2x):       Tilak Varma (BAT) [44.0% own]
+VICE-CAPTAIN (1.5x): Sanju Samson (WK) [58.0% own]
+Script:              WI 181/7 | India Chases 182/3 Under Heavy Dew (Losing only 3 wickets)
+Credits:             92.5 / 100 | Wild Cards: 4
+
+PLAYING XI (11 Players):
+ 1. Sanju Samson         (IND | WK   | 8.5cr) [VICE-CAPTAIN - 1.5x] -> VICE-CAPTAIN (1.5x): Hyderabad Centurion Opener: 2 T20 hundreds at Rajiv Gandhi Stadium. Blasts 62* off 39 balls with boundary bonuses + keeper dismissals.
+ 2. Abhishek Sharma      (IND | BAT  | 9.0cr) -> Explosive powerplay opener (32 off 15 with 3 sixes on 64m boundary); LOCKED OUT of C/VC to prevent 150,000 duplicate trap.
+ 3. Tilak Varma          (IND | BAT  | 8.5cr) [CAPTAIN - 2x] -> CAPTAIN (2x): Hyderabad Local Hero in Chase: Playing on his native home wicket. Anchors and hits winning runs in dew chase (48* off 28 balls) with 0 pressure.
+ 4. Nitish Kumar Reddy   (IND | AR   | 8.0cr) [WILD CARD - 32.0%] -> HIGH-CEILING WILD CARD (32.0%): Exact matchup edge to eliminate the 430,000 field.
+ 5. Arshdeep Singh       (IND | BOWL | 9.0cr) -> Dismisses Shai Hope in PP + bowls 19th/20th death overs; LOCKED OUT of C/VC to prevent crowd duplicate trap.
+ 6. Mayank Yadav         (IND | BOWL | 8.0cr) [WILD CARD - 28.5%] -> HIGH-CEILING WILD CARD (28.5%): Exact matchup edge to eliminate the 430,000 field.
+ 7. Sherfane Rutherford  (WI | BAT  | 8.0cr) [WILD CARD - 29.0%] -> HIGH-CEILING WILD CARD (29.0%): Exact matchup edge to eliminate the 430,000 field.
+ 8. Romario Shepherd     (WI | AR   | 8.5cr) -> Core AR performer providing essential base points.
+ 9. Roston Chase         (WI | AR   | 8.5cr) -> Core AR performer providing essential base points.
+10. Keemo Paul           (WI | AR   | 8.0cr) [WILD CARD - 24.0%] -> HIGH-CEILING WILD CARD (24.0%): Exact matchup edge to eliminate the 430,000 field.
+11. Shamar Joseph        (WI | BOWL | 8.5cr) -> Core BOWL performer providing essential base points.
+
+--------------------------------------------------------------------------------
+TEAM 2: Team 2: West Indies 1st Innings Blitz & Shepherd Return (Strict 5 IND : 6 WI)
+--------------------------------------------------------------------------------
+CAPTAIN (2x):       Romario Shepherd (AR) [71.0% own]
+VICE-CAPTAIN (1.5x): Ishan Kishan (WK) [69.0% own]
+Script:              WI Post 188+ via Shepherd 44* & Rutherford 34* | India Mounts Dew Chase
+Credits:             92.0 / 100 | Wild Cards: 4
+
+PLAYING XI (11 Players):
+ 1. Sanju Samson         (IND | WK   | 8.5cr) -> Core WK performer providing essential base points.
+ 2. Ishan Kishan         (IND | WK   | 8.5cr) [VICE-CAPTAIN - 1.5x] -> VICE-CAPTAIN (1.5x): Powerplay Dew Chase Aggressor: Attacks wet ball with aggressive pulls and cuts on short square boundary.
+ 3. Tilak Varma          (IND | BAT  | 8.5cr) -> Core BAT performer providing essential base points.
+ 4. Nitish Kumar Reddy   (IND | AR   | 8.0cr) [WILD CARD - 32.0%] -> HIGH-CEILING WILD CARD (32.0%): Exact matchup edge to eliminate the 430,000 field.
+ 5. Mayank Yadav         (IND | BOWL | 8.0cr) [WILD CARD - 28.5%] -> HIGH-CEILING WILD CARD (28.5%): Exact matchup edge to eliminate the 430,000 field.
+ 6. Shai Hope            (WI | WK   | 9.0cr) -> Core WK performer providing essential base points.
+ 7. Sherfane Rutherford  (WI | BAT  | 8.0cr) [WILD CARD - 29.0%] -> HIGH-CEILING WILD CARD (29.0%): Exact matchup edge to eliminate the 430,000 field.
+ 8. Romario Shepherd     (WI | AR   | 8.5cr) [CAPTAIN - 2x] -> CAPTAIN (2x): Death Overs Power Weapon: Back from injury! Blasts 44 off 21 balls on 64m boundaries + bowls overs 18 & 20 in 2nd innings to take key wickets.
+ 9. Roston Chase         (WI | AR   | 8.5cr) -> Core AR performer providing essential base points.
+10. Keemo Paul           (WI | AR   | 8.0cr) [WILD CARD - 24.0%] -> HIGH-CEILING WILD CARD (24.0%): Exact matchup edge to eliminate the 430,000 field.
+11. Shamar Joseph        (WI | BOWL | 8.5cr) -> Core BOWL performer providing essential base points.
+
+--------------------------------------------------------------------------------
+TEAM 3: Team 3: 80% Red Soil 150kph Pace Carnage (Strict 6 IND : 5 WI)
+--------------------------------------------------------------------------------
+CAPTAIN (2x):       Mayank Yadav (BOWL) [28.5% own]
+VICE-CAPTAIN (1.5x): Shamar Joseph (BOWL) [36.0% own]
+Script:              Steep Bounce Dismantles Batsmen | Dual 150kph Fast Bowling Carnage
+Credits:             92.5 / 100 | Wild Cards: 4
+
+PLAYING XI (11 Players):
+ 1. Sanju Samson         (IND | WK   | 8.5cr) -> Core WK performer providing essential base points.
+ 2. Abhishek Sharma      (IND | BAT  | 9.0cr) -> Explosive powerplay opener (32 off 15 with 3 sixes on 64m boundary); LOCKED OUT of C/VC to prevent 150,000 duplicate trap.
+ 3. Tilak Varma          (IND | BAT  | 8.5cr) -> Core BAT performer providing essential base points.
+ 4. Nitish Kumar Reddy   (IND | AR   | 8.0cr) [WILD CARD - 32.0%] -> HIGH-CEILING WILD CARD (32.0%): Exact matchup edge to eliminate the 430,000 field.
+ 5. Arshdeep Singh       (IND | BOWL | 9.0cr) -> Dismisses Shai Hope in PP + bowls 19th/20th death overs; LOCKED OUT of C/VC to prevent crowd duplicate trap.
+ 6. Mayank Yadav         (IND | BOWL | 8.0cr) [CAPTAIN - 2x] -> CAPTAIN (2x): 151.4 kph Red Soil Enforcer: Ian Bishop pitch report confirms extra bounce on hard red soil. Mayank takes 2-3 wickets dismantling top order and death hitters.
+ 7. Sherfane Rutherford  (WI | BAT  | 8.0cr) [WILD CARD - 29.0%] -> HIGH-CEILING WILD CARD (29.0%): Exact matchup edge to eliminate the 430,000 field.
+ 8. Romario Shepherd     (WI | AR   | 8.5cr) -> Core AR performer providing essential base points.
+ 9. Roston Chase         (WI | AR   | 8.5cr) -> Core AR performer providing essential base points.
+10. Keemo Paul           (WI | AR   | 8.0cr) [WILD CARD - 24.0%] -> HIGH-CEILING WILD CARD (24.0%): Exact matchup edge to eliminate the 430,000 field.
+11. Shamar Joseph        (WI | BOWL | 8.5cr) [VICE-CAPTAIN - 1.5x] -> VICE-CAPTAIN (1.5x): 148 kph Express Pace Counterpart: Shamar Joseph extracts identical steep bounce to dismiss Abhishek Sharma in the powerplay.
