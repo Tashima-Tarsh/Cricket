@@ -3,7 +3,11 @@ t20:
   credits: 100
   per_team_max: 7
   overseas_max: 4
-  roles: { WK: [1, 4], BAT: [3, 6], AR: [1, 4], BOWL: [3, 6] }
+  roles:
+    WK: [1, 4]
+    BAT: [3, 6]
+    AR: [1, 4]
+    BOWL: [3, 6]
   min_balls_sr: 10
-  min_balls_eco: 120
+  min_balls_eco: 12
   floor: -6.0

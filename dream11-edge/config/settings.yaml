@@ -1,24 +1,23 @@
 sim:
-  n_sims: 20000          # match simulations (marginal engine)
-  n_sims_ball: 2000      # match simulations (ball-by-ball engine, slower)
-  n_field: 100000        # simulated opponent entries
-  n_entries: 150         # portfolio size
-  engine: marginal       # marginal | ball
+  n_sims: 20000
+  n_sims_ball: 1500
+  n_field: 60000
+  n_entries: 150
+  engine: marginal
 
 portfolio:
-  max_exposure: 0.65     # no player above this share of entries
-  min_swap: 3            # min differing players between any two lineups
+  max_exposure: 0.65
+  min_swap: 3
   unique_cvc: true
-  jitter: 0.03           # projection jitter scale for diversity
+  jitter: 0.03
 
 relock:
-  min_edge: 0.02         # only swap if P(top 0.01%) improves by 2% relative
-  freeze_minutes: 3      # stop churning this close to lock
+  min_edge: 0.02
+  freeze_minutes: 3
 
 model:
   form_halflife_days: 120
   matchup_min_balls: 60
-  shrink_prior_obs: 200
   window_edges: [0, 15, 30, 50, 75, 999999]
 
 paths:

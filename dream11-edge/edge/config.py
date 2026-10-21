@@ -1,10 +1,8 @@
 from __future__ import annotations
-
 import os
 from dataclasses import dataclass
 from functools import lru_cache
 from pathlib import Path
-
 import yaml
 from dotenv import load_dotenv
 
@@ -15,8 +13,8 @@ load_dotenv(ROOT / ".env")
 @dataclass(frozen=True)
 class SimCfg:
     n_sims: int = 20000
-    n_sims_ball: int = 2000
-    n_field: int = 100000
+    n_sims_ball: int = 1500
+    n_field: int = 60000
     n_entries: int = 150
     engine: str = "marginal"
 
@@ -39,7 +37,6 @@ class RelockCfg:
 class ModelCfg:
     form_halflife_days: int = 120
     matchup_min_balls: int = 60
-    shrink_prior_obs: int = 200
     window_edges: tuple = (0, 15, 30, 50, 75, 10**9)
 
 
@@ -58,16 +55,13 @@ class Settings:
     venues: dict
     tz: str
 
-    def ensure_dirs(self) -> None:
+    def ensure_dirs(self):
         for d in (self.data_dir, self.web_dir, self.artifacts):
             d.mkdir(parents=True, exist_ok=True)
 
 
-def _tupleise(d: dict) -> dict:
-    out = {}
-    for k, v in d.items():
-        out[k] = tuple(v) if isinstance(v, list) else v
-    return out
+def _tup(d):
+    return {k: (tuple(v) if isinstance(v, list) else v) for k, v in d.items()}
 
 
 @lru_cache(maxsize=1)
@@ -75,18 +69,18 @@ def settings() -> Settings:
     s = yaml.safe_load((ROOT / "config" / "settings.yaml").read_text())
     rules = yaml.safe_load((ROOT / "config" / "rules.yaml").read_text())
     venues = yaml.safe_load((ROOT / "config" / "venues.yaml").read_text())
-    paths = s.get("paths", {})
-    data_dir = ROOT / paths.get("data", "data")
+    p = s.get("paths", {})
+    data_dir = ROOT / p.get("data", "data")
     return Settings(
         root=ROOT,
         data_dir=data_dir,
-        web_dir=ROOT / paths.get("web", "web"),
-        artifacts=ROOT / paths.get("artifacts", "artifacts"),
+        web_dir=ROOT / p.get("web", "web"),
+        artifacts=ROOT / p.get("artifacts", "artifacts"),
         db_path=data_dir / "edge.duckdb",
         sim=SimCfg(**s.get("sim", {})),
         portfolio=PortfolioCfg(**s.get("portfolio", {})),
         relock=RelockCfg(**s.get("relock", {})),
-        model=ModelCfg(**_tupleise(s.get("model", {}))),
+        model=ModelCfg(**_tup(s.get("model", {}))),
         rules=rules,
         venues=venues,
         tz=os.getenv("EDGE_TZ", "Asia/Kolkata"),

@@ -1,0 +1,23 @@
+lineup,captain,vice,p_rank1,p_top10,p_top100,players
+1,S. Iyer,A. Rahane,0.01640,0.03700,0.10480,A. Rahane|S. Iyer|D. Brevis|T. Varma|H. Pandya|J. Bumrah|G. Coetzee|R. Gaikwad|D. Conway|A. Rayudu|M. Theekshana
+2,A. Rahane,D. Brevis,0.01120,0.02400,0.07200,A. Rahane|S. Iyer|D. Brevis|T. Varma|N. Wadhera|J. Bumrah|G. Coetzee|R. Gaikwad|D. Conway|S. Dube|T. Deshpande
+3,T. Varma,D. Brevis,0.00780,0.01880,0.05520,A. Rahane|S. Iyer|D. Brevis|T. Varma|J. Bumrah|G. Coetzee|R. Gaikwad|D. Conway|J. Jadeja|R. Jadeja|T. Deshpande
+4,R. Gaikwad,A. Rayudu,0.00820,0.01520,0.03900,A. Rahane|D. Brevis|P. Chawla|J. Bumrah|G. Coetzee|R. Gaikwad|D. Conway|S. Dube|A. Rayudu|M. Theekshana|R. Jadeja
+5,R. Gaikwad,T. Varma,0.00840,0.01300,0.04500,A. Rahane|S. Iyer|T. Varma|J. Bumrah|R. Gaikwad|D. Conway|S. Dube|A. Rayudu|R. Jadeja|T. Deshpande|M. Pathirana
+6,S. Iyer,D. Conway,0.00700,0.02220,0.07840,A. Rahane|S. Iyer|D. Brevis|T. Varma|N. Wadhera|G. Coetzee|R. Gaikwad|D. Conway|S. Dube|M. Theekshana|R. Jadeja
+7,D. Conway,T. Varma,0.00680,0.01240,0.03560,A. Rahane|S. Iyer|T. Varma|P. Chawla|J. Bumrah|R. Gaikwad|D. Conway|A. Rayudu|J. Jadeja|M. Theekshana|R. Jadeja
+8,A. Rahane,A. Rayudu,0.00580,0.01240,0.03900,A. Rahane|S. Iyer|T. Varma|P. Chawla|J. Bumrah|D. Conway|A. Rayudu|J. Jadeja|R. Jadeja|T. Deshpande|M. Pathirana
+9,D. Conway,D. Brevis,0.00600,0.01380,0.04440,A. Rahane|S. Iyer|D. Brevis|T. Varma|J. Bumrah|R. Gaikwad|D. Conway|S. Dube|M. Theekshana|R. Jadeja|T. Deshpande
+10,D. Conway,A. Rayudu,0.00560,0.00980,0.03620,A. Rahane|S. Iyer|D. Brevis|P. Chawla|J. Bumrah|G. Coetzee|R. Gaikwad|D. Conway|A. Rayudu|S. Curran|R. Jadeja
+11,T. Varma,A. Rahane,0.00420,0.00880,0.03180,A. Rahane|S. Iyer|T. Varma|H. Pandya|P. Chawla|G. Coetzee|R. Gaikwad|D. Conway|M. Theekshana|T. Deshpande|M. Pathirana
+12,S. Iyer,G. Coetzee,0.00420,0.00920,0.04940,A. Rahane|S. Iyer|D. Brevis|P. Chawla|G. Coetzee|R. Gaikwad|D. Conway|S. Dube|A. Rayudu|R. Jadeja|M. Pathirana
+13,S. Iyer,T. Varma,0.00420,0.01380,0.06240,A. Rahane|S. Iyer|T. Varma|N. Wadhera|P. Chawla|G. Coetzee|R. Gaikwad|D. Conway|S. Dube|A. Rayudu|R. Jadeja
+14,D. Brevis,R. Gaikwad,0.00400,0.00840,0.03100,A. Rahane|S. Iyer|D. Brevis|J. Bumrah|R. Gaikwad|D. Conway|A. Rayudu|S. Curran|R. Jadeja|T. Deshpande|M. Pathirana
+15,R. Gaikwad,S. Iyer,0.00300,0.00680,0.03120,A. Rahane|S. Iyer|D. Brevis|N. Wadhera|R. Gaikwad|D. Conway|A. Rayudu|J. Jadeja|M. Theekshana|T. Deshpande|M. Pathirana
+16,T. Varma,S. Iyer,0.00220,0.00760,0.03120,A. Rahane|S. Iyer|T. Varma|H. Pandya|P. Chawla|G. Coetzee|R. Gaikwad|D. Conway|A. Rayudu|R. Jadeja|T. Deshpande
+17,A. Rahane,D. Conway,0.00300,0.00660,0.03620,A. Rahane|S. Iyer|D. Brevis|T. Varma|H. Pandya|J. Bumrah|R. Gaikwad|D. Conway|A. Rayudu|R. Jadeja|M. Pathirana
+18,D. Conway,S. Iyer,0.00260,0.00560,0.02020,A. Rahane|S. Iyer|D. Brevis|T. Varma|P. Chawla|J. Bumrah|R. Gaikwad|D. Conway|S. Dube|M. Theekshana|M. Pathirana
+19,T. Varma,D. Conway,0.00240,0.00560,0.02880,A. Rahane|S. Iyer|T. Varma|H. Pandya|G. Coetzee|R. Gaikwad|D. Conway|A. Rayudu|M. Theekshana|R. Jadeja|M. Pathirana
+20,A. Rahane,S. Iyer,0.00180,0.00580,0.02600,A. Rahane|S. Iyer|D. Brevis|H. Pandya|J. Bumrah|R. Gaikwad|D. Conway|A. Rayudu|M. Theekshana|T. Deshpande|M. Pathirana
+21,S. Iyer,R. Gaikwad,0.00240,0.01260,0.07180,A. Rahane|S. Iyer|D. Brevis|T. Varma|P. Chawla|J. Bumrah|R. Gaikwad|D. Conway|S. Dube|A. Rayudu|R. Jadeja
+22,R. Gaikwad,A. Rahane,0.00180,0.00340,0.02600,A. Rahane|S. Iyer|D. Brevis|T. Varma|P. Chawla|G. Coetzee|R. Gaikwad|D. Conway|A. Rayudu|J. Jadeja|R. Jadeja

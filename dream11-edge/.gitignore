@@ -8,3 +8,4 @@ artifacts/
 web/players.json
 .pytest_cache/
 *.egg-info/
+

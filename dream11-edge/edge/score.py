@@ -1,15 +1,8 @@
-"""Exact Dream11 T20 scoring.
-
-Single source of truth. The simulator, the backtester and the validator
-all call this - nothing re-implements the table.
-"""
+"""Exact Dream11 T20 scoring. Single source of truth."""
 from __future__ import annotations
-
 from dataclasses import dataclass
 
-MIN_BALLS_SR = 10
-MIN_BALLS_ECO = 12
-FLOOR = -6.0
+MIN_BALLS_SR, MIN_BALLS_ECO, FLOOR = 10, 12, -6.0
 
 
 @dataclass
@@ -59,18 +52,18 @@ def sr_bonus(runs: int, balls: int) -> float:
 def eco_bonus(runs: int, balls: int) -> float:
     if balls < MIN_BALLS_ECO:
         return 0.0
-    eco = runs / (balls / 6.0)
-    if eco <= 5:
+    e = runs / (balls / 6.0)
+    if e <= 5:
         return 6.0
-    if eco < 6:
+    if e < 6:
         return 4.0
-    if eco < 7:
+    if e < 7:
         return 2.0
-    if eco <= 10:
+    if e <= 10:
         return 0.0
-    if eco <= 11:
+    if e <= 11:
         return -2.0
-    if eco <= 12:
+    if e <= 12:
         return -4.0
     return -6.0
 
@@ -78,8 +71,7 @@ def eco_bonus(runs: int, balls: int) -> float:
 def points(bat: BatLine, bowl: BowlLine, fld: FieldLine) -> float:
     p = 0.0
     if bat.batted:
-        p += bat.runs + bat.fours + 2 * bat.sixes
-        p += sr_bonus(bat.runs, bat.balls)
+        p += bat.runs + bat.fours + 2 * bat.sixes + sr_bonus(bat.runs, bat.balls)
         if bat.out and bat.runs == 0:
             p -= 2.0
         if bat.runs >= 100:
@@ -101,15 +93,3 @@ def points(bat: BatLine, bowl: BowlLine, fld: FieldLine) -> float:
     if fld.catches >= 3:
         p += 4.0
     return max(p, FLOOR)
-
-
-def score_lineup(squad_points: dict, captain: str, vice: str) -> float:
-    total = 0.0
-    for pid, pts in squad_points.items():
-        if pid == captain:
-            total += 2.0 * pts
-        elif pid == vice:
-            total += 1.5 * pts
-        else:
-            total += pts
-    return total

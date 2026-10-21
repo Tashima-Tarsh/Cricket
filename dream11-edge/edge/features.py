@@ -1,18 +1,12 @@
-"""Feature construction.
-
-Leakage-safe: a feature for match M only uses data strictly before M.
-"""
+"""Leakage-safe feature construction."""
 from __future__ import annotations
-
 import numpy as np
 import pandas as pd
 
 PHASES = ("pp", "mid", "death")
 
-_BOWL_TYPES = ("leftarm_spin", "leftarm_pace", "offspin", "legspin", "pace", "medium")
 
-
-def bowl_type(style: str) -> str:
+def bowl_type(style):
     s = (style or "").lower()
     if "left" in s and ("orthodox" in s or "spin" in s or "wrist" in s):
         return "leftarm_spin"
@@ -27,96 +21,78 @@ def bowl_type(style: str) -> str:
     return "medium"
 
 
-def decay_weights(dates: pd.Series, halflife_days: int, ref: pd.Timestamp) -> np.ndarray:
+def decay_weights(dates, halflife, ref):
     age = (ref - pd.to_datetime(dates)).dt.days.clip(lower=0)
-    return np.power(0.5, age / max(halflife_days, 1))
+    return np.power(0.5, age / max(halflife, 1))
 
 
-def phase_of(over: int) -> str:
-    return "pp" if over < 6 else "mid" if over < 16 else "death"
-
-
-def form_table(balls: pd.DataFrame, halflife: int, ref: pd.Timestamp) -> pd.DataFrame:
+def form_table(balls, halflife, ref):
     b = balls.copy()
     b["w"] = decay_weights(b["match_date"], halflife, ref)
-    b["boundary"] = b["runs"].isin([4, 6]).astype(float)
-    b["is_ball"] = (~b["outcome"].isin(["wd", "nb"])).astype(float)
-    b["is_w"] = (b["outcome"] == "W").astype(float)
-
+    b["bnd"] = b["runs"].isin([4, 6]).astype(float)
+    b["ib"] = (~b["outcome"].isin(["wd", "nb"])).astype(float)
+    b["iw"] = (b["outcome"] == "W").astype(float)
     rows = []
-    for (pid, phase), d in b.groupby(["batter_id", "phase"]):
+    for (pid, ph), d in b.groupby(["batter_id", "phase"]):
         wb = d["w"].sum()
-        rows.append(dict(
-            batter_id=pid, phase=phase,
-            balls=d["is_ball"].sum(), wballs=wb,
-            sr=100 * (d["w"] * d["runs"]).sum() / max(wb, 1e-6),
-            bnd=(d["w"] * d["boundary"]).sum() / max(wb, 1e-6),
-            p_out=(d["w"] * d["is_w"]).sum() / max(wb, 1e-6),
-        ))
+        rows.append(dict(batter_id=pid, phase=ph, wballs=wb,
+                         sr=100 * (d["w"] * d["runs"]).sum() / max(wb, 1e-6),
+                         bnd=(d["w"] * d["bnd"]).sum() / max(wb, 1e-6),
+                         p_out=(d["w"] * d["iw"]).sum() / max(wb, 1e-6)))
     return pd.DataFrame(rows)
 
 
-def matchup_table(balls: pd.DataFrame, min_balls: int) -> pd.DataFrame:
-    """batter x bowler-type, empirical-Bayes shrunk toward the batter's own rate."""
+def matchup_table(balls, min_balls):
     b = balls.copy()
-    b["btype"] = b["bowl_style"].map(bowl_type)
-    b["is_ball"] = (~b["outcome"].isin(["wd", "nb"])).astype(float)
-    b["is_w"] = (b["outcome"] == "W").astype(float)
-
-    cell = b.groupby(["batter_id", "btype"]).agg(
-        balls=("is_ball", "sum"), runs=("runs", "sum"), outs=("is_w", "sum")
-    ).reset_index()
-    base = b.groupby("batter_id").agg(
-        b_balls=("is_ball", "sum"), b_runs=("runs", "sum"), b_outs=("is_w", "sum")
-    ).reset_index()
-
+    b["bt"] = b["bowl_style"].map(bowl_type)
+    b["ib"] = (~b["outcome"].isin(["wd", "nb"])).astype(float)
+    b["iw"] = (b["outcome"] == "W").astype(float)
+    cell = b.groupby(["batter_id", "bt"]).agg(balls=("ib","sum"), runs=("runs","sum"),
+                                              outs=("iw","sum")).reset_index()
+    base = b.groupby("batter_id").agg(bb=("ib","sum"), br=("runs","sum"),
+                                      bo=("iw","sum")).reset_index()
     d = cell.merge(base, on="batter_id")
     k = max(min_balls, 1)
-    d["sr"] = 100 * (d["runs"] + k * d["b_runs"] / d["b_balls"].clip(lower=1)) / (d["balls"] + k)
-    d["dismissal"] = (d["outs"] + k * d["b_outs"] / d["b_balls"].clip(lower=1)) / (d["balls"] + k)
-    return d[["batter_id", "btype", "balls", "sr", "dismissal"]]
+    d["sr"] = 100 * (d["runs"] + k * d["br"] / d["bb"].clip(lower=1)) / (d["balls"] + k)
+    return d[["batter_id", "bt", "sr"]]
 
 
-def venue_par(scorecards: pd.DataFrame, venues: dict) -> dict:
-    par = {k: v["par"] for k, v in venues.get("venues", {}).items()}
-    if "venue" in scorecards.columns and len(scorecards):
-        agg = scorecards.groupby("venue").agg(
-            runs=("runs", "sum"), n=("match_id", "nunique"))
-        for v, row in agg.iterrows():
-            obs = row["runs"] / max(row["n"], 1)
-            par[v] = 0.5 * par.get(v, venues["default"]["par"]) + 0.5 * float(obs)
-    return par
-
-
-def build(match: dict, roster: pd.DataFrame, balls: pd.DataFrame,
-          scorecards: pd.DataFrame, ref: pd.Timestamp) -> pd.DataFrame:
+def build(match, roster, balls, ref):
+    """Attach features. Missing history falls back to priors."""
     from .config import settings
-
     mcfg = settings().model
     venue = match.get("venue", "")
     vcfg = settings().venues["venues"].get(venue, settings().venues["default"])
+    out = roster.copy()
+    out["venue_adj"] = vcfg["par"] / settings().venues["default"]["par"]
+
+    if balls is None or not len(balls):
+        for ph in PHASES:
+            out[f"sr_{ph}"] = 128.0
+            out[f"pout_{ph}"] = 0.06
+        out["form_sr"] = 130.0
+        out["matchup_edge"] = 0.0
+        out["team_strength_adj"] = 1.0
+        out["bowl_share"] = 1.0
+        out["bowl_quality"] = 1.0
+        return out
 
     form = form_table(balls, mcfg.form_halflife_days, ref)
     mu = matchup_table(balls, mcfg.matchup_min_balls)
-
-    out = roster.copy()
-    out["venue_par"] = vcfg["par"]
-    out["pitch"] = match.get("pitch_class", vcfg["pitch"])
-
     for ph in PHASES:
         sub = form[form.phase == ph].set_index("batter_id")
-        out[f"sr_{ph}"] = out.player_id.map(sub["sr"]).fillna(110.0)
-        out[f"bnd_{ph}"] = out.player_id.map(sub["bnd"]).fillna(0.11)
+        out[f"sr_{ph}"] = out.player_id.map(sub["sr"]).fillna(128.0)
         out[f"pout_{ph}"] = out.player_id.map(sub["p_out"]).fillna(0.06)
-
-    team_a = out.team.iloc[0] if len(out) else ""
-    opp_types = set(roster[roster.team != team_a]["bowl_style"].map(bowl_type)) or set(_BOWL_TYPES)
-    mu_idx = mu[mu.btype.isin(opp_types)].groupby("batter_id")["sr"].mean()
-    out["matchup_sr"] = out.player_id.map(mu_idx).fillna(out["sr_mid"])
-    out["matchup_edge"] = out["matchup_sr"] - out["sr_mid"]
-
     agg = form.assign(x=form.sr * form.wballs).groupby("batter_id").agg(
-        x=("x", "sum"), w=("wballs", "sum"))
-    out["form_sr"] = out.player_id.map(agg["x"] / agg["w"].clip(lower=1e-6)).fillna(115.0)
-    out["venue_adj"] = out["venue_par"] / settings().venues["default"]["par"]
+        x=("x","sum"), w=("wballs","sum"))
+    out["form_sr"] = out.player_id.map(agg["x"] / agg["w"].clip(lower=1e-6)).fillna(130.0)
+    team_a = out.team.iloc[0] if len(out) else ""
+    opp = set(roster[roster.team != team_a]["bowl_style"].map(bowl_type))
+    mi = mu[mu.bt.isin(opp)].groupby("batter_id")["sr"].mean()
+    out["matchup_sr"] = out.player_id.map(mi).fillna(out["sr_mid"])
+    out["matchup_edge"] = out["matchup_sr"] - out["sr_mid"]
+    out["team_strength_adj"] = 1.0
+    out["bowl_share"] = 1.0
+    out["bowl_quality"] = out.player_id.map(
+        mu.groupby("batter_id")["sr"].mean()).fillna(130.0).rdiv(130.0)
     return out
