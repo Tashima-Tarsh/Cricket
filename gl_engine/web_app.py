@@ -128,6 +128,33 @@ def get_match_commentary_and_scorecard(match_id: str):
         "data": data
     }
 
+@app.get("/api/venues")
+def get_all_venue_pitch_intelligence():
+    """Returns detailed pitch, soil physics, boundary geometry, par scores, and player records across venues."""
+    from .venue_pitch_intelligence import VenuePitchIntelligenceEngine
+    engine = VenuePitchIntelligenceEngine()
+    return {
+        "status": "success",
+        "venues": engine.generate_full_report()
+    }
+
+@app.get("/api/venues/{venue_query}")
+def get_single_venue_pitch_intelligence(venue_query: str):
+    """Queries detailed pitch intelligence for a specific venue (e.g. hagley, sydney, sharjah, raipur)."""
+    from .venue_pitch_intelligence import VenuePitchIntelligenceEngine
+    from dataclasses import asdict
+    from fastapi import HTTPException
+    engine = VenuePitchIntelligenceEngine()
+    spec = engine.get_venue_specs(venue_query)
+    if not spec:
+        raise HTTPException(status_code=404, detail=f"Venue '{venue_query}' not found")
+    leaderboard = engine.query_venue_leaderboard(spec.venue_name)
+    return {
+        "status": "success",
+        "specs": asdict(spec),
+        "verified_leaderboard": leaderboard
+    }
+
 @app.get("/api/health")
 def get_health():
     """Health check endpoint providing subsystem statuses, database metrics, and model versions."""
