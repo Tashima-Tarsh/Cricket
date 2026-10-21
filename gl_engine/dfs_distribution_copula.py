@@ -232,3 +232,4 @@ class EmpiricalDistributionCopula:
             correlated_matrix[:, idx] = reordered
 
         return correlated_matrix
+

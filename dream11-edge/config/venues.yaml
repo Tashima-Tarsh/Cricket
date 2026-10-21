@@ -1,0 +1,12 @@
+default: { par: 168, boundary_rate: 0.115, pitch: flat }
+venues:
+  "Wankhede Stadium, Mumbai":   { par: 178, boundary_rate: 0.132, pitch: flat }
+  "M. A. Chidambaram Stadium":  { par: 162, boundary_rate: 0.104, pitch: turner }
+  "M. Chinnaswamy Stadium":     { par: 182, boundary_rate: 0.141, pitch: flat }
+  "Eden Gardens":               { par: 175, boundary_rate: 0.128, pitch: flat }
+  "Narendra Modi Stadium":      { par: 165, boundary_rate: 0.108, pitch: flat }
+  "Arun Jaitley Stadium":       { par: 172, boundary_rate: 0.121, pitch: flat }
+  "Rajiv Gandhi Intl. Stadium": { par: 170, boundary_rate: 0.118, pitch: flat }
+  "Punjab Cricket Association": { par: 176, boundary_rate: 0.126, pitch: flat }
+  "Sawai Mansingh Stadium":     { par: 158, boundary_rate: 0.099, pitch: slow_low }
+  "Ekana Cricket Stadium":      { par: 155, boundary_rate: 0.096, pitch: slow_low }

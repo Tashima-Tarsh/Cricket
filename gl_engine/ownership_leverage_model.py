@@ -208,3 +208,4 @@ class OwnershipLeverageModel:
 
         pivots.sort(key=lambda x: x["ownership_reduction"], reverse=True)
         return pivots[:3]
+

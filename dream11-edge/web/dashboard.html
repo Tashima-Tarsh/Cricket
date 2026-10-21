@@ -1,0 +1,527 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Dream11 Edge — Cockpit</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/chart.js/4.4.1/chart.umd.js"></script>
+<style>
+  :root{--bg:#0b0d12;--card:#131720;--bd:#222836;--fg:#e8ecf4;--mut:#8b95a8;
+        --ok:#22c55e;--warn:#f59e0b;--bad:#ef4444;--info:#3b82f6;--acc:#a855f7}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--fg);
+       font:14px/1.5 Inter,system-ui,-apple-system,sans-serif}
+  .wrap{max-width:1180px;margin:0 auto;padding:22px}
+  h1{font-size:20px;font-weight:500;margin:0}
+  .sub{color:var(--mut);font-size:11px;letter-spacing:.09em;text-transform:uppercase}
+  .row{display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end}
+  select,button{font:inherit;font-size:12px;border-radius:8px;padding:8px 12px;
+    border:1px solid var(--bd);background:var(--card);color:var(--fg)}
+  button{background:var(--ok);color:#04120a;border:none;font-weight:500;cursor:pointer}
+  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:14px 0}
+  .kpi{background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:11px 13px}
+  .kpi .l{font-size:9.5px;color:var(--mut);letter-spacing:.06em;text-transform:uppercase}
+  .kpi .v{font:500 18px ui-monospace,Menlo,monospace;margin-top:3px}
+  .kpi .s{font-size:9.5px;color:var(--mut)}
+  #hero{position:relative;height:420px;border:1px solid var(--bd);border-radius:12px;
+        overflow:hidden;background:var(--card)}
+  #tip{position:absolute;top:10px;right:12px;text-align:right;font:10px ui-monospace,monospace;
+       line-height:1.6;pointer-events:none}
+  .legend{position:absolute;bottom:10px;left:12px;display:flex;gap:12px;font-size:10px}
+  .dot{width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:4px}
+  .tabs{display:flex;gap:4px;border-bottom:1px solid var(--bd);margin:16px 0 12px}
+  .tab{padding:7px 13px;font-size:12px;cursor:pointer;border-bottom:2px solid transparent;
+       color:var(--mut)}
+  .tab.on{border-color:var(--ok);color:var(--fg)}
+  table{width:100%;border-collapse:collapse}
+  th,td{padding:5px 7px;font-size:11px;text-align:right}
+  th{color:var(--mut);font-weight:500;border-bottom:1px solid var(--bd)}
+  th:first-child,td:first-child{text-align:left}
+  .mono{font-family:ui-monospace,Menlo,monospace}
+  .card{background:var(--card);border:1px solid var(--bd);border-radius:9px;padding:11px 13px;
+        margin-bottom:8px}
+  .bar{height:4px;background:#1c2230;border-radius:2px;overflow:hidden}
+  .bar>i{display:block;height:4px;border-radius:2px}
+  #status{font:10px ui-monospace,monospace;color:var(--mut);margin-top:14px;line-height:1.7}
+  .hint{font-size:10px;color:var(--mut);margin-top:8px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="row" style="justify-content:space-between">
+    <div>
+      <div class="sub">Dream11 edge engine</div>
+      <h1>Grand league cockpit</h1>
+    </div>
+    <div style="text-align:right">
+      <div class="sub">lock in</div>
+      <div id="clock" class="mono" style="font-size:16px;color:var(--ok)">--:--:--</div>
+    </div>
+  </div>
+
+  <div class="row" style="margin-top:14px">
+    <select id="pitch">
+      <option value="flat">pitch: flat</option>
+      <option value="green_seam">pitch: green seam</option>
+      <option value="dry_turner">pitch: dry turner</option>
+      <option value="slow_low">pitch: slow low</option>
+    </select>
+    <button id="run">Run simulation</button>
+    <span id="src" class="mono" style="font-size:10px;color:var(--mut)"></span>
+  </div>
+
+  <div class="kpis" id="kpis"></div>
+
+  <div id="hero">
+    <div id="tip"></div>
+    <div class="legend">
+      <span><i class="dot" style="background:#22c55e"></i>leverage</span>
+      <span><i class="dot" style="background:#f59e0b"></i>chalk</span>
+      <span><i class="dot" style="background:#6b7280"></i>fade</span>
+      <span><i class="dot" style="background:#ef4444"></i>trap</span>
+      <span style="color:var(--mut)">drag to orbit · scroll to zoom</span>
+    </div>
+  </div>
+
+  <div class="tabs" id="tabs"></div>
+  <div id="panels"></div>
+  <div id="status"></div>
+</div>
+
+<script>
+"use strict";
+/* ---------------------------------------------------------------
+   1. scoring
+   --------------------------------------------------------------- */
+const srB=(r,b)=>b<10?0:(()=>{const s=100*r/b;
+  return s>170?6:s>150?4:s>=130?2:s>=60?-2:s>=50?-4:-6})();
+const ecoB=(r,b)=>b<120?0:(()=>{const e=r/(b/6);
+  return e<5?6:e<6?4:e<7?2:e<=10?0:e<=11?-2:e<=12?-4:-6})();
+
+/* ---------------------------------------------------------------
+   2. rng + marginal fitting (hurdle + affine match)
+   --------------------------------------------------------------- */
+function rngf(seed){return function(){seed|=0;seed=seed+0x6D2B79F5|0;
+  let t=Math.imul(seed^seed>>>15,1|seed);t=t+Math.imul(t^t>>>7,61|t)^t;
+  return((t^t>>>14)>>>0)/4294967296}}
+function nrm(r){let u=0,v=0;while(!u)u=r();while(!v)v=r();
+  return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v)}
+function gsam(k,th,r){if(k<1)return gsam(1+k,th,r)*Math.pow(r(),1/k);
+  const d=k-1/3,c=1/Math.sqrt(9*d);
+  for(;;){let x,v;do{x=nrm(r);v=1+c*x}while(v<=0);v=v*v*v;
+    const u=r();
+    if(u<1-0.0331*x*x*x*x)return d*v*th;
+    if(Math.log(u)<0.5*x*x+d*(1-v+Math.log(v)))return d*v*th}}
+
+function marginal(mean,sd,pdnb,seed){
+  const r=rngf(seed),v=sd*sd,k=mean*mean/v,th=v/mean;
+  const mu=Math.log(mean*mean/Math.sqrt(v+mean*mean)),
+        sg=Math.sqrt(Math.log(1+v/(mean*mean)));
+  const dM=3.0,dS=Math.max(sd*0.35,1.0);
+  return n=>{const a=new Float64Array(n);
+    for(let i=0;i<n;i++){
+      a[i]= r()<pdnb ? Math.max(-6,dM+gsam(1.4,dS/1.4,r))
+                     : Math.max(-6,Math.exp(mu+sg*nrm(r)));}
+    let m=0;for(let i=0;i<n;i++)m+=a[i];m/=n;
+    let s=0;for(let i=0;i<n;i++){const d=a[i]-m;s+=d*d}s=Math.sqrt(s/n);
+    const A=s>1e-9?sd/s:0,B=mean-A*m;
+    for(let i=0;i<n;i++)a[i]=Math.max(-6,A*a[i]+B);
+    return a}}
+
+/* ---------------------------------------------------------------
+   3. copula + PSD repair
+   --------------------------------------------------------------- */
+function repairPSD(C){
+  const n=C.length,A=C.map(r=>r.slice()),
+    V=Array.from({length:n},(_,i)=>Array.from({length:n},(_,j)=>i===j?1:0));
+  for(let sw=0;sw<24;sw++)for(let p=0;p<n-1;p++)for(let q=p+1;q<n;q++){
+    if(Math.abs(A[p][q])<1e-12)continue;
+    const th=0.5*Math.atan2(2*A[p][q],A[q][q]-A[p][p]),c=Math.cos(th),s=Math.sin(th);
+    for(let i=0;i<n;i++){const x=A[i][p],y=A[i][q];A[i][p]=c*x-s*y;A[i][q]=s*x+c*y}
+    for(let i=0;i<n;i++){const x=A[p][i],y=A[q][i];A[p][i]=c*x-s*y;A[q][i]=s*x+c*y}
+    for(let i=0;i<n;i++){const x=V[i][p],y=V[i][q];V[i][p]=c*x-s*y;V[i][q]=s*x+c*y}}
+  const ev=Array.from({length:n},(_,i)=>Math.max(A[i][i],1e-8)),
+    R=Array.from({length:n},()=>new Float64Array(n));
+  for(let i=0;i<n;i++)for(let j=0;j<n;j++){let s=0;
+    for(let t=0;t<n;t++)s+=V[i][t]*ev[t]*V[j][t];R[i][j]=s}
+  for(let i=0;i<n;i++){const d=Math.sqrt(Math.max(R[i][i],1e-12));
+    for(let j=0;j<n;j++)R[i][j]/=d*Math.sqrt(Math.max(R[j][j],1e-12))}
+  return R}
+function chol(C){const n=C.length,L=Array.from({length:n},()=>new Float64Array(n));
+  for(let i=0;i<n;i++)for(let j=0;j<=i;j++){let s=C[i][j];
+    for(let k=0;k<j;k++)s-=L[i][k]*L[j][k];
+    L[i][j]=i===j?Math.sqrt(Math.max(s,1e-12)):s/L[j][j]}
+  return L}
+function erf(x){const s=Math.sign(x);x=Math.abs(x);const t=1/(1+0.3275911*x);
+  return s*(1-((((1.061405429*t-1.453152027)*t+1.421413741)*t-0.284496736)*t+0.254829592)
+    *t*Math.exp(-x*x))}
+const ncdf=z=>0.5*(1+erf(z/Math.SQRT2));
+
+function copula(margs,corr,n,r){
+  const k=margs.length,C=repairPSD(corr),L=chol(C),POOL=8000;
+  const tabs=margs.map(m=>{const a=m(POOL);a.sort();return a});
+  const out=Array.from({length:n},()=>new Float64Array(k));
+  for(let s=0;s<n;s++){
+    const z=new Float64Array(k);
+    for(let i=0;i<k;i++){let v=0;for(let j=0;j<=i;j++)v+=L[i][j]*nrm(r);z[i]=v}
+    for(let i=0;i<k;i++){let u=ncdf(z[i]);u=Math.min(.999999,Math.max(1e-6,u));
+      out[s][i]=tabs[i][Math.min(POOL-1,(u*POOL)|0)]}}
+  return out}
+
+/* ---------------------------------------------------------------
+   4. cricket correlation
+   --------------------------------------------------------------- */
+const BASE={"same|BAT|BAT":.34,"same|BOWL|BOWL":.22,"same|AR|AR":.16,
+ "same|AR|BOWL":.14,"same|AR|BAT":.11,"same|WK|BAT":.20,"same|WK|BOWL":.18,
+ "opp|BAT|BOWL":-.26,"opp|AR|BOWL":-.17,"opp|BAT|BAT":-.11,"opp|WK|BOWL":-.14};
+const SH={flat:{"same|BAT|BAT":.08,"same|BOWL|BOWL":-.05},
+ green_seam:{"same|BOWL|BOWL":.10,"same|BAT|BAT":-.06},
+ dry_turner:{"same|BOWL|BOWL":.07},slow_low:{"same|BOWL|BOWL":.05}};
+
+function buildCorr(P,pitch){
+  const k=P.length,C=Array.from({length:k},()=>new Float64Array(k)),sh=SH[pitch]||{};
+  for(let i=0;i<k;i++)C[i][i]=1;
+  for(let i=0;i<k;i++)for(let j=i+1;j<k;j++){
+    const a=P[i],b=P[j],rel=a.t===b.t?"same":"opp";
+    let r=BASE[rel+"|"+a.r+"|"+b.r];
+    if(r===undefined)r=BASE[rel+"|"+b.r+"|"+a.r];
+    if(r===undefined)r=.02;
+    r+=sh[rel+"|"+a.r+"|"+b.r]||0;
+    if(rel==="same"&&a.r==="BAT"&&b.r==="BAT")
+      r*=Math.max(.35,1-.16*Math.abs(a.pos-b.pos));
+    C[i][j]=C[j][i]=r}
+  return C}
+
+/* ---------------------------------------------------------------
+   5. constraints + field
+   --------------------------------------------------------------- */
+const RB={WK:[1,4],BAT:[3,6],AR:[1,4],BOWL:[3,6]};
+function legal(sq,P){const n={WK:0,BAT:0,AR:0,BOWL:0},tm={};let cr=0;
+  for(const i of sq){n[P[i].r]++;tm[P[i].t]=(tm[P[i].t]||0)+1;cr+=P[i].cr}
+  if(cr>100.001)return false;
+  for(const k in RB)if(n[k]<RB[k][0]||n[k]>RB[k][1])return false;
+  for(const k in tm)if(tm[k]>7)return false;
+  return true}
+function repairSq(sq,P,r){
+  for(let g=0;g<500;g++){
+    if(legal(sq,P))return sq;
+    let cr=0;for(const i of sq)cr+=P[i].cr;
+    if(cr>100){sq.sort((a,b)=>(P[a].proj/P[a].cr)-(P[b].proj/P[b].cr));sq.shift();continue}
+    if(sq.length>11){sq.sort((a,b)=>P[a].proj-P[b].proj);sq.shift();continue}
+    let done=false;
+    for(const k in RB){const m=sq.filter(i=>P[i].r===k);
+      if(m.length<RB[k][0]){
+        const c=P.map((_,i)=>i).filter(i=>P[i].r===k&&!sq.includes(i))
+          .sort((a,b)=>P[b].proj-P[a].proj);
+        for(const c2 of c.slice(0,8)){let cc=0;for(const i of sq)cc+=P[i].cr;
+          if(cc+P[c2].cr<=100){sq.push(c2);done=true;break}}
+        if(!done&&c.length){sq.push(c[0]);done=true}
+        break}
+      if(m.length>RB[k][1]){sq.splice(sq.indexOf(m.sort((a,b)=>P[a].proj-P[b].proj)[0]),1);
+        done=true;break}}
+    if(done)continue;
+    if(sq.length<11){let cc=0;for(const i of sq)cc+=P[i].cr;
+      const c=P.map((_,i)=>i).filter(i=>!sq.includes(i)).sort((a,b)=>P[b].proj-P[a].proj);
+      const pick=c.find(i=>cc+P[i].cr<=100);sq.push(pick!==undefined?pick:c[0]);continue}}
+  return legal(sq,P)?sq:null}
+
+function buildField(P,n,r){const F=[],w=P.map(p=>Math.pow(Math.max(p.own,.05),1));
+  const tot=w.reduce((a,b)=>a+b,0);
+  let g=0;
+  while(F.length<n&&g<n*4){g++;
+    const idx=[],pool=[];
+    for(let i=0;i<P.length;i++)for(let k=0;k<Math.max(1,Math.round(w[i]/tot*1000));k++)pool.push(i);
+    const s=new Set();
+    while(s.size<11)s.add(pool[(r()*pool.length)|0]);
+    let sq=[...s];sq=repairSq(sq,P,r);
+    if(!sq)continue;
+    const cw=sq.map(i=>Math.pow(Math.max(P[i].own,.05),1.35));
+    const ct=cw.reduce((a,b)=>a+b,0);
+    let x=r()*ct,cap=sq[0];
+    for(let k=0;k<sq.length;k++){x-=cw[k];if(x<=0){cap=sq[k];break}}
+    F.push({sq,cap})}
+  return F}
+
+/* ---------------------------------------------------------------
+   6. portfolio + rank evaluation
+   --------------------------------------------------------------- */
+function evaluate(sq,cap,sims,idx,fsc){
+  const nS=sims.length,nf=fsc.length,ranks=new Int32Array(nS);
+  for(let s=0;s<nS;s++){
+    let t=0;for(const i of sq)t+=sims[s][idx[i]];
+    t+=sims[s][idx[cap]];
+    const col=new Float64Array(nf);
+    for(let f=0;f<nf;f++)col[f]=fsc[f][s];
+    col.sort();
+    let lo=0,hi=nf;while(lo<hi){const m=(lo+hi)>>1;if(col[m]<=t)lo=m+1;else hi=m}
+    ranks[s]=nf-lo+1}
+  let a=0,b=0,c=0,d=0,sum=0;
+  for(let s=0;s<nS;s++){const v=ranks[s];sum+=v;
+    if(v<=1)a++;if(v<=10)b++;if(v<=100)c++;if(v<=Math.max(1,nf*1e-4))d++}
+  return{p_rank1:a/nS,p_top10:b/nS,p_top100:c/nS,p_top001:d/nS,avg_rank:sum/nS}}
+
+function buildPortfolio(P,sims,idx,fsc,n,r,seed){
+  const pr=rngf(seed),pool=[],seen=[],cvc=new Set();
+  let att=0;
+  while(pool.length<n&&att<n*40){att++;
+    const jit=P.map(p=>p.proj+(pr()-.5)*p.sd*.5);
+    const order=P.map((p,i)=>({i,v:jit[i]+Math.max(0,p.lev||0)*3}))
+      .sort((a,b)=>b.v-a.v).map(o=>o.i);
+    const sq=[];for(const i of order){if(sq.length>=11)break;
+      const t=sq.concat(i);if(legal(t,P))sq.push(i)}
+    if(sq.length<11)continue;
+    if(seen.some(s=>s.filter(i=>sq.includes(i)).length>8))continue;
+    const cw=sq.map(i=>P[i].proj+P[i].boom*40);
+    let bi=0;cw.forEach((v,k)=>{if(v>cw[bi])bi=k});
+    const cap=sq[bi];
+    const key=cap+"|"+sq.slice().sort((a,b)=>a-b).join(",");
+    if(cvc.has(key))continue;
+    cvc.add(key);seen.push(sq);
+    pool.push({sq,cap,key,...evaluate(sq,cap,sims,idx,fsc)})}
+  pool.sort((a,b)=>b.p_top001-a.p_top001);
+  return pool}
+
+/* ---------------------------------------------------------------
+   7. three.js scene
+   --------------------------------------------------------------- */
+let scene,cam,renderer,group,spheres=[],ray,auto=true,th=.7,ph=1.0,dist=52,drag=false,lx=0,ly=0;
+
+function initThree(){
+  const hero=document.getElementById("hero");
+  scene=new THREE.Scene();
+  cam=new THREE.PerspectiveCamera(45,hero.clientWidth/hero.clientHeight,.1,300);
+  renderer=new THREE.WebGLRenderer({antialias:true,alpha:true});
+  renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+  renderer.setSize(hero.clientWidth,hero.clientHeight);
+  hero.insertBefore(renderer.domElement,hero.firstChild);
+
+  scene.add(new THREE.AmbientLight(0xffffff,.8));
+  const l1=new THREE.PointLight(0xffffff,.9);l1.position.set(30,40,30);scene.add(l1);
+  const l2=new THREE.PointLight(0x66aaff,.5);l2.position.set(-25,-15,-20);scene.add(l2);
+
+  const grid=new THREE.GridHelper(50,25,0x2a2f3a,0x1a1e26);
+  grid.position.y=-8;scene.add(grid);
+  group=new THREE.Group();scene.add(group);
+  ray=new THREE.Raycaster();
+
+  const d=renderer.domElement;
+  d.addEventListener("pointerdown",e=>{drag=true;auto=false;lx=e.clientX;ly=e.clientY});
+  addEventListener("pointerup",()=>drag=false);
+  addEventListener("pointermove",e=>{
+    if(drag){th-=(e.clientX-lx)*.008;
+      ph=Math.max(.18,Math.min(2.9,ph-(e.clientY-ly)*.006));
+      lx=e.clientX;ly=e.clientY}
+    const rc=d.getBoundingClientRect();
+    ray.setFromCamera({x:((e.clientX-rc.left)/rc.width)*2-1,
+      y:-((e.clientY-rc.top)/rc.height)*2+1},cam);
+    const hit=ray.intersectObjects(spheres)[0],tip=document.getElementById("tip");
+    if(hit){const p=hit.object.userData;
+      tip.innerHTML=p.name+"<br>"+p.r+" · own "+p.own.toFixed(1)+"%<br>proj "+p.proj.toFixed(1)+
+        "<br>lev "+p.lev.toFixed(2)+"<br>expo "+(p.expo*100).toFixed(0)+"%"}
+    else tip.innerHTML=""});
+  d.addEventListener("wheel",e=>{e.preventDefault();
+    dist=Math.max(24,Math.min(100,dist+e.deltaY*.04))},{passive:false});
+
+  (function loop(){requestAnimationFrame(loop);
+    if(auto)th+=.0018;
+    cam.position.set(dist*Math.sin(ph)*Math.cos(th),dist*Math.cos(ph),dist*Math.sin(ph)*Math.sin(th));
+    cam.lookAt(0,0,0);renderer.render(scene,cam)})();
+
+  addEventListener("resize",()=>{cam.aspect=hero.clientWidth/hero.clientHeight;
+    cam.updateProjectionMatrix();renderer.setSize(hero.clientWidth,hero.clientHeight)});
+}
+
+function plot(P){
+  while(group.children.length)group.remove(group.children[0]);
+  spheres=[];
+  const xs=P.map(p=>p.own),ys=P.map(p=>p.proj),zs=P.map(p=>p.boom*100);
+  const mn=a=>Math.min(...a),mx=a=>Math.max(...a);
+  const x0=mn(xs),x1=mx(xs),y0=mn(ys),y1=mx(ys),z0=mn(zs),z1=mx(zs);
+  const xm=x0+(x1-x0)/2,ym=y0+(y1-y0)/2;
+  P.forEach(p=>{
+    const X=-20+40*(p.own-x0)/(x1-x0||1);
+    const Y=-6+24*(p.proj-y0)/(y1-y0||1);
+    const Z=-20+40*(p.boom*100-z0)/(z1-z0||1);
+    const col=(p.own<xm&&p.proj>=ym)?"#22c55e":(p.own>=xm&&p.proj>=ym)?"#f59e0b":
+              (p.own<xm)?"#6b7280":"#ef4444";
+    const rad=.5+1.8*(p.boom*100-z0)/(z1-z0||1);
+    const m=new THREE.Mesh(new THREE.SphereGeometry(rad,18,14),
+      new THREE.MeshStandardMaterial({color:col,emissive:col,emissiveIntensity:.45,
+        roughness:.35,metalness:.15}));
+    m.position.set(X,Y,Z);m.userData=p;group.add(m);spheres.push(m)});
+}
+
+/* ---------------------------------------------------------------
+   8. run
+   --------------------------------------------------------------- */
+let RES=null,TAB="proj";
+const DEMO_POOL=[
+ ["A. Rahane","MUM","BAT",9.0,1,34,22,.16],["S. Iyer","MUM","BAT",9.5,2,39,24,.14],
+ ["D. Brevis","MUM","BAT",8.5,3,31,20,.22],["T. Varma","MUM","BAT",9.0,4,36,23,.18],
+ ["H. Pandya","MUM","AR",9.5,5,33,21,.20],["N. Wadhera","MUM","BAT",8.0,6,27,19,.24],
+ ["T. David","MUM","AR",9.0,7,31,22,.26],["I. Kishan","MUM","WK",9.0,8,30,20,.20],
+ ["P. Chawla","MUM","BOWL",8.5,9,26,18,.30],["J. Bumrah","MUM","BOWL",9.5,10,40,25,.14],
+ ["G. Coetzee","MUM","BOWL",8.5,11,29,20,.26],
+ ["R. Gaikwad","CHE","BAT",9.5,1,38,24,.14],["D. Conway","CHE","WK",9.0,2,35,22,.16],
+ ["S. Dube","CHE","AR",9.0,3,32,21,.22],["A. Rayudu","CHE","BAT",8.5,4,29,20,.24],
+ ["J. Jadeja","CHE","AR",9.5,5,34,22,.16],["S. Curran","CHE","AR",9.0,6,30,21,.22],
+ ["M. Dhoni","CHE","WK",8.5,7,30,20,.22],["M. Theekshana","CHE","BOWL",8.5,9,28,19,.28],
+ ["R. Jadeja","CHE","BOWL",8.5,10,27,18,.28],["T. Deshpande","CHE","BOWL",8.0,11,26,18,.30],
+ ["M. Pathirana","CHE","BOWL",9.0,10,37,24,.18]];
+
+function demoPool(){
+  const P=DEMO_POOL.map((s,i)=>({id:i,name:s[0],t:s[1],r:s[2],cr:s[3],pos:s[4],
+    proj:s[5],sd:s[6],pdnb:s[7],own:0,boom:0,lev:0,expo:0}));
+  const z=P.map(p=>(p.proj-P.reduce((a,b)=>a+b.proj,0)/P.length));
+  const sd=Math.sqrt(z.reduce((a,b)=>a+b*b,0)/z.length);
+  const raw=P.map(p=>Math.exp((p.proj-32)/18*1.8));
+  const tot=raw.reduce((a,b)=>a+b,0);
+  P.forEach((p,i)=>p.own=100*raw[i]/tot);
+  return P}
+
+async function run(){
+  const P=RES?RES.P:demoPool();
+  const pitch=document.getElementById("pitch").value;
+  const r=rngf(12345);
+  const N=1500,NF=3000;
+
+  const margs=P.map((p,i)=>marginal(p.proj,p.sd,p.pdnb,i*977+13));
+  const corr=buildCorr(P,pitch);
+  const sims=copula(margs,corr,N,r);
+  const idx={};P.forEach((p,i)=>idx[p.id]=i);
+
+  for(let j=0;j<P.length;j++){
+    let m=0,b=0;
+    for(let s=0;s<N;s++){const v=sims[s][j];m+=v;if(v>60)b++}
+    m/=N;let q=0;for(let s=0;s<N;s++){const d=sims[s][j]-m;q+=d*d}
+    P[j].proj=m;P[j].sd_=Math.sqrt(q/N);P[j].boom=b/N}
+  const ev=P.map(p=>p.proj),own=P.map(p=>p.own);
+  const zz=v=>{const m=v.reduce((a,b)=>a+b,0)/v.length;
+    const s=Math.sqrt(v.reduce((a,b)=>a+(b-m)*(b-m),0)/v.length)||1;
+    return v.map(x=>(x-m)/s)};
+  const zE=zz(ev),zO=zz(own);
+  P.forEach((p,j)=>p.lev=zE[j]-zO[j]);
+
+  const field=buildField(P,NF,r);
+  const fsc=field.map(e=>{
+    const a=new Float64Array(N);
+    for(let s=0;s<N;s++){let t=0;for(const i of e.sq)t+=sims[s][idx[i]];
+      a[s]=t+sims[s][idx[e.cap]]}
+    return a});
+  const port=buildPortfolio(P,sims,idx,fsc,12,r,999);
+
+  const expo={};P.forEach(p=>expo[p.id]=0);
+  port.forEach(e=>e.sq.forEach(i=>expo[i]++));
+  P.forEach(p=>p.expo=expo[p.id]/Math.max(port.length,1));
+
+  let mx=0;
+  for(let i=0;i<P.length;i++)for(let j=i+1;j<P.length;j++){
+    const a=sims.map(s=>s[i]),b=sims.map(s=>s[j]);
+    const ma=a.reduce((x,y)=>x+y,0)/a.length,mb=b.reduce((x,y)=>x+y,0)/b.length;
+    let cab=0,va=0,vb=0;
+    for(let k=0;k<a.length;k++){const da=a[k]-ma,db=b[k]-mb;cab+=da*db;va+=da*da;vb+=db*db}
+    mx=Math.max(mx,Math.abs(cab/Math.sqrt(va*vb||1)-corr[i][j]))}
+
+  RES={P,port,corr,sims,N,NF,err:mx,uniq:port.length};
+  render()}
+
+function kpi(l,v,s,c){return `<div class="kpi"><div class="l">${l}</div>
+  <div class="v" style="color:${c||"var(--fg)"}">${v}</div><div class="s">${s}</div></div>`}
+
+function render(){
+  if(!RES)return;
+  const {P,port,corr,NF,err}=RES,b=port[0];
+  document.getElementById("kpis").innerHTML=
+    kpi("P(rank 1)",(b.p_rank1*100).toFixed(2)+"%","single entry ceiling","var(--ok)")+
+    kpi("P(top 10)",(b.p_top10*100).toFixed(1)+"%","portfolio best","var(--ok)")+
+    kpi("P(top 100)",(b.p_top100*100).toFixed(1)+"%","deep run","var(--warn)")+
+    kpi("expected rank",Math.round(b.avg_rank).toLocaleString(),"of "+NF.toLocaleString()+" sampled");
+
+  document.getElementById("tabs").innerHTML=
+    [["proj","Projections"],["port","Portfolio"],["rank","Rank sim"],["corr","Correlation"]]
+    .map(([k,l])=>`<div class="tab ${TAB===k?"on":""}" data-t="${k}">${l}</div>`).join("");
+  document.querySelectorAll("[data-t]").forEach(el=>el.onclick=()=>{TAB=el.dataset.t;render()});
+
+  const pan=document.getElementById("panels");
+  if(TAB==="proj"){
+    pan.innerHTML=`<table><thead><tr>${["player","role","proj","sd","boom","own","lev","exposure"]
+      .map(h=>`<th>${h}</th>`).join("")}</tr></thead><tbody>`+
+      P.slice().sort((a,b2)=>b2.lev-a.lev).map(p=>{
+        const c=p.lev>.5?"#22c55e":p.lev>0?"#a3e635":p.lev>-.5?"#6b7280":"#ef4444";
+        return `<tr><td>${p.name}</td><td style="color:var(--mut)">${p.r}</td>
+        <td class="mono">${p.proj.toFixed(1)}</td><td class="mono" style="color:var(--mut)">${p.sd_.toFixed(1)}</td>
+        <td class="mono">${(p.boom*100).toFixed(0)}%</td><td class="mono" style="color:var(--mut)">${p.own.toFixed(1)}%</td>
+        <td class="mono" style="color:${c}">${p.lev>0?"+":""}${p.lev.toFixed(2)}</td>
+        <td><div class="bar"><i style="width:${(p.expo*100).toFixed(0)}%;background:${c}"></i></div></td></tr>`})
+      .join("")+`</tbody></table>
+      <div class="hint">lev = z(projection) − z(ownership). Positive means your model rates him above the field.</div>`}
+  else if(TAB==="port"){
+    pan.innerHTML=port.map((e,i)=>`<div class="card" style="border-left:3px solid ${i?"#3b82f6":"#22c55e"}">
+      <div style="display:flex;justify-content:space-between;margin-bottom:5px">
+      <b style="font-size:11px">lineup ${i+1}</b>
+      <span class="mono" style="font-size:10px;color:var(--ok)">P(rank1) ${(e.p_rank1*100).toFixed(2)}%
+      · P(top100) ${(e.p_top100*100).toFixed(1)}%</span></div>
+      <div style="font-size:11px;color:var(--mut);line-height:1.7">${
+        e.sq.map(j=>`<span style="${j===e.cap?"color:var(--ok);font-weight:500":""}">
+        ${P[j].name}${j===e.cap?" (C)":""}</span>`).join(" · ")}</div></div>`).join("")+
+      `<div class="hint">Captains rotate by design. Overlap between any two lineups is capped; duplication is controlled via exposure, not maximised.</div>`}
+  else if(TAB==="rank"){
+    pan.innerHTML=`<div class="hint">Rank distribution across ${RES.N.toLocaleString()} simulations
+      against a ${NF.toLocaleString()}-entry field.</div>
+      <div style="position:relative;height:220px"><canvas id="rc"></canvas></div>`;
+    const bins=[1,10,100,1000,10000,NF],cnt=new Array(5).fill(0);
+    for(let s=0;s<RES.N;s++){
+      let t=0;for(const i of b.sq)t+=RES.sims[s][i];t+=RES.sims[s][b.cap];
+      let r=1;for(let f=0;f<NF;f++)if(fscAt(f,s)>t)r++;
+      for(let i=0;i<5;i++)if(r>=bins[i]&&r<bins[i+1]){cnt[i]++;break}}
+    new Chart(document.getElementById("rc"),{type:"bar",
+      data:{labels:["1-10","10-100","100-1k","1k-10k","10k+"],
+        datasets:[{data:cnt,backgroundColor:["#22c55e","#3b82f6","#6b7280","#6b7280","#374151"],borderRadius:3}]},
+      options:{maintainAspectRatio:false,plugins:{legend:{display:false}},
+        scales:{x:{ticks:{color:"#8b95a8",font:{size:10}},grid:{display:false}},
+          y:{ticks:{color:"#8b95a8",font:{size:10}},grid:{color:"#1c2230"}}}}})}
+  else {
+    pan.innerHTML=`<div class="hint">Simulated correlation. Green positive, red negative.
+      This is what the copula enforces.</div>
+      <div style="position:relative;height:340px"><canvas id="hm"></canvas></div>`;
+    const labels=P.map(p=>p.name.split(" ").pop());
+    const ds=[];
+    for(let i=0;i<P.length;i++)for(let j=0;j<P.length;j++)ds.push({x:i,y:j,v:corr[i][j]});
+    new Chart(document.getElementById("hm"),{type:"matrix",
+      data:{labels,datasets:[{data:ds,backgroundColor:c=>{const v=c.raw.v;
+        return v>0?`rgba(34,197,94,${Math.min(1,.12+v*1.9)})`:`rgba(239,68,68,${Math.min(1,.12-v*1.9)})`},
+        borderWidth:0,width:({chart})=>(chart.chartArea||{width:300}).width/P.length-1,
+        height:({chart})=>(chart.chartArea||{height:300}).height/P.length-1}]},
+      options:{maintainAspectRatio:false,plugins:{legend:{display:false},
+        tooltip:{callbacks:{label:c=>c.raw.v.toFixed(2)}}},
+        scales:{x:{type:"category",labels,ticks:{color:"#8b95a8",font:{size:8}},grid:{display:false}},
+          y:{type:"category",labels,ticks:{color:"#8b95a8",font:{size:8}},grid:{display:false}}}}})}
+
+  document.getElementById("status").textContent=
+    `sims ${RES.N} · field ${NF} · lineups ${RES.uniq} · pitch ${document.getElementById("pitch").value}`
+    +` · corr realised max|err| ${err.toFixed(3)}`+(err>0.06?"  ⚠ COPULA DRIFT":"  ✓");
+  plot(P)}
+
+let _fsc=null;
+function fscAt(f,s){return _fsc[f][s]}
+
+document.getElementById("run").onclick=()=>{
+  document.getElementById("run").textContent="Running…";
+  setTimeout(async()=>{
+    await run();
+    _fsc=RES?RES.port.map(()=>null):null;
+    document.getElementById("run").textContent="Run simulation"},30)};
+document.getElementById("pitch").onchange=()=>run();
+
+(function clock(){const dl=Date.now()+1000*60*47;
+  setInterval(()=>{let s=Math.max(0,(dl-Date.now())/1000)|0;
+    document.getElementById("clock").textContent=
+      [((s/3600)|0),(s%3600/60)|0,s%60].map(v=>String(v).padStart(2,"0")).join(":")},1000)})();
+
+initThree();
+run();
+</script>
+</body>
+</html>
