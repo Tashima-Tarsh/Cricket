@@ -1,5 +1,5 @@
 {
-  "timestamp": 1792571432.1967769,
+  "timestamp": 1792590020.4986079,
   "count": 15,
   "matches": [
     {
@@ -25,12 +25,12 @@
     {
       "id": "cb_172681",
       "match_id": "172681",
-      "title": "Afg Vs Ban 3Rd Match Odi Tri Nation Series In Uae 2026",
+      "title": "Ban Vs Afg 3Rd Match Odi Tri Nation Series In Uae 2026",
       "provider": "Cricbuzz Live Hub",
       "state": "VERIFIED_LIVE",
       "status": "LIVE",
       "details": "Tracked live via Cricbuzz match 172681",
-      "link": "https://www.cricbuzz.com/live-cricket-scores/172681/afg-vs-ban-3rd-match-odi-tri-nation-series-in-uae-2026",
+      "link": "https://www.cricbuzz.com/live-cricket-scores/172681/ban-vs-afg-3rd-match-odi-tri-nation-series-in-uae-2026",
       "format": "ODI",
       "category": "INTERNATIONAL",
       "ai_archetype": "ASYMMETRIC_MISMATCH",
@@ -40,26 +40,6 @@
         "bowling_rule": "Favorite team strike pace/spin choke against forced aggressive chase.",
         "captaincy": "Middle-order powerhouse (C) + Underdog 2-Way All-Rounder (VC).",
         "credit_shield": "Leave 15.0 to 19.0 credits unspent."
-      }
-    },
-    {
-      "id": "cb_163671",
-      "match_id": "163671",
-      "title": "Kar Vs Saur Elite Group B Ranji Trophy Elite 2026 27",
-      "provider": "Cricbuzz Live Hub",
-      "state": "VERIFIED_LIVE",
-      "status": "LIVE",
-      "details": "Tracked live via Cricbuzz match 163671",
-      "link": "https://www.cricbuzz.com/live-cricket-scores/163671/kar-vs-saur-elite-group-b-ranji-trophy-elite-2026-27",
-      "format": "TEST",
-      "category": "INTERNATIONAL",
-      "ai_archetype": "HIGH_STAKES_PARITY",
-      "recommended_strategy": {
-        "archetype": "HIGH_STAKES_PARITY (Even Derby / Knockout)",
-        "batting_rule": "Balanced 6-5 split. Target left-arm pace / off-spin micro matchups.",
-        "bowling_rule": "Balanced powerplay + death overs coverage.",
-        "captaincy": "Dual-threat all-rounder (bats top 5 + bowls 3-4 overs).",
-        "credit_shield": "Leave 12.0 to 15.5 credits unspent."
       }
     },
     {
@@ -83,23 +63,43 @@
       }
     },
     {
-      "id": "cb_155541",
-      "match_id": "155541",
-      "title": "Indw Vs Zimw 3Rd T20I Zimbabwe Women Tour Of India 2026",
+      "id": "cb_163671",
+      "match_id": "163671",
+      "title": "Kar Vs Saur Elite Group B Ranji Trophy Elite 2026 27",
       "provider": "Cricbuzz Live Hub",
       "state": "VERIFIED_LIVE",
       "status": "LIVE",
-      "details": "Tracked live via Cricbuzz match 155541",
-      "link": "https://www.cricbuzz.com/live-cricket-scores/155541/indw-vs-zimw-3rd-t20i-zimbabwe-women-tour-of-india-2026",
-      "format": "T20",
-      "category": "WOMEN_CRICKET",
-      "ai_archetype": "ASYMMETRIC_MISMATCH",
+      "details": "Tracked live via Cricbuzz match 163671",
+      "link": "https://www.cricbuzz.com/live-cricket-scores/163671/kar-vs-saur-elite-group-b-ranji-trophy-elite-2026-27",
+      "format": "TEST",
+      "category": "INTERNATIONAL",
+      "ai_archetype": "HIGH_STAKES_PARITY",
       "recommended_strategy": {
-        "archetype": "ASYMMETRIC_MISMATCH (Powerhouse vs Underdog)",
-        "batting_rule": "Watch for dead-rubber captaincy demotions; lock middle order No. 4/5.",
-        "bowling_rule": "Favorite team strike pace/spin choke against forced aggressive chase.",
-        "captaincy": "Middle-order powerhouse (C) + Underdog 2-Way All-Rounder (VC).",
-        "credit_shield": "Leave 15.0 to 19.0 credits unspent."
+        "archetype": "HIGH_STAKES_PARITY (Even Derby / Knockout)",
+        "batting_rule": "Balanced 6-5 split. Target left-arm pace / off-spin micro matchups.",
+        "bowling_rule": "Balanced powerplay + death overs coverage.",
+        "captaincy": "Dual-threat all-rounder (bats top 5 + bowls 3-4 overs).",
+        "credit_shield": "Leave 12.0 to 15.5 credits unspent."
+      }
+    },
+    {
+      "id": "cb_170727",
+      "match_id": "170727",
+      "title": "Sl Vs Eng 3Rd Match Pakistan Odi Tri Series 2026",
+      "provider": "Cricbuzz Live Hub",
+      "state": "VERIFIED_LIVE",
+      "status": "LIVE",
+      "details": "Tracked live via Cricbuzz match 170727",
+      "link": "https://www.cricbuzz.com/live-cricket-scores/170727/sl-vs-eng-3rd-match-pakistan-odi-tri-series-2026",
+      "format": "ODI",
+      "category": "INTERNATIONAL",
+      "ai_archetype": "HIGH_STAKES_PARITY",
+      "recommended_strategy": {
+        "archetype": "HIGH_STAKES_PARITY (Even Derby / Knockout)",
+        "batting_rule": "Balanced 6-5 split. Target left-arm pace / off-spin micro matchups.",
+        "bowling_rule": "Balanced powerplay + death overs coverage.",
+        "captaincy": "Dual-threat all-rounder (bats top 5 + bowls 3-4 overs).",
+        "credit_shield": "Leave 12.0 to 15.5 credits unspent."
       }
     },
     {
@@ -143,34 +143,14 @@
       }
     },
     {
-      "id": "cb_170727",
-      "match_id": "170727",
-      "title": "Sl Vs Eng 3Rd Match Pakistan Odi Tri Series 2026",
-      "provider": "Cricbuzz Live Hub",
-      "state": "VERIFIED_LIVE",
-      "status": "LIVE",
-      "details": "Tracked live via Cricbuzz match 170727",
-      "link": "https://www.cricbuzz.com/live-cricket-scores/170727/sl-vs-eng-3rd-match-pakistan-odi-tri-series-2026",
-      "format": "ODI",
-      "category": "INTERNATIONAL",
-      "ai_archetype": "HIGH_STAKES_PARITY",
-      "recommended_strategy": {
-        "archetype": "HIGH_STAKES_PARITY (Even Derby / Knockout)",
-        "batting_rule": "Balanced 6-5 split. Target left-arm pace / off-spin micro matchups.",
-        "bowling_rule": "Balanced powerplay + death overs coverage.",
-        "captaincy": "Dual-threat all-rounder (bats top 5 + bowls 3-4 overs).",
-        "credit_shield": "Leave 12.0 to 15.5 credits unspent."
-      }
-    },
-    {
       "id": "cb_173040",
       "match_id": "173040",
-      "title": "Bcbxi Vs Wi 3 Days Warm Up Match West Indies Tour Of Bangladesh 2026",
+      "title": "Bcbxi Vs Wi Warm Up Match West Indies Tour Of Bangladesh 2026",
       "provider": "Cricbuzz Live Hub",
       "state": "VERIFIED_LIVE",
       "status": "LIVE",
       "details": "Tracked live via Cricbuzz match 173040",
-      "link": "https://www.cricbuzz.com/live-cricket-scores/173040/bcbxi-vs-wi-3-days-warm-up-match-west-indies-tour-of-bangladesh-2026",
+      "link": "https://www.cricbuzz.com/live-cricket-scores/173040/bcbxi-vs-wi-warm-up-match-west-indies-tour-of-bangladesh-2026",
       "format": "TEST",
       "category": "INTERNATIONAL",
       "ai_archetype": "HIGH_STAKES_PARITY",
@@ -200,26 +180,6 @@
         "bowling_rule": "Favorite team strike pace/spin choke against forced aggressive chase.",
         "captaincy": "Middle-order powerhouse (C) + Underdog 2-Way All-Rounder (VC).",
         "credit_shield": "Leave 15.0 to 19.0 credits unspent."
-      }
-    },
-    {
-      "id": "cb_173941",
-      "match_id": "173941",
-      "title": "Uga Vs Zmb 1St Match Icc Mens T20 World Cup Africa Sub Regional Qualifier C 2026",
-      "provider": "Cricbuzz Live Hub",
-      "state": "VERIFIED_LIVE",
-      "status": "LIVE",
-      "details": "Tracked live via Cricbuzz match 173941",
-      "link": "https://www.cricbuzz.com/live-cricket-scores/173941/uga-vs-zmb-1st-match-icc-mens-t20-world-cup-africa-sub-regional-qualifier-c-2026",
-      "format": "T20",
-      "category": "INTERNATIONAL",
-      "ai_archetype": "HIGH_STAKES_PARITY",
-      "recommended_strategy": {
-        "archetype": "HIGH_STAKES_PARITY (Even Derby / Knockout)",
-        "batting_rule": "Balanced 6-5 split. Target left-arm pace / off-spin micro matchups.",
-        "bowling_rule": "Balanced powerplay + death overs coverage.",
-        "captaincy": "Dual-threat all-rounder (bats top 5 + bowls 3-4 overs).",
-        "credit_shield": "Leave 12.0 to 15.5 credits unspent."
       }
     },
     {
@@ -291,6 +251,46 @@
       "status": "LIVE",
       "details": "Tracked live via Cricbuzz match 173971",
       "link": "https://www.cricbuzz.com/live-cricket-scores/173971/lso-vs-uga-5th-match-icc-mens-t20-world-cup-africa-sub-regional-qualifier-c-2026",
+      "format": "T20",
+      "category": "INTERNATIONAL",
+      "ai_archetype": "HIGH_STAKES_PARITY",
+      "recommended_strategy": {
+        "archetype": "HIGH_STAKES_PARITY (Even Derby / Knockout)",
+        "batting_rule": "Balanced 6-5 split. Target left-arm pace / off-spin micro matchups.",
+        "bowling_rule": "Balanced powerplay + death overs coverage.",
+        "captaincy": "Dual-threat all-rounder (bats top 5 + bowls 3-4 overs).",
+        "credit_shield": "Leave 12.0 to 15.5 credits unspent."
+      }
+    },
+    {
+      "id": "cb_173973",
+      "match_id": "173973",
+      "title": "Zmb Vs Nga 6Th Match Icc Mens T20 World Cup Africa Sub Regional Qualifier C 2026",
+      "provider": "Cricbuzz Live Hub",
+      "state": "VERIFIED_LIVE",
+      "status": "LIVE",
+      "details": "Tracked live via Cricbuzz match 173973",
+      "link": "https://www.cricbuzz.com/live-cricket-scores/173973/zmb-vs-nga-6th-match-icc-mens-t20-world-cup-africa-sub-regional-qualifier-c-2026",
+      "format": "T20",
+      "category": "INTERNATIONAL",
+      "ai_archetype": "HIGH_STAKES_PARITY",
+      "recommended_strategy": {
+        "archetype": "HIGH_STAKES_PARITY (Even Derby / Knockout)",
+        "batting_rule": "Balanced 6-5 split. Target left-arm pace / off-spin micro matchups.",
+        "bowling_rule": "Balanced powerplay + death overs coverage.",
+        "captaincy": "Dual-threat all-rounder (bats top 5 + bowls 3-4 overs).",
+        "credit_shield": "Leave 12.0 to 15.5 credits unspent."
+      }
+    },
+    {
+      "id": "cb_173411",
+      "match_id": "173411",
+      "title": "Dol Vs War Pool A Csa T20 Challenge 2026",
+      "provider": "Cricbuzz Live Hub",
+      "state": "VERIFIED_LIVE",
+      "status": "LIVE",
+      "details": "Tracked live via Cricbuzz match 173411",
+      "link": "https://www.cricbuzz.com/live-cricket-scores/173411/dol-vs-war-pool-a-csa-t20-challenge-2026",
       "format": "T20",
       "category": "INTERNATIONAL",
       "ai_archetype": "HIGH_STAKES_PARITY",
