@@ -8,14 +8,22 @@ Implements the core analytical capabilities of:
 """
 
 from typing import Dict, Any, List, Optional, Tuple
-from pydantic import BaseModel, Field
 import math
+from dataclasses import dataclass, asdict
 
+try:
+    from pydantic import BaseModel, Field
+except ImportError:
+    class BaseModel:
+        def model_dump(self):
+            return {k: v for k, v in self.__dict__.items() if not k.startswith('_')}
+    Field = lambda *a, **k: None
 
-class BatterBowlerH2H(BaseModel):
+@dataclass
+class BatterBowlerH2H:
     batter_name: str
     bowler_name: str
-    bowling_style: str  # e.g., "Left-Arm Fast", "Right-Arm Offbreak", "Right-Arm Legbreak"
+    bowling_style: str
     balls_faced: int
     runs_scored: int
     dismissals: int
@@ -25,15 +33,21 @@ class BatterBowlerH2H(BaseModel):
     strike_rate: float = 130.0
     dismissal_rate_per_ball: float = 0.05
     dot_ball_pct: float = 35.0
-    tactical_advantage: str = "Neutral"  # "Batter Dominant", "Bowler Dominant", "Neutral"
+    tactical_advantage: str = 'Neutral'
 
+    def model_dump(self) -> Dict[str, Any]:
+        return asdict(self)
 
-class DLSState(BaseModel):
+@dataclass
+class DLSState:
     first_innings_overs: int = 20
     first_innings_runs: int = 180
     revised_overs_second_innings: int = 15
     wickets_lost_at_interruption: int = 2
     overs_completed_at_interruption: float = 6.0
+
+    def model_dump(self) -> Dict[str, Any]:
+        return asdict(self)
 
 
 class PlayerBattlesMCPEngine:

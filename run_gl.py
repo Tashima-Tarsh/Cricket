@@ -1,6 +1,9 @@
-"""Top-level executable script for India vs West Indies Grand League Engine."""
+"""Top-level executable script for STRIKE//OS Pro Grand League Engine."""
 import sys
 import os
+
+# Ensure repo root is always in sys.path
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 if sys.platform.startswith("win"):
     try:

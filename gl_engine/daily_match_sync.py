@@ -233,3 +233,4 @@ if __name__ == "__main__":
         print(f"[{f['state']}] {f['title']} ({f['format']})")
         print(f"   Archetype: {f['ai_archetype']}")
         print(f"   Strategy: {f['recommended_strategy']['captaincy']}\n")
+

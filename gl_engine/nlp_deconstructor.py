@@ -113,3 +113,4 @@ def get_nlp_deconstructor() -> NLPCommentaryDeconstructor:
     if _DECONSTRUCTOR_INSTANCE is None:
         _DECONSTRUCTOR_INSTANCE = NLPCommentaryDeconstructor()
     return _DECONSTRUCTOR_INSTANCE
+

@@ -99,3 +99,4 @@ def get_multi_agent_engine() -> MultiAgentDebateEngine:
     if _MULTI_AGENT_INSTANCE is None:
         _MULTI_AGENT_INSTANCE = MultiAgentDebateEngine()
     return _MULTI_AGENT_INSTANCE
+

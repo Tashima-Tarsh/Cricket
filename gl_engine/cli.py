@@ -11,11 +11,50 @@ if sys.platform.startswith("win"):
     except Exception:
         pass
 
-from rich.console import Console
-from rich.table import Table
-from rich.panel import Panel
-from rich.text import Text
-from rich import box
+try:
+    from rich.console import Console
+    from rich.table import Table
+    from rich.panel import Panel
+    from rich.text import Text
+    from rich import box
+except ImportError:
+    import re
+    class Console:
+        def __init__(self, *args, **kwargs): pass
+        def print(self, *args, **kwargs):
+            for a in args:
+                if hasattr(a, 'render'):
+                    print(a.render())
+                elif isinstance(a, str):
+                    print(re.sub(r'\[/?[a-zA-Z0-9_\s#]+\]', '', a))
+                else:
+                    print(a)
+    class Panel:
+        def __init__(self, content, *args, **kwargs):
+            self.content = content
+        def render(self):
+            clean = re.sub(r'\[/?[a-zA-Z0-9_\s#]+\]', '', str(self.content))
+            return f"\n{'='*70}\n{clean}\n{'='*70}\n"
+        @classmethod
+        def fit(cls, content, *args, **kwargs):
+            return cls(content)
+    class Table:
+        def __init__(self, *args, **kwargs):
+            self.cols = []
+            self.rows = []
+        def add_column(self, name, *args, **kwargs):
+            self.cols.append(name)
+        def add_row(self, *args, **kwargs):
+            self.rows.append([str(a) for a in args])
+        def render(self):
+            lines = [" | ".join(self.cols), "-" * 70]
+            for r in self.rows:
+                lines.append(" | ".join([re.sub(r'\[/?[a-zA-Z0-9_\s#]+\]', '', c) for c in r]))
+            return "\n".join(lines)
+    class Text:
+        pass
+    class box:
+        ROUNDED = None
 
 from .pipeline import GrandLeaguePipeline
 from .live_feed import fetch_espn_cricinfo_live_matches
@@ -32,7 +71,68 @@ def run_cli():
     parser.add_argument("--sims", type=int, default=2000, help="Number of Monte Carlo simulations (default: 2000)")
     parser.add_argument("--csv", type=str, default="predict11_ortools_lineups.csv", help="CSV export destination for Dream11")
     parser.add_argument("--export", type=str, default="gl_report.json", help="File path to save results JSON")
+    parser.add_argument("--watch", "--daemon", action="store_true", dest="watch", help="Start the autonomous pre-match watcher daemon")
+    parser.add_argument("--mcp", action="store_true", help="Start the Model Context Protocol (MCP) server")
+    parser.add_argument("--inject", action="store_true", help="Generate 1-click browser console injector snippet for Dream11")
+    parser.add_argument("--sync", action="store_true", help="Discover and sync all daily matches worldwide")
     args = parser.parse_args()
+
+    # MCP Server Mode
+    if args.mcp:
+        from .mcp_server import CricketMCPServer
+        server = CricketMCPServer()
+        server.handle_stdio_rpc()
+        return
+
+    # Watcher Daemon Mode
+    if args.watch:
+        from .daemon_watcher import MatchWatcherDaemon
+        console.print(Panel.fit(
+            "[bold green]🤖 STRIKE//OS PRO - AUTONOMOUS DAEMON WATCHER ACTIVATED[/bold green]\n"
+            "[dim]Monitoring fixtures worldwide | Auto-locking portfolios at T-30m[/dim]",
+            border_style="green"
+        ))
+        daemon = MatchWatcherDaemon(poll_interval_sec=60)
+        daemon.start_daemon()
+        return
+
+    # 1-Click Browser Injector Mode
+    if args.inject:
+        from .universal_engine import get_universal_engine
+        from .browser_injector import BrowserLineupInjector
+        engine = get_universal_engine()
+        state = engine.get_unified_state("ind_w_vs_zim_w_2026_03")
+        injector = BrowserLineupInjector(state.get("lineups", []))
+        js_code = injector.generate_browser_console_script(0)
+        console.print(Panel.fit(
+            "[bold cyan]⚡ 1-CLICK BROWSER LINEUP INJECTOR GENERATED[/bold cyan]\n"
+            "[dim]Paste the code below into Chrome/Edge DevTools Console on Dream11 to auto-fill Team 1[/dim]",
+            border_style="cyan"
+        ))
+        console.print(js_code)
+        userscript_path = injector.export_tampermonkey_userscript()
+        console.print(f"[bold green]✔ Tampermonkey Userscript exported to: {userscript_path}[/bold green]\n")
+        return
+
+    # Daily Match Sync Mode
+    if args.sync:
+        from .daily_match_sync import get_daily_match_sync_engine
+        sync_engine = get_daily_match_sync_engine()
+        matches = sync_engine.discover_daily_matches(force_refresh=True)
+        console.print(Panel.fit(
+            f"[bold magenta]🌍 SYNCED {len(matches)} DAILY MATCHES WORLDWIDE[/bold magenta]",
+            border_style="magenta"
+        ))
+        table = Table(box=box.ROUNDED, show_header=True, header_style="bold cyan")
+        table.add_column("Match ID", style="yellow")
+        table.add_column("Title", style="bold white")
+        table.add_column("Format", style="cyan")
+        table.add_column("AI Archetype", style="magenta")
+        table.add_column("Status", style="green")
+        for m in matches[:12]:
+            table.add_row(m.get("match_id", ""), m.get("title", ""), m.get("format", ""), m.get("ai_archetype", ""), m.get("status", ""))
+        console.print(table)
+        return
 
     # 1. Handle --list flag: Show all live and upcoming matches today
     if args.list:
