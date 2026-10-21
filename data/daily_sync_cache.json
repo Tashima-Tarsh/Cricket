@@ -1,5 +1,5 @@
 {
-  "timestamp": 1792569752.1194487,
+  "timestamp": 1792571432.1967769,
   "count": 15,
   "matches": [
     {
@@ -223,14 +223,14 @@
       }
     },
     {
-      "id": "cb_173957",
-      "match_id": "173957",
-      "title": "Nga Vs Gm 3Rd Match Icc Mens T20 World Cup Africa Sub Regional Qualifier C 2026",
+      "id": "cb_173950",
+      "match_id": "173950",
+      "title": "Lso Vs Moz 2Nd Match Icc Mens T20 World Cup Africa Sub Regional Qualifier C 2026",
       "provider": "Cricbuzz Live Hub",
       "state": "VERIFIED_LIVE",
       "status": "LIVE",
-      "details": "Tracked live via Cricbuzz match 173957",
-      "link": "https://www.cricbuzz.com/live-cricket-scores/173957/nga-vs-gm-3rd-match-icc-mens-t20-world-cup-africa-sub-regional-qualifier-c-2026",
+      "details": "Tracked live via Cricbuzz match 173950",
+      "link": "https://www.cricbuzz.com/live-cricket-scores/173950/lso-vs-moz-2nd-match-icc-mens-t20-world-cup-africa-sub-regional-qualifier-c-2026",
       "format": "T20",
       "category": "INTERNATIONAL",
       "ai_archetype": "HIGH_STAKES_PARITY",
@@ -243,14 +243,14 @@
       }
     },
     {
-      "id": "cb_173950",
-      "match_id": "173950",
-      "title": "Lso Vs Moz 2Nd Match Icc Mens T20 World Cup Africa Sub Regional Qualifier C 2026",
+      "id": "cb_173957",
+      "match_id": "173957",
+      "title": "Nga Vs Gm 3Rd Match Icc Mens T20 World Cup Africa Sub Regional Qualifier C 2026",
       "provider": "Cricbuzz Live Hub",
       "state": "VERIFIED_LIVE",
       "status": "LIVE",
-      "details": "Tracked live via Cricbuzz match 173950",
-      "link": "https://www.cricbuzz.com/live-cricket-scores/173950/lso-vs-moz-2nd-match-icc-mens-t20-world-cup-africa-sub-regional-qualifier-c-2026",
+      "details": "Tracked live via Cricbuzz match 173957",
+      "link": "https://www.cricbuzz.com/live-cricket-scores/173957/nga-vs-gm-3rd-match-icc-mens-t20-world-cup-africa-sub-regional-qualifier-c-2026",
       "format": "T20",
       "category": "INTERNATIONAL",
       "ai_archetype": "HIGH_STAKES_PARITY",
