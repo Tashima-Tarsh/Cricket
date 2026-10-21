@@ -104,6 +104,30 @@ def load_data():
 # IND-W VS ZIM-W CRICKET INTELLIGENCE & GRAND LEAGUE OPTIMIZER API ENDPOINTS
 # ==============================================================================
 
+@app.get("/api/sync/daily-matches")
+def get_daily_synced_matches(force_refresh: bool = False):
+    """Discovers and synchronizes all live, upcoming, and completed matches across all formats."""
+    from .daily_match_sync import get_daily_match_sync_engine
+    engine = get_daily_match_sync_engine()
+    matches = engine.discover_daily_matches(force_refresh=force_refresh)
+    return {
+        "status": "success",
+        "synced_at": datetime.now(timezone.utc).isoformat(),
+        "count": len(matches),
+        "matches": matches
+    }
+
+@app.get("/api/sync/match-commentary/{match_id}")
+def get_match_commentary_and_scorecard(match_id: str):
+    """Scrapes live ball-by-ball commentary, scorecard, and pitch report for a specific fixture."""
+    from .daily_match_sync import get_daily_match_sync_engine
+    engine = get_daily_match_sync_engine()
+    data = engine.fetch_live_commentary_and_scorecard(match_id)
+    return {
+        "status": "success",
+        "data": data
+    }
+
 @app.get("/api/health")
 def get_health():
     """Health check endpoint providing subsystem statuses, database metrics, and model versions."""
