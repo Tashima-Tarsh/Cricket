@@ -110,3 +110,4 @@ else:
         with open(readme_path, "w", encoding="utf-8") as f:
             f.write(text_norm)
         print("README.md successfully updated via anchor!")
+
