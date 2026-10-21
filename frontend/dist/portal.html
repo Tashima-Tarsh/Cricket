@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>STRIKE//OS PRO — Autonomous Live Cricket Syndicate Workstation</title>
+  <title>STRIKE//OS PRO - Autonomous Live Cricket Syndicate Workstation</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -53,14 +53,14 @@
       transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     }
     .glass-card:hover {
-      border-color: rgba(0, 229, 255, 0.5);
+      border-color: rgba(0, 229, 255, 0.6);
       transform: translateY(-2px);
-      box-shadow: 0 12px 30px -10px rgba(0, 229, 255, 0.2);
+      box-shadow: 0 12px 30px -10px rgba(0, 229, 255, 0.25);
     }
     .fixture-card.active {
       border-color: #00e5ff !important;
-      background: rgba(0, 229, 255, 0.06) !important;
-      box-shadow: 0 0 20px -5px rgba(0, 229, 255, 0.4) !important;
+      background: rgba(0, 229, 255, 0.08) !important;
+      box-shadow: 0 0 25px -4px rgba(0, 229, 255, 0.45) !important;
     }
     .tab-btn.active {
       background: rgba(0, 229, 255, 0.15);
@@ -70,7 +70,15 @@
     .filter-btn.active {
       background: rgba(0, 229, 255, 0.2);
       color: #00e5ff;
-      border-color: rgba(0, 229, 255, 0.5);
+      border-color: rgba(0, 229, 255, 0.6);
+    }
+    /* Pulse glow */
+    .pulse-glow {
+      animation: pulseGlow 1.5s ease-in-out infinite alternate;
+    }
+    @keyframes pulseGlow {
+      from { box-shadow: 0 0 10px rgba(0, 229, 255, 0.3); }
+      to { box-shadow: 0 0 25px rgba(0, 229, 255, 0.8); }
     }
     ::-webkit-scrollbar { width: 6px; height: 6px; }
     ::-webkit-scrollbar-track { background: #070b14; }
@@ -80,15 +88,77 @@
 </head>
 <body class="min-h-full font-sans antialiased flex flex-col">
 
+  <!-- TOAST NOTIFICATION CONTAINER -->
+  <div id="toastContainer" class="fixed bottom-6 right-6 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+  <!-- QUICK VIEW MODAL (OVERLAY) -->
+  <div id="quickModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md hidden items-center justify-center p-4">
+    <div class="glass-panel max-w-3xl w-full max-h-[90vh] rounded-2xl border border-cyan-500/50 shadow-2xl flex flex-col overflow-hidden animate-in fade-in zoom-in duration-200">
+      <div class="flex justify-between items-center p-5 border-b border-slate-800 bg-slate-900/80">
+        <div>
+          <span id="modalSeries" class="text-[10px] font-mono text-cyan-400 font-bold uppercase tracking-wider block">Series</span>
+          <h3 id="modalTitle" class="font-display font-black text-lg text-white">Match Intelligence Modal</h3>
+          <span id="modalMeta" class="text-xs font-mono text-slate-400">Date • Time • Venue</span>
+        </div>
+        <button onclick="closeQuickModal()" class="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 flex items-center justify-center font-bold text-sm">
+          &times;
+        </button>
+      </div>
+
+      <div class="p-5 overflow-y-auto space-y-4 flex-1 font-mono text-xs">
+        <!-- Details Strip -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 bg-slate-950/70 p-3 rounded-xl border border-slate-800">
+          <div>
+            <span class="text-slate-400 block text-[10px]">PAR SCORE</span>
+            <strong id="modalPar" class="text-emerald-400 text-sm font-display">204</strong>
+          </div>
+          <div>
+            <span class="text-slate-400 block text-[10px]">ARCHETYPE</span>
+            <strong id="modalArchetype" class="text-purple-400 text-xs">ROAD_HIGHWAY</strong>
+          </div>
+          <div>
+            <span class="text-slate-400 block text-[10px]">SEAM / TURN</span>
+            <strong id="modalPhysics" class="text-cyan-400 text-xs">2.1mm / 1.4&deg;</strong>
+          </div>
+          <div>
+            <span class="text-slate-400 block text-[10px]">UNSPENT CREDITS</span>
+            <strong id="modalShield" class="text-amber-400 text-xs">15.5 Cr Left</strong>
+          </div>
+        </div>
+
+        <!-- Toss Quote -->
+        <div>
+          <span class="text-slate-400 text-[10px] uppercase font-bold block mb-1">Pitch & Conditions Telemetry</span>
+          <p id="modalToss" class="text-slate-300 bg-slate-900/80 p-3 rounded-xl border border-slate-800 leading-relaxed"></p>
+        </div>
+
+        <!-- 4 Lineups Summary -->
+        <div>
+          <span class="text-slate-400 text-[10px] uppercase font-bold block mb-1">CP-SAT Lineups Available</span>
+          <div id="modalLineupsList" class="space-y-2"></div>
+        </div>
+      </div>
+
+      <div class="p-4 border-t border-slate-800 bg-slate-900/90 flex justify-between items-center">
+        <button onclick="closeQuickModal()" class="px-4 py-2 rounded-xl bg-slate-800 text-slate-300 font-mono text-xs font-semibold hover:bg-slate-700">
+          Close
+        </button>
+        <button onclick="openFullWorkspaceFromModal()" class="px-4 py-2 rounded-xl bg-cyan-400 text-black font-mono text-xs font-bold hover:bg-cyan-300 shadow-lg shadow-cyan-400/20 flex items-center gap-1.5">
+          <span>&#9889;</span> Open in Full Workspace &darr;
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- TOP NAVIGATION BAR -->
-  <nav class="glass-panel sticky top-0 z-50 border-b border-slate-800 px-4 lg:px-8 py-3.5 shadow-xl">
+  <nav class="glass-panel sticky top-0 z-40 border-b border-slate-800 px-4 lg:px-8 py-3.5 shadow-xl">
     <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
       
       <!-- Brand & Status -->
       <div class="flex items-center gap-3.5 w-full md:w-auto justify-between md:justify-start">
         <div class="flex items-center gap-2.5">
           <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-cyan-500 to-emerald-400 flex items-center justify-center font-display font-black text-black text-xl shadow-lg shadow-cyan-500/20">
-            ⚡
+            &#9889;
           </div>
           <div>
             <div class="flex items-center gap-2">
@@ -102,7 +172,7 @@
         <!-- Live Pulse Indicator -->
         <div class="flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-950/60 border border-emerald-500/40 text-emerald-400 text-xs font-mono">
           <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
-          <span id="navLiveStatus">17 GLOBAL MATCHES SYNCED</span>
+          <span id="navLiveStatus">11 GLOBAL MATCHES SYNCED</span>
         </div>
       </div>
 
@@ -110,21 +180,14 @@
       <div class="flex items-center gap-3 w-full md:w-auto">
         <div class="relative w-full md:w-96">
           <label for="matchSelector" class="sr-only">Choose Match Fixture</label>
-          <select id="matchSelector" onchange="onMatchChange(this.value)" class="w-full bg-slate-900/90 text-white font-mono text-xs px-3.5 py-2.5 rounded-xl border border-slate-700 hover:border-cyan-500 focus:outline-none focus:ring-2 focus:ring-cyan-400/40 transition appearance-none cursor-pointer">
-            <option value="161190">🇳🇿 NZ vs 🇮🇳 IND (1st T20I — Eden Park, Auckland)</option>
-            <option value="afg_vs_ban_odi_sharjah">🇦🇫 AFG vs 🇧🇩 BAN (3rd ODI — Sharjah Stadium)</option>
-            <option value="147931">🇿🇦 RSA vs 🇦🇺 AUS (2nd Test — Kingsmead, Durban)</option>
-            <option value="aus_w_vs_eng_w_sydney">🇦🇺 AUS-W vs 🏴󠁧󠁢󠁥󠁮󠁧󠁿 ENG-W (North Sydney Oval)</option>
-            <option value="nz_w_vs_aus_w_hagley">🇳🇿 NZ-W vs 🇦🇺 AUS-W (Hagley Oval, Christchurch)</option>
-            <option value="170723">🇵🇰 PAK vs 🏴󠁧󠁢󠁥󠁮󠁧󠁿 ENG (2nd ODI — Karachi)</option>
-            <option value="163671">🏏 Karnataka vs Saurashtra (Ranji Trophy — Bengaluru)</option>
-            <option value="ind_w_vs_zim_w_2026_03">🇮🇳 IND-W vs 🇿🇼 ZIM-W (3rd T20I — Raipur)</option>
+          <select id="matchSelector" onchange="onMatchChange(this.value, true)" class="w-full bg-slate-900/90 text-white font-mono text-xs px-3.5 py-2.5 rounded-xl border border-slate-700 hover:border-cyan-500 focus:outline-none focus:ring-2 focus:ring-cyan-400/40 transition appearance-none cursor-pointer">
+            <!-- Populated dynamically via JS -->
           </select>
-          <div class="absolute right-3.5 top-3 pointer-events-none text-slate-400 text-xs">▼</div>
+          <div class="absolute right-3.5 top-3 pointer-events-none text-slate-400 text-xs">&#9660;</div>
         </div>
 
-        <button onclick="refreshLiveFeed()" title="Refresh Live Scorecard & Commentary" class="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl border border-slate-700 text-xs font-mono flex items-center gap-1.5 transition">
-          <span id="refreshSpinner">🔄</span> <span class="hidden sm:inline">Sync</span>
+        <button onclick="refreshLiveFeed()" title="Refresh Live Scorecard & Commentary" class="px-3.5 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl border border-slate-700 text-xs font-mono flex items-center gap-1.5 transition">
+          <span id="refreshSpinner">&#8635;</span> <span class="hidden sm:inline">Sync</span>
         </button>
       </div>
 
@@ -145,33 +208,47 @@
             <h2 class="font-display font-black text-base lg:text-lg text-white tracking-wide">
               SCHEDULE & FIXTURE EXPLORER
             </h2>
-            <span id="fixtureCountBadge" class="text-[11px] font-mono px-2 py-0.5 rounded-full bg-cyan-950 text-cyan-400 border border-cyan-800 font-bold">17 Matches</span>
+            <span id="fixtureCountBadge" class="text-[11px] font-mono px-2 py-0.5 rounded-full bg-cyan-950 text-cyan-400 border border-cyan-800 font-bold">11 Matches</span>
           </div>
           <p class="text-xs text-slate-400 font-mono mt-0.5">
-            Click any fixture below to view Date, Time, Venue, and immediately generate CP-SAT Grand League lineups.
+            Click any fixture below to view Date, Time, Venue, and immediately open the Grand League workspace.
           </p>
         </div>
 
         <!-- Filter Tabs -->
         <div class="flex flex-wrap items-center gap-1.5" id="fixtureFilterTabs">
           <button onclick="filterFixtures('ALL')" id="filter-ALL" class="filter-btn active px-3 py-1.5 rounded-lg text-xs font-mono font-semibold bg-cyan-500/20 text-cyan-300 border border-cyan-500/60 transition">All Fixtures</button>
-          <button onclick="filterFixtures('UPCOMING')" id="filter-UPCOMING" class="filter-btn px-3 py-1.5 rounded-lg text-xs font-mono font-semibold bg-slate-900 text-slate-400 border border-slate-800 hover:text-white transition">⏳ Upcoming</button>
-          <button onclick="filterFixtures('LIVE')" id="filter-LIVE" class="filter-btn px-3 py-1.5 rounded-lg text-xs font-mono font-semibold bg-slate-900 text-slate-400 border border-slate-800 hover:text-white transition">🔴 Live Now</button>
-          <button onclick="filterFixtures('INTERNATIONAL')" id="filter-INTERNATIONAL" class="filter-btn px-3 py-1.5 rounded-lg text-xs font-mono font-semibold bg-slate-900 text-slate-400 border border-slate-800 hover:text-white transition">🏆 International</button>
-          <button onclick="filterFixtures('DOMESTIC')" id="filter-DOMESTIC" class="filter-btn px-3 py-1.5 rounded-lg text-xs font-mono font-semibold bg-slate-900 text-slate-400 border border-slate-800 hover:text-white transition">🏏 Domestic</button>
+          <button onclick="filterFixtures('UPCOMING')" id="filter-UPCOMING" class="filter-btn px-3 py-1.5 rounded-lg text-xs font-mono font-semibold bg-slate-900 text-slate-400 border border-slate-800 hover:text-white transition">&#9203; Upcoming</button>
+          <button onclick="filterFixtures('LIVE')" id="filter-LIVE" class="filter-btn px-3 py-1.5 rounded-lg text-xs font-mono font-semibold bg-slate-900 text-slate-400 border border-slate-800 hover:text-white transition">&#128308; Live Now</button>
+          <button onclick="filterFixtures('INTERNATIONAL')" id="filter-INTERNATIONAL" class="filter-btn px-3 py-1.5 rounded-lg text-xs font-mono font-semibold bg-slate-900 text-slate-400 border border-slate-800 hover:text-white transition">&#127942; International</button>
+          <button onclick="filterFixtures('DOMESTIC')" id="filter-DOMESTIC" class="filter-btn px-3 py-1.5 rounded-lg text-xs font-mono font-semibold bg-slate-900 text-slate-400 border border-slate-800 hover:text-white transition">&#127951; Domestic</button>
         </div>
       </div>
 
       <!-- Responsive Fixture Grid -->
-      <div id="fixtureCardsContainer" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3.5 max-h-[380px] overflow-y-auto pr-1">
+      <div id="fixtureCardsContainer" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3.5 max-h-[420px] overflow-y-auto pr-1">
         <!-- Rendered dynamically via JavaScript -->
+      </div>
+
+      <!-- Sticky Quick-Jump Bar -->
+      <div id="activeMatchStickyBar" class="flex flex-col sm:flex-row justify-between items-center bg-slate-900/90 border border-cyan-500/40 px-4 py-2.5 rounded-xl shadow-lg shadow-cyan-500/10 gap-2">
+        <div class="flex items-center gap-2 text-xs font-mono truncate">
+          <span class="w-2 h-2 rounded-full bg-cyan-400 animate-ping"></span>
+          <span class="text-slate-400">ACTIVE MATCH:</span>
+          <strong id="stickyMatchTitle" class="text-cyan-300 truncate">New Zealand vs India, 1st T20I</strong>
+          <span class="text-slate-500 hidden sm:inline">|</span>
+          <span id="stickyMatchVenue" class="text-slate-300 hidden sm:inline">Eden Park, Auckland</span>
+        </div>
+        <button onclick="scrollToWorkspace()" class="w-full sm:w-auto px-4 py-1.5 rounded-lg bg-cyan-400 hover:bg-cyan-300 text-black font-mono text-xs font-bold transition flex items-center justify-center gap-1.5 shadow shadow-cyan-400/20">
+          <span>&#9889;</span> <span>Open Full Workspace & Lineups &darr;</span>
+        </button>
       </div>
     </section>
 
     <!-- ===================================================================== -->
     <!-- SECTION 2: HERO MATCH BANNER & ARCHETYPE CARD -->
     <!-- ===================================================================== -->
-    <section id="heroMatchSection" class="glass-panel rounded-2xl p-6 lg:p-8 relative overflow-hidden shadow-2xl border-l-4 border-l-cyan-400">
+    <section id="heroMatchSection" class="glass-panel rounded-2xl p-6 lg:p-8 relative overflow-hidden shadow-2xl border-l-4 border-l-cyan-400 transition-all duration-300">
       <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 relative z-10">
         
         <!-- Left: Match Info & Exact Date / Time / Venue Details -->
@@ -196,23 +273,23 @@
           <!-- Prominent Date, Time & Venue Details Strip -->
           <div class="flex flex-wrap items-center gap-y-2 gap-x-4 text-xs font-mono bg-slate-900/90 p-3 rounded-xl border border-slate-800">
             <div class="flex items-center gap-1.5">
-              <span class="text-cyan-400">📅 Date:</span>
+              <span class="text-cyan-400 font-bold">&#128197; Date:</span>
               <strong id="heroDate" class="text-white">Tomorrow, Oct 22, 2026</strong>
             </div>
             <div class="flex items-center gap-1.5">
-              <span class="text-amber-400">⏰ Time:</span>
+              <span class="text-amber-400 font-bold">&#9200; Time:</span>
               <strong id="heroTime" class="text-white">12:30 PM IST (7:00 PM Local NZDT)</strong>
             </div>
             <div class="flex items-center gap-1.5">
-              <span class="text-emerald-400">🏟️ Venue:</span>
+              <span class="text-emerald-400 font-bold">&#127967; Venue:</span>
               <strong id="heroVenueText" class="text-cyan-300">Eden Park, Auckland, New Zealand</strong>
             </div>
           </div>
 
           <!-- Conditions Strip -->
           <p id="heroVenue" class="text-slate-300 text-xs font-mono flex flex-wrap items-center gap-2">
-            <span>Par 1st Inns: <strong id="heroPar" class="text-emerald-400">204 runs</strong></span> • 
-            <span>Spin Grip: <strong id="heroSpin" class="text-purple-400">35% Wkts (1.4° Turn)</strong></span> •
+            <span>Par 1st Inns: <strong id="heroPar" class="text-emerald-400">204 runs</strong></span> &bull; 
+            <span>Spin Grip: <strong id="heroSpin" class="text-purple-400">35% Wkts (1.4&deg; Turn)</strong></span> &bull;
             <span>Soil Type: <strong id="heroSoil" class="text-cyan-400">Drop-in Rye Grass</strong></span>
           </p>
 
@@ -224,7 +301,7 @@
         <!-- Right: The 3 Invariable Laws Shield -->
         <div class="bg-slate-900/90 rounded-xl p-5 border border-slate-700/80 min-w-[280px] space-y-3 shadow-xl">
           <div class="flex items-center justify-between text-xs font-mono text-slate-400 border-b border-slate-800 pb-2">
-            <span class="font-bold text-slate-200">🛡️ INVARIABLE LAWS SHIELD</span>
+            <span class="font-bold text-slate-200">&#128737; INVARIABLE LAWS SHIELD</span>
             <span class="text-emerald-400 font-bold">VERIFIED</span>
           </div>
           
@@ -239,7 +316,7 @@
             </div>
             <div class="flex items-center justify-between">
               <span class="text-slate-400">C/VC Independence:</span>
-              <span class="text-amber-400 font-bold">P(C) × P(VC) ≤ 0.05</span>
+              <span class="text-amber-400 font-bold">P(C) &times; P(VC) &le; 0.05</span>
             </div>
             <div class="flex items-center justify-between">
               <span class="text-slate-400">Narrative Fit:</span>
@@ -254,22 +331,22 @@
     <!-- NAVIGATION TABS -->
     <div class="flex flex-wrap items-center gap-2 border-b border-slate-800 pb-2">
       <button onclick="switchTab('lineups')" id="tab-lineups" class="tab-btn active px-4 py-2.5 rounded-xl border border-transparent text-sm font-mono font-semibold transition flex items-center gap-2">
-        <span>🏆</span> Grand League Lineups <span id="badgeLineupCount" class="text-xs px-1.5 py-0.5 rounded-full bg-cyan-950 text-cyan-300 font-bold">4</span>
+        <span>&#127942;</span> Grand League Lineups <span id="badgeLineupCount" class="text-xs px-1.5 py-0.5 rounded-full bg-cyan-950 text-cyan-300 font-bold">4</span>
       </button>
       <button onclick="switchTab('pitch')" id="tab-pitch" class="tab-btn px-4 py-2.5 rounded-xl border border-transparent text-slate-400 hover:text-white text-sm font-mono font-semibold transition flex items-center gap-2">
-        <span>🏟️</span> Spatial Pitch & Hawkeye Radar
+        <span>&#127967;</span> Spatial Pitch & Hawkeye Radar
       </button>
       <button onclick="switchTab('nlp')" id="tab-nlp" class="tab-btn px-4 py-2.5 rounded-xl border border-transparent text-slate-400 hover:text-white text-sm font-mono font-semibold transition flex items-center gap-2">
-        <span>🧠</span> NLP Toss Deconstructor
+        <span>&#129504;</span> NLP Toss Deconstructor
       </button>
       <button onclick="switchTab('debate')" id="tab-debate" class="tab-btn px-4 py-2.5 rounded-xl border border-transparent text-slate-400 hover:text-white text-sm font-mono font-semibold transition flex items-center gap-2">
-        <span>⚔️</span> 3-Agent Consensus Debate
+        <span>&#9876;</span> 3-Agent Consensus Debate
       </button>
       <button onclick="switchTab('momentum')" id="tab-momentum" class="tab-btn px-4 py-2.5 rounded-xl border border-transparent text-slate-400 hover:text-white text-sm font-mono font-semibold transition flex items-center gap-2">
-        <span>📈</span> Live Field Rank Simulator
+        <span>&#128200;</span> Live Field Rank Simulator
       </button>
       <button onclick="switchTab('h2h')" id="tab-h2h" class="tab-btn px-4 py-2.5 rounded-xl border border-transparent text-slate-400 hover:text-white text-sm font-mono font-semibold transition flex items-center gap-2">
-        <span>🎯</span> H2H Battle Matrix
+        <span>&#127919;</span> H2H Battle Matrix
       </button>
     </div>
 
@@ -286,10 +363,10 @@
         </div>
         <div class="flex items-center gap-3">
           <button onclick="copyAllInjectorScripts()" class="px-3.5 py-2 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-black font-mono text-xs font-bold transition flex items-center gap-1.5 shadow-lg shadow-cyan-500/20">
-            <span>⚡</span> Copy All Injector Scripts
+            <span>&#9889;</span> Copy All Injector Scripts
           </button>
           <button onclick="downloadCSV()" class="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-mono text-xs font-semibold transition flex items-center gap-1.5">
-            <span>📥</span> Export CSV
+            <span>&#128229;</span> Export CSV
           </button>
         </div>
       </div>
@@ -378,7 +455,7 @@
               </div>
               <div class="bg-slate-900/90 p-3 rounded-xl border border-slate-800">
                 <span class="text-slate-400 block text-[11px]">Spin Turn</span>
-                <strong class="text-purple-400 text-lg font-display" id="pitchTurnDeg">1.4°</strong>
+                <strong class="text-purple-400 text-lg font-display" id="pitchTurnDeg">1.4&deg;</strong>
                 <span class="text-[10px] text-slate-500 block">Low Turn Grip</span>
               </div>
             </div>
@@ -440,7 +517,7 @@
               </div>
               <div class="flex justify-between items-center p-3 rounded-lg bg-slate-900/90 border border-slate-800">
                 <span class="text-slate-300">Unspent Credit Requirement</span>
-                <strong class="text-purple-400 font-bold">≥ 13.5 Cr Enforced</strong>
+                <strong class="text-purple-400 font-bold">&ge; 13.5 Cr Enforced</strong>
               </div>
             </div>
           </div>
@@ -463,7 +540,7 @@
           <!-- Bull Agent -->
           <div class="glass-card rounded-xl p-5 border-l-4 border-l-emerald-500 space-y-3">
             <div class="flex items-center gap-2">
-              <span class="text-2xl">🐂</span>
+              <span class="text-2xl">&#128002;</span>
               <div>
                 <h3 class="font-display font-bold text-white text-base">The Bull Agent</h3>
                 <span class="text-[10px] font-mono text-emerald-400 font-bold">CEILING MAXIMIZER</span>
@@ -480,7 +557,7 @@
           <!-- Bear Agent -->
           <div class="glass-card rounded-xl p-5 border-l-4 border-l-amber-500 space-y-3">
             <div class="flex items-center gap-2">
-              <span class="text-2xl">🐻</span>
+              <span class="text-2xl">&#128059;</span>
               <div>
                 <h3 class="font-display font-bold text-white text-base">The Bear Agent</h3>
                 <span class="text-[10px] font-mono text-amber-400 font-bold">VARIANCE & COLLAPSE STRESS-TEST</span>
@@ -497,14 +574,14 @@
           <!-- Quant Solver -->
           <div class="glass-card rounded-xl p-5 border-l-4 border-l-cyan-500 space-y-3">
             <div class="flex items-center gap-2">
-              <span class="text-2xl">⚖️</span>
+              <span class="text-2xl">&#9878;</span>
               <div>
                 <h3 class="font-display font-bold text-white text-base">The Quant Solver</h3>
                 <span class="text-[10px] font-mono text-cyan-400 font-bold">OR-TOOLS CP-SAT ARBITRAGE</span>
               </div>
             </div>
             <p id="quantArgument" class="text-xs text-slate-300 font-mono leading-relaxed bg-slate-900/60 p-3 rounded-lg border border-slate-800">
-              "Resolution: Enforce 15.5 Cr unspent and P(C) × P(VC) ≤ 0.05. Isolates roster into the sub-0.5% tail for Solo Rank 1 equity."
+              "Resolution: Enforce 15.5 Cr unspent and P(C) &times; P(VC) &le; 0.05. Isolates roster into the sub-0.5% tail for Solo Rank 1 equity."
             </p>
             <div class="text-[11px] font-mono text-slate-400 flex justify-between">
               <span>Solver Status:</span> <strong class="text-cyan-400">OPTIMAL (0.8s)</strong>
@@ -523,7 +600,7 @@
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
             <h2 class="font-display font-bold text-lg text-white">Live In-Play Momentum & 270,000 Field Rank Simulator</h2>
-            <p class="text-xs text-slate-400 font-mono">Calculates live points and estimated contest finish using Normal Survival CDF (μ=850, σ=120)</p>
+            <p class="text-xs text-slate-400 font-mono">Calculates live points and estimated contest finish using Normal Survival CDF (&mu;=850, &sigma;=120)</p>
           </div>
           <span class="text-xs font-mono px-3 py-1 rounded-full bg-cyan-950 text-cyan-400 border border-cyan-800">
             Contest Size: 270,000 Entries
@@ -549,7 +626,7 @@
           <div class="bg-slate-950 p-4 rounded-xl border border-slate-800">
             <span class="text-xs text-slate-400 font-mono block">Percentile Finish</span>
             <strong id="simPercentile" class="text-2xl font-display text-cyan-400 font-black">99.999%</strong>
-            <span class="text-[10px] text-slate-500 font-mono block mt-1">P(Rank ≤ 3) = 94.2%</span>
+            <span class="text-[10px] text-slate-500 font-mono block mt-1">P(Rank &le; 3) = 94.2%</span>
           </div>
           <div class="bg-slate-950 p-4 rounded-xl border border-slate-800">
             <span class="text-xs text-slate-400 font-mono block">Best Performing Lineup</span>
@@ -585,15 +662,36 @@
     let cachedFixturesList = [];
 
     // =========================================================================
-    // 1. Dynamic Portal Initialization
+    // 1. Toast Notification Helper
     // =========================================================================
-    async function initPortal() {
-      await fetchFixturesCatalog();
-      await onMatchChange(activeMatchKey);
+    function showToast(message, type = "info") {
+      const container = document.getElementById("toastContainer");
+      if (!container) return;
+      const toast = document.createElement("div");
+      toast.className = "px-4 py-2.5 rounded-xl bg-slate-900 border border-cyan-400/80 text-white font-mono text-xs shadow-2xl flex items-center gap-2 transform transition-all duration-300 translate-y-2 opacity-0";
+      toast.innerHTML = `<span class="text-cyan-400">&#9889;</span> <span>${message}</span>`;
+      container.appendChild(toast);
+      
+      requestAnimationFrame(() => {
+        toast.classList.remove("translate-y-2", "opacity-0");
+      });
+
+      setTimeout(() => {
+        toast.classList.add("opacity-0", "translate-y-2");
+        setTimeout(() => toast.remove(), 300);
+      }, 3200);
     }
 
     // =========================================================================
-    // 2. Fetch Fixtures Catalog & Render Cards
+    // 2. Dynamic Portal Initialization
+    // =========================================================================
+    async function initPortal() {
+      await fetchFixturesCatalog();
+      await onMatchChange(activeMatchKey, false);
+    }
+
+    // =========================================================================
+    // 3. Fetch Fixtures Catalog & Render Cards
     // =========================================================================
     async function fetchFixturesCatalog() {
       const selector = document.getElementById("matchSelector");
@@ -611,8 +709,8 @@
             cachedFixturesList.forEach(m => {
               const opt = document.createElement("option");
               opt.value = m.id;
-              const flag = m.id.includes("ind") ? "🇮🇳" : (m.id.includes("nz") ? "🇳🇿" : (m.id.includes("afg") ? "🇦🇫" : (m.id.includes("aus") ? "🇦🇺" : (m.id.includes("pak") ? "🇵🇰" : "🏏"))));
-              opt.textContent = `${flag} ${m.title} [${m.format || 'T20'}]`;
+              const flag = m.id.includes("ind") ? "&#127470;&#127475;" : (m.id.includes("nz") ? "&#127475;&#127487;" : (m.id.includes("afg") ? "&#127462;&#127467;" : (m.id.includes("aus") ? "&#127462;&#127482;" : (m.id.includes("pak") ? "&#127477;&#127472;" : "&#127951;"))));
+              opt.textContent = `${m.title} [${m.format || 'T20'}]`;
               selector.appendChild(opt);
             });
             selector.value = activeMatchKey;
@@ -627,7 +725,7 @@
     }
 
     // =========================================================================
-    // 3. Render Fixture Cards Grid with Filter
+    // 4. Render Fixture Cards Grid with Filter
     // =========================================================================
     function filterFixtures(filter) {
       document.querySelectorAll(".filter-btn").forEach(btn => btn.classList.remove("active"));
@@ -659,13 +757,13 @@
       matches.forEach(m => {
         const isCurrentActive = (m.id === activeMatchKey);
         const card = document.createElement("div");
-        card.className = `fixture-card glass-card rounded-xl p-3.5 space-y-2.5 cursor-pointer border ${isCurrentActive ? 'active' : 'border-slate-800/80'}`;
+        card.className = `fixture-card glass-card rounded-xl p-4 space-y-3 cursor-pointer border ${isCurrentActive ? 'active' : 'border-slate-800/80'}`;
         card.id = `card-${m.id}`;
 
         const isLive = (m.status || "").toUpperCase().includes("LIVE");
         const statusBadge = isLive 
           ? `<span class="px-2 py-0.5 rounded-full bg-emerald-950 text-emerald-400 border border-emerald-500/50 text-[10px] font-mono font-bold flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span> LIVE NOW</span>`
-          : `<span class="px-2 py-0.5 rounded-full bg-amber-950 text-amber-300 border border-amber-600/40 text-[10px] font-mono font-bold">⏳ ${(m.status || 'UPCOMING')}</span>`;
+          : `<span class="px-2 py-0.5 rounded-full bg-amber-950 text-amber-300 border border-amber-600/40 text-[10px] font-mono font-bold">&#9203; ${(m.status || 'UPCOMING')}</span>`;
 
         card.innerHTML = `
           <div class="flex justify-between items-center text-[10px] font-mono">
@@ -675,49 +773,44 @@
 
           <div>
             <h4 class="font-display font-bold text-sm text-white hover:text-cyan-400 transition leading-snug">${m.title}</h4>
-            <span class="text-[10px] font-mono text-slate-400 uppercase tracking-wider">${m.format || 'T20'} • Par ${m.par_score || 180}</span>
+            <span class="text-[10px] font-mono text-slate-400 uppercase tracking-wider">${m.format || 'T20'} &bull; Par ${m.par_score || 180}</span>
           </div>
 
-          <div class="text-[11px] font-mono text-slate-300 space-y-1 bg-slate-950/70 p-2.5 rounded-lg border border-slate-800/80">
-            <div class="flex items-center gap-1.5"><span class="text-cyan-400">📅</span> <span class="truncate font-semibold text-slate-200">${m.date || 'Today, Oct 21, 2026'}</span></div>
-            <div class="flex items-center gap-1.5"><span class="text-amber-400">⏰</span> <span class="truncate text-slate-300">${m.time || '7:00 PM IST'}</span></div>
-            <div class="flex items-center gap-1.5 truncate"><span class="text-emerald-400">🏟️</span> <span class="truncate text-slate-400" title="${m.venue || 'Stadium'}">${m.venue || 'Stadium'}</span></div>
+          <div class="text-[11px] font-mono text-slate-300 space-y-1.5 bg-slate-950/70 p-2.5 rounded-lg border border-slate-800/80">
+            <div class="flex items-center gap-1.5"><span class="text-cyan-400 font-bold">&#128197;</span> <span class="truncate font-semibold text-slate-200">${m.date || 'Today, Oct 21, 2026'}</span></div>
+            <div class="flex items-center gap-1.5"><span class="text-amber-400 font-bold">&#9200;</span> <span class="truncate text-slate-300">${m.time || '7:00 PM IST'}</span></div>
+            <div class="flex items-center gap-1.5 truncate"><span class="text-emerald-400 font-bold">&#127967;</span> <span class="truncate text-slate-400" title="${m.venue || 'Stadium'}">${m.venue || 'Stadium'}</span></div>
           </div>
 
-          <div class="flex justify-between items-center text-[10px] font-mono text-slate-400">
+          <div class="flex justify-between items-center text-[10px] font-mono text-slate-400 pt-0.5">
             <span class="px-1.5 py-0.5 rounded bg-purple-950 text-purple-300 border border-purple-800 font-bold">${m.archetype || 'PARITY'}</span>
-            <span class="text-amber-300 font-semibold truncate max-w-[130px]">${m.countdown || 'Locking Soon'}</span>
+            <span class="text-amber-300 font-semibold text-[11px] text-right">${m.countdown || 'Locking Soon'}</span>
           </div>
 
-          <button onclick="event.stopPropagation(); onMatchChange('${m.id}')" class="w-full py-2 rounded-xl text-xs font-mono font-bold transition flex items-center justify-center gap-1 ${isCurrentActive ? 'bg-cyan-400 text-black shadow-lg shadow-cyan-400/20' : 'bg-slate-800/90 hover:bg-cyan-500 hover:text-black text-cyan-300 border border-cyan-500/30'}">
-            <span>${isCurrentActive ? '✓ ACTIVE MATCH' : '⚡ Analyze Match'}</span>
-          </button>
+          <!-- Dual Actions: Open Full Workspace & Quick View Modal -->
+          <div class="grid grid-cols-2 gap-2 pt-1">
+            <button onclick="event.stopPropagation(); openQuickModal('${m.id}')" class="py-2 px-2 rounded-xl text-[11px] font-mono font-semibold transition flex items-center justify-center gap-1 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700">
+              <span>&#128065;</span> Quick View
+            </button>
+            <button onclick="event.stopPropagation(); onMatchChange('${m.id}', true)" class="py-2 px-2 rounded-xl text-[11px] font-mono font-bold transition flex items-center justify-center gap-1 ${isCurrentActive ? 'bg-cyan-400 text-black shadow-lg shadow-cyan-400/20' : 'bg-cyan-950 hover:bg-cyan-400 hover:text-black text-cyan-300 border border-cyan-500/50'}">
+              <span>&#9889;</span> ${isCurrentActive ? 'Active &darr;' : 'Analyze &darr;'}
+            </button>
+          </div>
         `;
 
-        card.onclick = () => onMatchChange(m.id);
+        // Clicking the whole card also triggers immediate match opening and smooth scroll
+        card.onclick = () => onMatchChange(m.id, true);
         container.appendChild(card);
       });
     }
 
     // =========================================================================
-    // 4. Dynamic Match Change Handler (Instant API Fetch & Re-Render)
+    // 5. Dynamic Match Change Handler (Instant API Fetch & Re-Render)
     // =========================================================================
-    async function onMatchChange(matchKey) {
+    async function onMatchChange(matchKey, shouldScroll = true) {
       activeMatchKey = matchKey;
       const selector = document.getElementById("matchSelector");
       if (selector) selector.value = matchKey;
-
-      // Update card highlighting
-      document.querySelectorAll(".fixture-card").forEach(c => c.classList.remove("active"));
-      const activeCard = document.getElementById(`card-${matchKey}`);
-      if (activeCard) {
-        activeCard.classList.add("active");
-        const btn = activeCard.querySelector("button");
-        if (btn) {
-          btn.className = "w-full py-2 rounded-xl text-xs font-mono font-bold transition flex items-center justify-center gap-1 bg-cyan-400 text-black shadow-lg shadow-cyan-400/20";
-          btn.innerHTML = "<span>✓ ACTIVE MATCH</span>";
-        }
-      }
 
       const spinner = document.getElementById("refreshSpinner");
       if (spinner) spinner.classList.add("animate-spin");
@@ -728,6 +821,20 @@
           const m = await res.json();
           activeMatchData = m;
           renderPortalState(m);
+
+          // Update sticky bar
+          document.getElementById("stickyMatchTitle").innerText = m.title || "Match";
+          document.getElementById("stickyMatchVenue").innerText = m.venue || "Stadium";
+
+          // Re-render card buttons so the active card displays active state
+          renderFixtureCards(cachedFixturesList);
+
+          showToast(`⚡ Opened Workspace for ${m.title}`);
+
+          // Smooth scroll to workspace
+          if (shouldScroll) {
+            scrollToWorkspace();
+          }
         }
       } catch (err) {
         console.warn("Error fetching match-data:", err);
@@ -736,8 +843,72 @@
       }
     }
 
+    function scrollToWorkspace() {
+      const hero = document.getElementById("heroMatchSection");
+      if (hero) {
+        hero.scrollIntoView({ behavior: "smooth", block: "start" });
+        hero.classList.add("ring-2", "ring-cyan-400", "shadow-cyan-500/50");
+        setTimeout(() => {
+          hero.classList.remove("ring-2", "ring-cyan-400", "shadow-cyan-500/50");
+        }, 1500);
+      }
+    }
+
     // =========================================================================
-    // 5. Render Portal State for Chosen Match
+    // 6. Quick Modal Handlers
+    // =========================================================================
+    async function openQuickModal(matchId) {
+      const modal = document.getElementById("quickModal");
+      try {
+        const res = await fetch(`/api/portal/match-data?match_id=${encodeURIComponent(matchId)}`);
+        if (res.ok) {
+          const m = await res.json();
+          document.getElementById("modalSeries").innerText = m.series || "Series 2026";
+          document.getElementById("modalTitle").innerText = m.title || "Match Title";
+          document.getElementById("modalMeta").innerText = `${m.date || ''} • ${m.time || ''} • ${m.venue || ''}`;
+          document.getElementById("modalPar").innerText = `${m.par_score || 180} runs`;
+          document.getElementById("modalArchetype").innerText = m.archetype || "PARITY";
+          document.getElementById("modalPhysics").innerText = `${m.seamMm || '3mm'} / ${m.turnDeg || '2°'}`;
+          document.getElementById("modalShield").innerText = m.unspent_shield || "15 Cr Left";
+          document.getElementById("modalToss").innerText = m.toss_statement || "Telemetry synchronized.";
+
+          // Lineups in modal
+          const lContainer = document.getElementById("modalLineupsList");
+          lContainer.innerHTML = "";
+          (m.lineups || []).forEach((t, i) => {
+            const row = document.createElement("div");
+            row.className = "p-2.5 rounded-lg bg-slate-900 border border-slate-800 flex justify-between items-center";
+            row.innerHTML = `
+              <div>
+                <strong class="text-white">${t.name}</strong>
+                <span class="text-slate-400 text-[10px] block">C: <span class="text-amber-300 font-bold">${t.captain}</span> | VC: <span class="text-cyan-300 font-bold">${t.vice_captain}</span></span>
+              </div>
+              <span class="px-2 py-1 rounded bg-cyan-950 text-cyan-400 font-bold text-[10px]">${t.unspent_credits} Cr Left</span>
+            `;
+            lContainer.appendChild(row);
+          });
+
+          modal.classList.remove("hidden");
+          modal.classList.add("flex");
+        }
+      } catch (err) {
+        console.warn("Could not open modal:", err);
+      }
+    }
+
+    function closeQuickModal() {
+      const modal = document.getElementById("quickModal");
+      modal.classList.add("hidden");
+      modal.classList.remove("flex");
+    }
+
+    function openFullWorkspaceFromModal() {
+      closeQuickModal();
+      scrollToWorkspace();
+    }
+
+    // =========================================================================
+    // 7. Render Portal State for Chosen Match
     // =========================================================================
     function renderPortalState(m) {
       // 1. Hero Updates
@@ -805,7 +976,7 @@
       if (lineups.length === 0) {
         container.innerHTML = `
           <div class="col-span-2 p-8 text-center bg-slate-900/60 rounded-2xl border border-slate-800">
-            <span class="text-3xl block mb-2">⚡</span>
+            <span class="text-3xl block mb-2">&#9889;</span>
             <h3 class="text-white font-display font-bold text-lg">Generating Portfolio for ${activeMatchKey}...</h3>
             <p class="text-slate-400 font-mono text-xs mt-1">Executing Google OR-Tools CP-SAT Mixed Integer Linear Programming...</p>
           </div>
@@ -824,7 +995,7 @@
           return `
             <div class="flex items-center justify-between text-xs font-mono py-1 border-b border-slate-800/60">
               <span class="text-slate-200 flex items-center">${p.name} ${badge}</span>
-              <span class="text-slate-500">${p.role || 'BAT'} • <strong class="text-slate-300">${p.credits || 8.0} Cr</strong></span>
+              <span class="text-slate-500">${p.role || 'BAT'} &bull; <strong class="text-slate-300">${p.credits || 8.0} Cr</strong></span>
             </div>
           `;
         }).join("");
@@ -864,7 +1035,7 @@
 
           <div class="pt-2 flex items-center gap-2">
             <button onclick="copySingleInjectorScript(${idx})" class="w-full py-2.5 rounded-xl bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 font-mono text-xs font-bold transition flex items-center justify-center gap-1.5">
-              <span>⚡</span> Copy 1-Click Injector Script
+              <span>&#9889;</span> Copy 1-Click Injector Script
             </button>
           </div>
         `;
@@ -964,9 +1135,9 @@
 })();`;
 
       navigator.clipboard.writeText(script).then(() => {
-        alert(`1-Click Dream11 Browser Script for "${team.name}" copied to clipboard!`);
+        showToast(`Copied script for "${team.name}"!`);
       }).catch(() => {
-        alert("Copied to clipboard!");
+        showToast("Copied to clipboard!");
       });
     }
 
@@ -978,7 +1149,7 @@
         fullBundle += JSON.stringify(team.players.map(p => p.name)) + "\n\n";
       });
       navigator.clipboard.writeText(fullBundle).then(() => {
-        alert("All 4 CP-SAT Grand League Lineup Scripts copied to clipboard!");
+        showToast("All 4 CP-SAT Lineups copied to clipboard!");
       });
     }
 
@@ -1002,7 +1173,7 @@
     function refreshLiveFeed() {
       const spinner = document.getElementById("refreshSpinner");
       if (spinner) spinner.classList.add("animate-spin");
-      fetchFixturesCatalog().then(() => onMatchChange(activeMatchKey)).finally(() => {
+      fetchFixturesCatalog().then(() => onMatchChange(activeMatchKey, false)).finally(() => {
         if (spinner) spinner.classList.remove("animate-spin");
       });
     }
