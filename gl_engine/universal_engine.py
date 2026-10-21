@@ -161,6 +161,68 @@ class UniversalMatchEngine:
             ]
         }
 
+        # 3. Afghanistan vs Bangladesh, 3rd ODI (Sharjah Cricket Stadium - 2026)
+        self._matches["afg_vs_ban_odi_sharjah"] = {
+            "id": "afg_vs_ban_odi_sharjah",
+            "name": "Afghanistan vs Bangladesh, 3rd ODI (Sharjah)",
+            "format": "One Day International",
+            "status": "LIVE & SCHEDULED | Tri-Nation Series in UAE",
+            "archetype": "SPIN_CHOKE_MINEFIELD",
+            "venue": {
+                "id": "sharjah_cricket_stadium",
+                "name": "Sharjah Cricket Stadium",
+                "city": "Sharjah, UAE",
+                "soil_type": "Dry baked desert clay with low bounce and abrasive degradation",
+                "avg_first_innings": 242.0,
+                "avg_second_innings": 225.0,
+                "chasing_win_pct": 46.0,
+                "pace_wicket_pct": 52.0,
+                "spin_wicket_pct": 48.0,
+                "dew_factor": 0.15,
+                "pitch_nature": "Abrasive, two-paced desert surface. Initial 15 overs offer true carry for top-order boundary hitting due to short 58m square boundaries. From over 20-50, surface degrades into a heavy spin choke for Rashid Khan, Ghazanfar & Mehidy Miraz, with reverse swing in death overs.",
+                "boundaries": {"square_leg": 58, "midwicket": 62, "long_on": 66, "straight": 64, "long_off": 66, "cover": 62, "point": 59}
+            },
+            "teams": {
+                "home": {"name": "Afghanistan", "code": "AFG", "score": "Yet to Bat", "overs": "50.0"},
+                "away": {"name": "Bangladesh", "code": "BAN", "score": "Yet to Bat", "overs": "50.0"}
+            },
+            "toss": {
+                "winner": "Afghanistan",
+                "choice": "bat",
+                "statement": "Afghanistan won the toss and elected to bat first. Hashmatullah: Pitch looks dry and abrasive, we want 250+ runs and let Rashid Khan, AM Ghazanfar defend."
+            },
+            "current_crr": 0.0,
+            "projected_total": 248,
+            "chasing_win_prob": 46.0,
+            "playing_xi_home": [
+                {"name": "Rahmanullah Gurbaz", "role": "WK", "credits": 8.5, "order": 1, "bat_hand": "RHB", "bowl_style": "Right-arm offbreak"},
+                {"name": "Sediqullah Atal", "role": "BAT", "credits": 7.5, "order": 2, "bat_hand": "LHB", "bowl_style": "Right-arm offbreak"},
+                {"name": "Rahmat Shah", "role": "BAT", "credits": 8.0, "order": 3, "bat_hand": "RHB", "bowl_style": "Right-arm legbreak"},
+                {"name": "Hashmatullah Shahidi", "role": "BAT", "credits": 8.0, "order": 4, "bat_hand": "LHB", "bowl_style": "Right-arm offbreak", "is_c": True},
+                {"name": "Azmatullah Omarzai", "role": "AR", "credits": 9.0, "order": 5, "bat_hand": "RHB", "bowl_style": "Right-arm medium-fast"},
+                {"name": "Mohammad Nabi", "role": "AR", "credits": 8.0, "order": 6, "bat_hand": "RHB", "bowl_style": "Right-arm offbreak"},
+                {"name": "Gulbadin Naib", "role": "AR", "credits": 7.5, "order": 7, "bat_hand": "RHB", "bowl_style": "Right-arm medium-fast"},
+                {"name": "Rashid Khan", "role": "BOWL", "credits": 9.0, "order": 8, "bat_hand": "RHB", "bowl_style": "Right-arm legbreak"},
+                {"name": "AM Ghazanfar", "role": "BOWL", "credits": 7.5, "order": 9, "bat_hand": "RHB", "bowl_style": "Right-arm offbreak"},
+                {"name": "Fazalhaq Farooqi", "role": "BOWL", "credits": 8.5, "order": 10, "bat_hand": "RHB", "bowl_style": "Left-arm medium-fast"},
+                {"name": "Naveed Zadran", "role": "BOWL", "credits": 7.0, "order": 11, "bat_hand": "RHB", "bowl_style": "Right-arm fast-medium"}
+            ],
+            "playing_xi_away": [
+                {"name": "Tanzid Hasan", "role": "BAT", "credits": 7.5, "order": 1, "bat_hand": "LHB", "bowl_style": "Right-arm offbreak"},
+                {"name": "Soumya Sarkar", "role": "BAT", "credits": 8.0, "order": 2, "bat_hand": "LHB", "bowl_style": "Right-arm medium"},
+                {"name": "Najmul Hossain Shanto", "role": "BAT", "credits": 8.5, "order": 3, "bat_hand": "LHB", "bowl_style": "Right-arm offbreak", "is_c": True},
+                {"name": "Towhid Hridoy", "role": "BAT", "credits": 8.0, "order": 4, "bat_hand": "RHB", "bowl_style": "Right-arm offbreak"},
+                {"name": "Mahmudullah", "role": "BAT", "credits": 7.5, "order": 5, "bat_hand": "RHB", "bowl_style": "Right-arm offbreak"},
+                {"name": "Jaker Ali", "role": "WK", "credits": 7.0, "order": 6, "bat_hand": "RHB", "bowl_style": "Right-arm offbreak"},
+                {"name": "Mehidy Hasan Miraz", "role": "AR", "credits": 8.5, "order": 7, "bat_hand": "RHB", "bowl_style": "Right-arm offbreak"},
+                {"name": "Nasum Ahmed", "role": "BOWL", "credits": 7.5, "order": 8, "bat_hand": "LHB", "bowl_style": "Slow left-arm orthodox"},
+                {"name": "Taskin Ahmed", "role": "BOWL", "credits": 8.5, "order": 9, "bat_hand": "RHB", "bowl_style": "Right-arm fast"},
+                {"name": "Shoriful Islam", "role": "BOWL", "credits": 8.0, "order": 10, "bat_hand": "LHB", "bowl_style": "Left-arm medium-fast"},
+                {"name": "Mustafizur Rahman", "role": "BOWL", "credits": 8.5, "order": 11, "bat_hand": "LHB", "bowl_style": "Left-arm fast-medium"}
+            ]
+        }
+        self._matches["afg_ban"] = self._matches["afg_vs_ban_odi_sharjah"]
+
         # Aliases
         self._matches["indw_zimw"] = self._matches["ind_w_vs_zim_w_2026_03"]
         self._matches["ind_w_vs_zim_w"] = self._matches["ind_w_vs_zim_w_2026_03"]
