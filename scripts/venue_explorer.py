@@ -44,3 +44,4 @@ LIMIT 10
 """
 for bw in c.execute(q_bowl).fetchall():
     print(bw)
+

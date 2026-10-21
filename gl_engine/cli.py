@@ -75,7 +75,25 @@ def run_cli():
     parser.add_argument("--mcp", action="store_true", help="Start the Model Context Protocol (MCP) server")
     parser.add_argument("--inject", action="store_true", help="Generate 1-click browser console injector snippet for Dream11")
     parser.add_argument("--sync", action="store_true", help="Discover and sync all daily matches worldwide")
+    parser.add_argument("--portal", "--web", action="store_true", dest="portal", help="Launch the live dynamic working portal on http://127.0.0.1:8000/portal")
     args = parser.parse_args()
+
+    # Live Portal Mode
+    if args.portal:
+        import uvicorn
+        import webbrowser
+        console.print(Panel.fit(
+            "[bold cyan]⚡ STRIKE//OS PRO - LIVE DYNAMIC WORKING PORTAL[/bold cyan]\n"
+            "[bold green]Serving portal at: http://127.0.0.1:8000/portal[/bold green]\n"
+            "[dim]Live Match Selector • 4 Archetypes • 3 Invariable Laws • 1-Click Dream11 Injector[/dim]",
+            border_style="cyan"
+        ))
+        try:
+            webbrowser.open("http://127.0.0.1:8000/portal")
+        except Exception:
+            pass
+        uvicorn.run("gl_engine.web_app:app", host="127.0.0.1", port=8000, reload=False)
+        return
 
     # MCP Server Mode
     if args.mcp:

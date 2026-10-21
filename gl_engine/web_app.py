@@ -1134,6 +1134,15 @@ def get_2026_schedule():
     from .datasets_2026 import Datasets2026Pipeline
     return {"fixtures": Datasets2026Pipeline().get_season_2026_fixtures()}
 
+LIVE_PORTAL_PATH = Path(__file__).parent / "templates" / "live_portal.html"
+
+@app.get("/portal", response_class=HTMLResponse)
+def live_portal():
+    """Serves the dynamic live working portal with interactive match selector and full tool integration."""
+    if LIVE_PORTAL_PATH.exists():
+        return LIVE_PORTAL_PATH.read_text(encoding="utf-8")
+    return "<h1>Live Portal Template Not Found</h1>"
+
 @app.get("/legacy", response_class=HTMLResponse)
 def index():
     raw_data = load_data()
