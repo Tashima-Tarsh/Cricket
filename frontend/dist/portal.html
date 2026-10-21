@@ -271,19 +271,24 @@
           </h1>
 
           <!-- Prominent Date, Time & Venue Details Strip -->
-          <div class="flex flex-wrap items-center gap-y-2 gap-x-4 text-xs font-mono bg-slate-900/90 p-3 rounded-xl border border-slate-800">
-            <div class="flex items-center gap-1.5">
-              <span class="text-cyan-400 font-bold">&#128197; Date:</span>
-              <strong id="heroDate" class="text-white">Tomorrow, Oct 22, 2026</strong>
+          <div class="flex flex-wrap items-center justify-between gap-y-2 gap-x-4 text-xs font-mono bg-slate-900/90 p-3 rounded-xl border border-slate-800">
+            <div class="flex flex-wrap items-center gap-y-2 gap-x-4">
+              <div class="flex items-center gap-1.5">
+                <span class="text-cyan-400 font-bold">&#128197; Date:</span>
+                <strong id="heroDate" class="text-white">Tomorrow, Oct 22, 2026</strong>
+              </div>
+              <div class="flex items-center gap-1.5">
+                <span class="text-amber-400 font-bold">&#9200; Time:</span>
+                <strong id="heroTime" class="text-white">12:30 PM IST (7:00 PM Local NZDT)</strong>
+              </div>
+              <div class="flex items-center gap-1.5">
+                <span class="text-emerald-400 font-bold">&#127967; Venue:</span>
+                <strong id="heroVenueText" class="text-cyan-300">Eden Park, Auckland, New Zealand</strong>
+              </div>
             </div>
-            <div class="flex items-center gap-1.5">
-              <span class="text-amber-400 font-bold">&#9200; Time:</span>
-              <strong id="heroTime" class="text-white">12:30 PM IST (7:00 PM Local NZDT)</strong>
-            </div>
-            <div class="flex items-center gap-1.5">
-              <span class="text-emerald-400 font-bold">&#127967; Venue:</span>
-              <strong id="heroVenueText" class="text-cyan-300">Eden Park, Auckland, New Zealand</strong>
-            </div>
+            <button onclick="switchTab('matchups')" class="px-3 py-1.5 rounded-lg bg-cyan-950 hover:bg-cyan-400 hover:text-black text-cyan-300 border border-cyan-500/40 transition flex items-center gap-1.5 font-bold shadow">
+              <span>&#9876;</span> <span>Bowler vs Batter & Speed Matchups &rarr;</span>
+            </button>
           </div>
 
           <!-- Conditions Strip -->
@@ -333,6 +338,9 @@
       <button onclick="switchTab('lineups')" id="tab-lineups" class="tab-btn active px-4 py-2.5 rounded-xl border border-transparent text-sm font-mono font-semibold transition flex items-center gap-2">
         <span>&#127942;</span> Grand League Lineups <span id="badgeLineupCount" class="text-xs px-1.5 py-0.5 rounded-full bg-cyan-950 text-cyan-300 font-bold">4</span>
       </button>
+      <button onclick="switchTab('matchups')" id="tab-matchups" class="tab-btn px-4 py-2.5 rounded-xl border border-transparent text-slate-400 hover:text-white text-sm font-mono font-semibold transition flex items-center gap-2">
+        <span>&#9876;</span> Bowler vs Batter & Speed Matchups
+      </button>
       <button onclick="switchTab('pitch')" id="tab-pitch" class="tab-btn px-4 py-2.5 rounded-xl border border-transparent text-slate-400 hover:text-white text-sm font-mono font-semibold transition flex items-center gap-2">
         <span>&#127967;</span> Spatial Pitch & Hawkeye Radar
       </button>
@@ -340,13 +348,10 @@
         <span>&#129504;</span> NLP Toss Deconstructor
       </button>
       <button onclick="switchTab('debate')" id="tab-debate" class="tab-btn px-4 py-2.5 rounded-xl border border-transparent text-slate-400 hover:text-white text-sm font-mono font-semibold transition flex items-center gap-2">
-        <span>&#9876;</span> 3-Agent Consensus Debate
+        <span>&#128002;</span> 3-Agent Consensus Debate
       </button>
       <button onclick="switchTab('momentum')" id="tab-momentum" class="tab-btn px-4 py-2.5 rounded-xl border border-transparent text-slate-400 hover:text-white text-sm font-mono font-semibold transition flex items-center gap-2">
         <span>&#128200;</span> Live Field Rank Simulator
-      </button>
-      <button onclick="switchTab('h2h')" id="tab-h2h" class="tab-btn px-4 py-2.5 rounded-xl border border-transparent text-slate-400 hover:text-white text-sm font-mono font-semibold transition flex items-center gap-2">
-        <span>&#127919;</span> H2H Battle Matrix
       </button>
     </div>
 
@@ -638,19 +643,114 @@
     </div>
 
     <!-- ===================================================================== -->
-    <!-- TAB 6: H2H BATTLE MATRIX -->
     <!-- ===================================================================== -->
-    <div id="view-h2h" class="hidden space-y-6">
-      <div class="glass-panel rounded-2xl p-6 lg:p-8 space-y-6">
-        <div>
-          <h2 class="font-display font-bold text-lg text-white">Ball-by-Ball Head-to-Head Battle Matrix</h2>
-          <p class="text-xs text-slate-400 font-mono">Real historical micro-battles queried from 328k DuckDB deliveries</p>
+    <!-- TAB 2: BOWLER VS BATTER, HANDEDNESS & SPEED MATCHUPS -->
+    <!-- ===================================================================== -->
+    <div id="view-matchups" class="hidden space-y-6">
+      
+      <!-- Section 1: Interactive Bowler vs Batter Duel Simulator -->
+      <div class="glass-panel rounded-2xl p-6 lg:p-8 space-y-6 border-l-4 border-l-cyan-400">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-slate-800 pb-4">
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="w-2.5 h-2.5 rounded-full bg-cyan-400 animate-pulse"></span>
+              <h2 class="font-display font-black text-lg text-white">Interactive Bowler vs Batter Duel Simulator</h2>
+              <span class="text-[10px] font-mono px-2 py-0.5 rounded-full bg-cyan-950 text-cyan-400 border border-cyan-800 font-bold">BALL-BY-BALL TELEMETRY</span>
+            </div>
+            <p class="text-xs text-slate-400 font-mono mt-0.5">Select any batter and bowler to inspect head-to-head strike rate, release speed, dismissals, and venue advantage.</p>
+          </div>
+
+          <!-- Selectors -->
+          <div class="flex flex-wrap items-center gap-3 w-full sm:w-auto">
+            <div>
+              <label for="duelBatterSelect" class="text-[10px] font-mono text-slate-400 block mb-1">CHOOSE BATTER:</label>
+              <select id="duelBatterSelect" onchange="onDuelSelectionChange()" class="bg-slate-900 border border-slate-700 text-white font-mono text-xs px-3 py-2 rounded-xl focus:border-cyan-400 cursor-pointer">
+                <!-- Dynamically populated -->
+              </select>
+            </div>
+            <div>
+              <label for="duelBowlerSelect" class="text-[10px] font-mono text-slate-400 block mb-1">CHOOSE BOWLER:</label>
+              <select id="duelBowlerSelect" onchange="onDuelSelectionChange()" class="bg-slate-900 border border-slate-700 text-white font-mono text-xs px-3 py-2 rounded-xl focus:border-cyan-400 cursor-pointer">
+                <!-- Dynamically populated -->
+              </select>
+            </div>
+          </div>
         </div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4" id="h2hBattlesContainer">
-          <!-- Rendered dynamically via JS -->
+        <!-- Duel Comparison Card Container -->
+        <div id="duelResultCard" class="bg-slate-950/70 p-5 rounded-2xl border border-slate-800/90 space-y-5">
+          <!-- Rendered dynamically via updateDuelCard() -->
         </div>
       </div>
+
+      <!-- Section 2: Left-Arm vs Right-Arm Delivery Angle & Speed Matrix -->
+      <div class="glass-panel rounded-2xl p-6 lg:p-8 space-y-5">
+        <div class="border-b border-slate-800 pb-3">
+          <div class="flex items-center gap-2">
+            <span class="text-xl">&#9878;</span>
+            <h2 class="font-display font-black text-lg text-white">Left-Arm vs Right-Arm Delivery Angle & Speed Matrix</h2>
+          </div>
+          <p class="text-xs text-slate-400 font-mono mt-0.5">Batters breakdown vs Left-Arm Pace (LAP), Right-Arm Pace (RAP), Off-Spin (OB), Leg-Spin (LB), and Slow Left-Arm (SLA).</p>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-left font-mono text-xs">
+            <thead class="bg-slate-900/90 text-slate-400 uppercase text-[10px] border-b border-slate-800">
+              <tr>
+                <th class="p-3">Batter & Hand</th>
+                <th class="p-3">vs Right-Arm Pace</th>
+                <th class="p-3">vs Left-Arm Pace</th>
+                <th class="p-3">vs Off-Spin</th>
+                <th class="p-3">vs Leg-Spin</th>
+                <th class="p-3">vs Left-Arm Spin</th>
+                <th class="p-3">Speed Vulnerability</th>
+                <th class="p-3">Venue Fit</th>
+              </tr>
+            </thead>
+            <tbody id="handednessTableBody" class="divide-y divide-slate-800/60 text-slate-200">
+              <!-- Rendered dynamically -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Section 3: Venue Player Records (At Current Ground) -->
+      <div class="glass-panel rounded-2xl p-6 lg:p-8 space-y-5">
+        <div class="border-b border-slate-800 pb-3 flex justify-between items-center">
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="text-xl">&#127967;</span>
+              <h2 class="font-display font-black text-lg text-white">Player Venue History & Fantasy Projections</h2>
+            </div>
+            <p class="text-xs text-slate-400 font-mono mt-0.5">Historical match records, strike rates, economy, and average fantasy points at this specific stadium.</p>
+          </div>
+          <span id="venuePlayerRecordBadge" class="text-xs font-mono px-3 py-1 rounded-full bg-cyan-950 text-cyan-400 border border-cyan-800 font-bold">
+            Eden Park Auckland
+          </span>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-left font-mono text-xs">
+            <thead class="bg-slate-900/90 text-slate-400 uppercase text-[10px] border-b border-slate-800">
+              <tr>
+                <th class="p-3">Player</th>
+                <th class="p-3">Team / Role</th>
+                <th class="p-3">Hand / Delivery Speed</th>
+                <th class="p-3">Venue Matches</th>
+                <th class="p-3">Runs / Wickets</th>
+                <th class="p-3">Venue Avg</th>
+                <th class="p-3">SR / Economy</th>
+                <th class="p-3">Avg Fantasy Pts</th>
+                <th class="p-3">Syndicate Badge</th>
+              </tr>
+            </thead>
+            <tbody id="venuePlayerTableBody" class="divide-y divide-slate-800/60 text-slate-200">
+              <!-- Rendered dynamically -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
     </div>
 
   </main>
@@ -950,8 +1050,8 @@
       // 3. Render Lineups
       renderLineups(m.lineups || []);
 
-      // 4. Render Battles
-      renderBattles(m.battles || []);
+      // 4. Render Battles & Matchups
+      renderMatchupsTab(m);
 
       // 5. Update Debate scripts
       updateDebateScripts(m);
@@ -1043,39 +1143,206 @@
       });
     }
 
-    function renderBattles(battles) {
-      const container = document.getElementById("h2hBattlesContainer");
-      container.innerHTML = "";
-      if (battles.length === 0) {
-        container.innerHTML = `<div class="col-span-3 text-center text-xs font-mono text-slate-500 p-6 bg-slate-900/40 rounded-xl">No prior ball-by-ball deliveries recorded in local database for this specific micro-matchup.</div>`;
-        return;
+    // =========================================================================
+    // 6. Matchups, Duel Simulator & Handedness Matrix
+    // =========================================================================
+    function renderMatchupsTab(m) {
+      const matchups = m.matchups || [];
+      const handedness = m.handedness_matrix || [];
+      const venueRecords = m.venue_player_records || [];
+
+      // 1. Populate Duel Selectors
+      const bSelect = document.getElementById("duelBatterSelect");
+      const pSelect = document.getElementById("duelBowlerSelect");
+      
+      const batters = [...new Set(matchups.map(x => x.batter))];
+      const bowlers = [...new Set(matchups.map(x => x.bowler))];
+
+      if (bSelect && batters.length > 0) {
+        bSelect.innerHTML = "";
+        batters.forEach(b => {
+          const opt = document.createElement("option");
+          opt.value = b;
+          opt.textContent = b;
+          bSelect.appendChild(opt);
+        });
       }
-      battles.forEach(b => {
-        const item = document.createElement("div");
-        item.className = "bg-slate-900/90 p-4 rounded-xl border border-slate-800 space-y-2";
-        const advClass = (b.adv || '').includes("Batter") ? "text-emerald-400" : ((b.adv || '').includes("Bowler") ? "text-amber-400" : "text-cyan-400");
-        item.innerHTML = `
-          <div class="flex justify-between items-center text-xs font-mono border-b border-slate-800 pb-1.5">
-            <strong class="text-white">${b.batter}</strong>
-            <span class="text-slate-400">vs</span>
-            <strong class="text-cyan-400">${b.bowler}</strong>
-          </div>
-          <div class="grid grid-cols-3 gap-2 text-xs font-mono text-slate-300 pt-1">
-            <div>Runs: <strong class="text-white">${b.runs}</strong></div>
-            <div>Balls: <strong class="text-white">${b.balls}</strong></div>
-            <div>Wkts: <strong class="text-amber-400">${b.dism}</strong></div>
-          </div>
-          <div class="flex justify-between items-center text-xs font-mono pt-1 text-slate-400">
-            <span>SR: <strong class="text-white">${b.sr}</strong></span>
-            <span class="${advClass} font-bold">${b.adv || 'Neutral'}</span>
-          </div>
-        `;
-        container.appendChild(item);
-      });
+
+      if (pSelect && bowlers.length > 0) {
+        pSelect.innerHTML = "";
+        bowlers.forEach(bw => {
+          const opt = document.createElement("option");
+          opt.value = bw;
+          opt.textContent = bw;
+          pSelect.appendChild(opt);
+        });
+      }
+
+      updateDuelCard();
+
+      // 2. Populate Handedness Matrix Table
+      const hBody = document.getElementById("handednessTableBody");
+      if (hBody) {
+        hBody.innerHTML = "";
+        handedness.forEach(h => {
+          const tr = document.createElement("tr");
+          tr.className = "hover:bg-slate-900/60 transition";
+          tr.innerHTML = `
+            <td class="p-3"><strong class="text-white">${h.batter}</strong> <span class="text-[10px] px-1.5 py-0.5 rounded bg-cyan-950 text-cyan-400 font-bold ml-1">${h.hand}</span></td>
+            <td class="p-3 font-semibold text-slate-300">${h.vs_rap || '-'}</td>
+            <td class="p-3 font-semibold text-slate-300">${h.vs_lap || '-'}</td>
+            <td class="p-3 font-semibold text-slate-300">${h.vs_ob || '-'}</td>
+            <td class="p-3 font-semibold text-slate-300">${h.vs_lb || '-'}</td>
+            <td class="p-3 font-semibold text-slate-300">${h.vs_sla || '-'}</td>
+            <td class="p-3 text-amber-300 font-semibold">${h.weakness_speed || '-'}</td>
+            <td class="p-3 text-emerald-400 font-semibold">${h.venue_fit || '-'}</td>
+          `;
+          hBody.appendChild(tr);
+        });
+      }
+
+      // 3. Populate Venue Player Records Table
+      const vBody = document.getElementById("venuePlayerTableBody");
+      const vBadge = document.getElementById("venuePlayerRecordBadge");
+      if (vBadge) vBadge.innerText = m.venue || "Stadium Records";
+      if (vBody) {
+        vBody.innerHTML = "";
+        venueRecords.forEach(v => {
+          const tr = document.createElement("tr");
+          tr.className = "hover:bg-slate-900/60 transition";
+          tr.innerHTML = `
+            <td class="p-3 font-bold text-white">${v.player}</td>
+            <td class="p-3 text-slate-400">${v.team || ''} • <span class="text-slate-300">${v.role || ''}</span></td>
+            <td class="p-3 text-cyan-300 font-bold">${v.hand || ''}</td>
+            <td class="p-3 text-slate-300">${v.matches || 0}</td>
+            <td class="p-3 font-bold text-slate-200">${v.runs_wkts || '-'}</td>
+            <td class="p-3 text-emerald-400 font-bold">${v.avg || '-'}</td>
+            <td class="p-3 text-slate-300">${v.sr_econ || '-'}</td>
+            <td class="p-3 text-amber-300 font-bold">${v.fantasy_avg || '-'}</td>
+            <td class="p-3"><span class="px-2 py-0.5 rounded bg-purple-950 text-purple-300 border border-purple-800 text-[10px] font-bold">${v.badge || 'Verified'}</span></td>
+          `;
+          vBody.appendChild(tr);
+        });
+      }
     }
 
+    function onDuelSelectionChange() {
+      updateDuelCard();
+    }
+
+    function updateDuelCard() {
+      const bSelect = document.getElementById("duelBatterSelect");
+      const pSelect = document.getElementById("duelBowlerSelect");
+      const cardContainer = document.getElementById("duelResultCard");
+      if (!cardContainer) return;
+
+      const selBatter = bSelect ? bSelect.value : "";
+      const selBowler = pSelect ? pSelect.value : "";
+
+      const matchups = (activeMatchData && activeMatchData.matchups) ? activeMatchData.matchups : [];
+      
+      let duel = matchups.find(x => x.batter === selBatter && x.bowler === selBowler);
+      if (!duel) {
+        duel = matchups.find(x => x.batter === selBatter) || matchups.find(x => x.bowler === selBowler) || matchups[0];
+      }
+
+      if (!duel) {
+        cardContainer.innerHTML = `<div class="p-6 text-center text-slate-500 font-mono text-xs">No duel data available for this pair.</div>`;
+        return;
+      }
+
+      const advClass = (duel.adv || '').includes("Batter") ? "text-emerald-400 bg-emerald-950/60 border-emerald-500/40" : ((duel.adv || '').includes("Bowler") ? "text-amber-400 bg-amber-950/60 border-amber-500/40" : "text-cyan-400 bg-cyan-950/60 border-cyan-500/40");
+
+      cardContainer.innerHTML = `
+        <!-- Top Duel Header -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-center bg-slate-900/90 p-4 rounded-xl border border-slate-800">
+          
+          <!-- Batter Side -->
+          <div class="flex items-center gap-3">
+            <div class="w-12 h-12 rounded-xl bg-cyan-500/20 border border-cyan-500/40 flex items-center justify-center text-xl font-black text-cyan-300">
+              &#127951;
+            </div>
+            <div>
+              <span class="text-[10px] uppercase font-mono text-slate-400 block font-bold">BATTER</span>
+              <strong class="text-white text-base font-display">${duel.batter}</strong>
+              <span class="text-xs font-mono text-cyan-400 block">${duel.batter_hand || 'Batting Hand'}</span>
+            </div>
+          </div>
+
+          <!-- Speed & SR Pulse Center -->
+          <div class="text-center p-3 rounded-xl bg-slate-950/80 border border-slate-800 space-y-1">
+            <span class="text-[10px] font-mono text-slate-400 uppercase tracking-widest block font-bold">BOWLER RELEASE SPEED</span>
+            <div class="flex items-center justify-center gap-2">
+              <span class="text-xs text-amber-400">&#9889;</span>
+              <strong class="text-2xl font-display font-black text-amber-400 tracking-tight">${duel.speed || '142.5 km/h'}</strong>
+            </div>
+            <span class="text-[10px] font-mono text-emerald-400 font-bold block">Strike Rate: ${duel.sr}</span>
+          </div>
+
+          <!-- Bowler Side -->
+          <div class="flex items-center justify-end gap-3 text-right">
+            <div>
+              <span class="text-[10px] uppercase font-mono text-slate-400 block font-bold">BOWLER</span>
+              <strong class="text-white text-base font-display">${duel.bowler}</strong>
+              <span class="text-xs font-mono text-amber-400 block">${duel.bowler_arm || 'Bowling Arm'}</span>
+            </div>
+            <div class="w-12 h-12 rounded-xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-xl font-black text-amber-300">
+              &#9918;
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Metrics Grid -->
+        <div class="grid grid-cols-2 sm:grid-cols-6 gap-3 text-center font-mono">
+          <div class="bg-slate-900/80 p-3 rounded-xl border border-slate-800">
+            <span class="text-slate-400 text-[10px] block">RUNS</span>
+            <strong class="text-white text-lg font-display">${duel.runs}</strong>
+          </div>
+          <div class="bg-slate-900/80 p-3 rounded-xl border border-slate-800">
+            <span class="text-slate-400 text-[10px] block">BALLS</span>
+            <strong class="text-white text-lg font-display">${duel.balls}</strong>
+          </div>
+          <div class="bg-slate-900/80 p-3 rounded-xl border border-slate-800">
+            <span class="text-slate-400 text-[10px] block">DISMISSALS</span>
+            <strong class="text-amber-400 text-lg font-display">${duel.dism}</strong>
+          </div>
+          <div class="bg-slate-900/80 p-3 rounded-xl border border-slate-800">
+            <span class="text-slate-400 text-[10px] block">STRIKE RATE</span>
+            <strong class="text-cyan-400 text-lg font-display">${duel.sr}</strong>
+          </div>
+          <div class="bg-slate-900/80 p-3 rounded-xl border border-slate-800">
+            <span class="text-slate-400 text-[10px] block">DOT BALL %</span>
+            <strong class="text-purple-400 text-lg font-display">${duel.dots || 35.0}%</strong>
+          </div>
+          <div class="bg-slate-900/80 p-3 rounded-xl border border-slate-800">
+            <span class="text-slate-400 text-[10px] block">BOUNDARIES</span>
+            <strong class="text-emerald-400 text-lg font-display">${duel.fours || 0}F / ${duel.sixes || 0}S</strong>
+          </div>
+        </div>
+
+        <!-- Bottom Insights: Venue Factor & AI Syndicate Verdict -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs font-mono">
+          <div class="bg-slate-900/90 p-4 rounded-xl border border-slate-800 space-y-1.5">
+            <span class="text-slate-400 uppercase text-[10px] font-bold flex items-center gap-1.5">
+              <span>&#127967;</span> VENUE DIMENSION & ANGLE FACTOR
+            </span>
+            <p class="text-slate-200 leading-relaxed">${duel.venue_factor || 'Surface and boundary dimensions evaluated for this matchup.'}</p>
+          </div>
+
+          <div class="p-4 rounded-xl border space-y-1.5 ${advClass}">
+            <span class="uppercase text-[10px] font-bold flex items-center gap-1.5">
+              <span>&#9878;</span> GRAND LEAGUE TACTICAL VERDICT
+            </span>
+            <p class="font-bold leading-relaxed">${duel.adv || 'Tactical Neutral Matchup'}</p>
+          </div>
+        </div>
+      `;
+    }
+
+
     function switchTab(tabKey) {
-      const tabs = ['lineups', 'pitch', 'nlp', 'debate', 'momentum', 'h2h'];
+      const tabs = ['lineups', 'matchups', 'pitch', 'nlp', 'debate', 'momentum'];
       tabs.forEach(t => {
         const btn = document.getElementById(`tab-${t}`);
         const view = document.getElementById(`view-${t}`);
