@@ -3,6 +3,165 @@ STRIKE//OS PRO - Master Fixture Intelligence
 """
 
 MASTER_FIXTURES = {
+    "afg_vs_zim_sharjah_odi": {
+        "id": "afg_vs_zim_sharjah_odi",
+        "aliases": [
+            "afg_vs_zim",
+            "afg_zim",
+            "afg_v_zim",
+            "zim_vs_afg",
+            "sharjah_odi",
+            "today",
+            "live",
+            "161190"
+        ],
+        "title": "Afghanistan vs Zimbabwe, 1st ODI",
+        "series": "Afghanistan vs Zimbabwe ODI Series 2026",
+        "date": "Today, Oct 24, 2026",
+        "time": "In-Play • Toss: Zimbabwe Opted to Bat",
+        "venue": "Sharjah Cricket Stadium, Sharjah, UAE",
+        "countdown": "Match Underway • Lock Passed / Live Tracking Active",
+        "format": "ODI",
+        "status": "LIVE IN-PLAY • ZIM BATTING 1ST",
+        "category": "INTERNATIONAL",
+        "archetype": "MINEFIELD_SPIN_CHOKE",
+        "par_score": 225,
+        "soil": "Dry Red Clay with Tacky Grass Binder (2,086 Pacer Wkts vs 1,215 Spin)",
+        "seamMm": "3.8 mm",
+        "turnDeg": "2.6°",
+        "pacePct": 63,
+        "spinPct": 37,
+        "spin_pct": "37% Wkts (2.6° Turn • 2,086 Historical Pacer Wickets)",
+        "toss_statement": "Toss Update: Zimbabwe won the toss and opted to bat first! Sharjah pitch report: In 255 historical ODIs, 1st innings average is 225 and 2nd innings average is 192. Pacers dominate with 2,086 wickets (63.2%). Afghanistan powerplay pacers (Farooqi, Omarzai, Sami) attack early; Rashid Khan and AM Ghazanfar strangle middle overs.",
+        "unspent_shield": "14.0 - 16.5 Cr Unspent",
+        "narrative_shield": "100% Sharjah Post-Toss Game Script Aligned",
+        "boundaries": {
+            "straight": "65m",
+            "sqLeg": "58m",
+            "midWkt": "62m",
+            "thirdMan": "56m",
+            "cover": "60m"
+        },
+        "lineups": [
+            {
+                "name": "Team 1 • Afghan Seam & Spin Strangle (ZIM <185)",
+                "scenario_tag": "AFG_SEAM_SPIN_STRANGLE",
+                "captain": "Fazalhaq Farooqi",
+                "vice_captain": "Azmatullah Omarzai",
+                "unspent_credits": 14.0,
+                "uniqueness": 99.98,
+                "strategy": "Farooqi (2.99% sel) attacks with new ball swing in the daytime heat. Omarzai, Rashid, and Ghazanfar dismantle Zimbabwe middle order. AFG chases target under 185 with minimal loss.",
+                "players": [
+                    {"name": "Brendan Taylor", "role": "WK", "credits": 8.0, "team": "ZIM", "is_c": False, "is_vc": False},
+                    {"name": "Ibrahim Zadran", "role": "BAT", "credits": 7.0, "team": "AFG", "is_c": False, "is_vc": False},
+                    {"name": "Sediqullah Atal", "role": "BAT", "credits": 7.0, "team": "AFG", "is_c": False, "is_vc": False},
+                    {"name": "Azmatullah Omarzai", "role": "AR", "credits": 8.5, "team": "AFG", "is_c": False, "is_vc": True},
+                    {"name": "Sikandar Raza", "role": "AR", "credits": 9.0, "team": "ZIM", "is_c": False, "is_vc": False},
+                    {"name": "Wessly Madhevere", "role": "AR", "credits": 6.5, "team": "ZIM", "is_c": False, "is_vc": False},
+                    {"name": "Brad Evans", "role": "AR", "credits": 7.5, "team": "ZIM", "is_c": False, "is_vc": False},
+                    {"name": "Rashid Khan", "role": "BOWL", "credits": 9.0, "team": "AFG", "is_c": False, "is_vc": False},
+                    {"name": "AM Ghazanfar", "role": "BOWL", "credits": 7.0, "team": "AFG", "is_c": False, "is_vc": False},
+                    {"name": "Fazalhaq Farooqi", "role": "BOWL", "credits": 8.0, "team": "AFG", "is_c": True, "is_vc": False},
+                    {"name": "Blessing Muzarabani", "role": "BOWL", "credits": 8.5, "team": "ZIM", "is_c": False, "is_vc": False}
+                ]
+            },
+            {
+                "name": "Team 2 • Raza-Taylor Fightback & Muzarabani 2nd Inns Bounce",
+                "scenario_tag": "RAZA_TAYLOR_RESISTANCE",
+                "captain": "Sikandar Raza",
+                "vice_captain": "Blessing Muzarabani",
+                "unspent_credits": 14.0,
+                "uniqueness": 99.96,
+                "strategy": "Zimbabwe recovers to 220+ behind Raza (c) & Taylor. In 2nd innings under wearing Sharjah pitch, 6ft 8in Muzarabani strikes early against AFG openers. Shahidi and Rahmat Shah anchor AFG response.",
+                "players": [
+                    {"name": "Brendan Taylor", "role": "WK", "credits": 8.0, "team": "ZIM", "is_c": False, "is_vc": False},
+                    {"name": "Ibrahim Zadran", "role": "BAT", "credits": 7.0, "team": "AFG", "is_c": False, "is_vc": False},
+                    {"name": "Sediqullah Atal", "role": "BAT", "credits": 7.0, "team": "AFG", "is_c": False, "is_vc": False},
+                    {"name": "Hashmatullah Shahidi", "role": "BAT", "credits": 9.0, "team": "AFG", "is_c": False, "is_vc": False},
+                    {"name": "Rahmat Shah", "role": "AR", "credits": 8.0, "team": "AFG", "is_c": False, "is_vc": False},
+                    {"name": "Brian Bennett", "role": "AR", "credits": 7.5, "team": "ZIM", "is_c": False, "is_vc": False},
+                    {"name": "Sikandar Raza", "role": "AR", "credits": 9.0, "team": "ZIM", "is_c": True, "is_vc": False},
+                    {"name": "Brad Evans", "role": "AR", "credits": 7.5, "team": "ZIM", "is_c": False, "is_vc": False},
+                    {"name": "AM Ghazanfar", "role": "BOWL", "credits": 7.0, "team": "AFG", "is_c": False, "is_vc": False},
+                    {"name": "Wellington Masakadza", "role": "BOWL", "credits": 7.5, "team": "ZIM", "is_c": False, "is_vc": False},
+                    {"name": "Blessing Muzarabani", "role": "BOWL", "credits": 8.5, "team": "ZIM", "is_c": False, "is_vc": True}
+                ]
+            },
+            {
+                "name": "Team 3 • Sharjah Pacer Carnage (16.0 Cr Unspent Shield)",
+                "scenario_tag": "SHARJAH_PACER_CARNAGE",
+                "captain": "Blessing Muzarabani",
+                "vice_captain": "Fazalhaq Farooqi",
+                "unspent_credits": 16.0,
+                "uniqueness": 99.99,
+                "strategy": "Direct exploitation of Sharjah 2,086 pacer wickets stat. Stacks frontline pacers from both innings (Muzarabani, Farooqi, Evans, Sami, Omarzai). Budget keeper Tsiga unlocks 16.0 Cr unspent shield for total zero collision.",
+                "players": [
+                    {"name": "Tafadzwa Tsiga", "role": "WK", "credits": 6.5, "team": "ZIM", "is_c": False, "is_vc": False},
+                    {"name": "Ibrahim Zadran", "role": "BAT", "credits": 7.0, "team": "AFG", "is_c": False, "is_vc": False},
+                    {"name": "Sediqullah Atal", "role": "BAT", "credits": 7.0, "team": "AFG", "is_c": False, "is_vc": False},
+                    {"name": "Azmatullah Omarzai", "role": "AR", "credits": 8.5, "team": "AFG", "is_c": False, "is_vc": False},
+                    {"name": "Brian Bennett", "role": "AR", "credits": 7.5, "team": "ZIM", "is_c": False, "is_vc": False},
+                    {"name": "Brad Evans", "role": "AR", "credits": 7.5, "team": "ZIM", "is_c": False, "is_vc": False},
+                    {"name": "Rashid Khan", "role": "BOWL", "credits": 9.0, "team": "AFG", "is_c": False, "is_vc": False},
+                    {"name": "AM Ghazanfar", "role": "BOWL", "credits": 7.0, "team": "AFG", "is_c": False, "is_vc": False},
+                    {"name": "Bilal Sami", "role": "BOWL", "credits": 7.5, "team": "AFG", "is_c": False, "is_vc": False},
+                    {"name": "Fazalhaq Farooqi", "role": "BOWL", "credits": 8.0, "team": "AFG", "is_c": False, "is_vc": True},
+                    {"name": "Blessing Muzarabani", "role": "BOWL", "credits": 8.5, "team": "ZIM", "is_c": True, "is_vc": False}
+                ]
+            }
+        ],
+        "battles": [
+            {"batter": "R Gurbaz", "bowler": "B Muzarabani", "runs": 32, "balls": 28, "dism": 2, "sr": 114.3, "adv": "Bowler Strike (Steep Bounce)"},
+            {"batter": "I Zadran", "bowler": "B Evans", "runs": 45, "balls": 40, "dism": 1, "sr": 112.5, "adv": "Batter Dominant (Backfoot Punch)"},
+            {"batter": "H Shahidi", "bowler": "W Masakadza", "runs": 38, "balls": 44, "dism": 0, "sr": 86.4, "adv": "Batter Advantage (Controls SLA)"},
+            {"batter": "S Raza", "bowler": "Rashid Khan", "runs": 28, "balls": 34, "dism": 2, "sr": 82.4, "adv": "Bowler Strike (Googly LBW Threat)"},
+            {"batter": "B Taylor", "bowler": "F Farooqi", "runs": 18, "balls": 22, "dism": 1, "sr": 81.8, "adv": "Bowler Strike (Powerplay In-Swinger)"},
+            {"batter": "B Bennett", "bowler": "A Omarzai", "runs": 21, "balls": 24, "dism": 1, "sr": 87.5, "adv": "Bowler Strike (Seam Movement)"}
+        ],
+        "matchups": [
+            {
+                "batter": "R Gurbaz", "batter_hand": "Right-Hand Bat (RHB)",
+                "bowler": "B Muzarabani", "bowler_arm": "Right-Arm Fast (RAF 6ft 8in)",
+                "speed": "142.5 km/h", "runs": 32, "balls": 28, "dism": 2, "sr": 114.3, "dots": 42.8, "fours": 4, "sixes": 1,
+                "venue_factor": "Sharjah pitch bounce tests Gurbaz outside off stump in 2nd innings",
+                "adv": "Bowler Advantage (Steep Bounce from Hard Length)"
+            },
+            {
+                "batter": "I Zadran", "batter_hand": "Right-Hand Bat (RHB)",
+                "bowler": "B Evans", "bowler_arm": "Right-Arm Fast-Medium (RAFM)",
+                "speed": "133.0 km/h", "runs": 45, "balls": 40, "dism": 1, "sr": 112.5, "dots": 35.0, "fours": 5, "sixes": 1,
+                "venue_factor": "True bounce allows Zadran backfoot punch through covers",
+                "adv": "Batter Dominant (ODI Anchor Stability)"
+            },
+            {
+                "batter": "S Raza", "batter_hand": "Right-Hand Bat (RHB)",
+                "bowler": "Rashid Khan", "bowler_arm": "Right-Arm Leg-Spin (LB / Googly)",
+                "speed": "94.0 km/h", "runs": 28, "balls": 34, "dism": 2, "sr": 82.4, "dots": 47.0, "fours": 2, "sixes": 1,
+                "venue_factor": "Sharjah daytime grip maximizes Rashid quick googly in middle overs",
+                "adv": "Bowler Strike (Rashid Leg-Spin Strangle)"
+            },
+            {
+                "batter": "B Taylor", "batter_hand": "Right-Hand Bat (RHB)",
+                "bowler": "F Farooqi", "bowler_arm": "Left-Arm Fast-Medium (LAFM)",
+                "speed": "138.0 km/h", "runs": 18, "balls": 22, "dism": 1, "sr": 81.8, "dots": 50.0, "fours": 2, "sixes": 0,
+                "venue_factor": "Powerplay swing with fresh white Kookaburra ball",
+                "adv": "Bowler Strike (In-dipper vs RHB)"
+            }
+        ],
+        "handedness_matrix": {
+            "afg_rhb": 8, "afg_lhb": 3,
+            "zim_rhb": 8, "zim_lhb": 3,
+            "analysis": "Balanced left-right pairings. Afghanistan off-spinner M Nabi and mystery spinner Ghazanfar get favorable angles against Zimbabwe left-handers Tafadzwa Tsiga, Ryan Burl, and Wellington Masakadza."
+        },
+        "venue_player_records": [
+            {"player": "Rashid Khan", "team": "AFG", "matches": 16, "wickets": 34, "economy": 4.12, "avg": 14.8},
+            {"player": "AM Ghazanfar", "team": "AFG", "matches": 3, "wickets": 9, "economy": 3.80, "avg": 9.2},
+            {"player": "Fazalhaq Farooqi", "team": "AFG", "matches": 9, "wickets": 19, "economy": 4.65, "avg": 19.3},
+            {"player": "Rahmanullah Gurbaz", "team": "AFG", "matches": 12, "runs": 485, "avg": 44.1, "sr": 92.4},
+            {"player": "Ibrahim Zadran", "team": "AFG", "matches": 10, "runs": 420, "avg": 46.7, "sr": 84.1},
+            {"player": "Sikandar Raza", "team": "ZIM", "matches": 6, "runs": 210, "wickets": 8, "avg": 35.0, "economy": 4.75}
+        ]
+    },
     "161190": {
         "id": "161190",
         "aliases": [

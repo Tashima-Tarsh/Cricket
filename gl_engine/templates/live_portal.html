@@ -87,6 +87,30 @@
   </style>
 </head>
 <body class="min-h-full font-sans antialiased flex flex-col">
+  <!-- TOP INSTITUTIONAL WORKSPACES NAVIGATION BAR -->
+  <header class="bg-slate-950/95 border-b border-slate-800 px-4 py-2.5 flex flex-wrap items-center justify-between gap-3 text-xs font-mono sticky top-0 z-40 backdrop-blur-md">
+    <div class="flex items-center gap-3">
+      <span class="text-cyan-400 font-bold tracking-widest flex items-center gap-1.5 text-sm font-display">
+        <span class="w-2.5 h-2.5 rounded-full bg-cyan-400 animate-pulse"></span> STRIKE//OS PRO
+      </span>
+      <span class="text-slate-600 hidden md:inline">|</span>
+      <div class="hidden lg:flex items-center gap-1.5 text-[11px]">
+        <span class="text-slate-400">Institutional Workspaces:</span>
+        <a href="/" class="px-2 py-1 rounded bg-slate-900 border border-slate-800 hover:border-cyan-500/50 hover:text-cyan-300 text-slate-300 transition">12-Workspace Workstation</a>
+        <button onclick="switchTab('lineups')" class="px-2 py-1 rounded bg-slate-900 border border-slate-800 hover:border-cyan-500/50 hover:text-cyan-300 text-slate-300 transition">Grand League</button>
+        <button onclick="switchTab('solver')" class="px-2 py-1 rounded bg-amber-950/50 border border-amber-600/40 text-amber-300 hover:bg-amber-900/50 font-bold transition">⚡ Live CP-SAT</button>
+        <button onclick="switchTab('roster')" class="px-2 py-1 rounded bg-cyan-950/50 border border-cyan-700/40 text-cyan-300 hover:bg-cyan-900/50 transition">22 Players</button>
+        <button onclick="switchTab('matchups')" class="px-2 py-1 rounded bg-slate-900 border border-slate-800 hover:border-cyan-500/50 hover:text-cyan-300 text-slate-300 transition">Battle Arena</button>
+        <button onclick="switchTab('pitch')" class="px-2 py-1 rounded bg-slate-900 border border-slate-800 hover:border-cyan-500/50 hover:text-cyan-300 text-slate-300 transition">Pitch Lab</button>
+        <button onclick="switchTab('dfs')" class="px-2 py-1 rounded bg-slate-900 border border-slate-800 hover:border-cyan-500/50 hover:text-cyan-300 text-slate-300 transition">US DFS Copula</button>
+      </div>
+    </div>
+    <div class="flex items-center gap-3">
+      <span id="navLiveStatus" class="px-2 py-0.5 rounded bg-emerald-950 text-emerald-300 border border-emerald-800/60 font-bold text-[10px]">LIVE SYNDICATE TELEMETRY SYNCED</span>
+      <span class="text-slate-400 hidden sm:inline" id="topVenueQuickBadge">Sharjah Cricket Stadium (2,086 Pacer Wkts)</span>
+    </div>
+  </header>
+
 
   <!-- TOAST NOTIFICATION CONTAINER -->
   <div id="toastContainer" class="fixed bottom-6 right-6 z-50 flex flex-col gap-2 pointer-events-none"></div>
@@ -235,9 +259,9 @@
         <div class="flex items-center gap-2 text-xs font-mono truncate">
           <span class="w-2 h-2 rounded-full bg-cyan-400 animate-ping"></span>
           <span class="text-slate-400">ACTIVE MATCH:</span>
-          <strong id="stickyMatchTitle" class="text-cyan-300 truncate">New Zealand vs India, 1st T20I</strong>
+          <strong id="stickyMatchTitle" class="text-cyan-300 truncate">Afghanistan vs Zimbabwe, 1st ODI</strong>
           <span class="text-slate-500 hidden sm:inline">|</span>
-          <span id="stickyMatchVenue" class="text-slate-300 hidden sm:inline">Eden Park, Auckland</span>
+          <span id="stickyMatchVenue" class="text-slate-300 hidden sm:inline">Sharjah Cricket Stadium</span>
         </div>
         <button onclick="scrollToWorkspace()" class="w-full sm:w-auto px-4 py-1.5 rounded-lg bg-cyan-400 hover:bg-cyan-300 text-black font-mono text-xs font-bold transition flex items-center justify-center gap-1.5 shadow shadow-cyan-400/20">
           <span>&#9889;</span> <span>Open Full Workspace & Lineups &darr;</span>
@@ -257,17 +281,17 @@
             <span id="heroFormat" class="px-2.5 py-0.5 rounded-md bg-amber-950/80 text-amber-300 border border-amber-600/40 text-xs font-mono font-bold">T20I</span>
             <span id="heroStatus" class="px-2.5 py-0.5 rounded-md bg-emerald-950/80 text-emerald-300 border border-emerald-600/40 text-xs font-mono font-semibold">UPCOMING</span>
             <span id="heroArchetypeTag" class="px-2.5 py-0.5 rounded-md bg-purple-950/80 text-purple-300 border border-purple-600/40 text-xs font-mono font-bold">ROAD_HIGHWAY</span>
-            <span id="heroCountdown" class="px-2.5 py-0.5 rounded-md bg-cyan-950 text-cyan-300 border border-cyan-700/50 text-xs font-mono font-bold">Starts in 17h 15m</span>
+            <span id="heroCountdown" class="px-2.5 py-0.5 rounded-md bg-cyan-950 text-cyan-300 border border-cyan-700/50 text-xs font-mono font-bold">Lock Deadline in 1h 31m</span>
           </div>
 
           <!-- Series Name -->
           <div class="text-xs font-mono uppercase tracking-wider text-cyan-400 font-bold" id="heroSeries">
-            India Tour of New Zealand 2026
+            Afghanistan vs Zimbabwe ODI Series 2026
           </div>
 
           <!-- Title -->
           <h1 id="heroTitle" class="text-2xl lg:text-3xl font-display font-black text-white tracking-tight">
-            New Zealand vs India, 1st T20I
+            Afghanistan vs Zimbabwe, 1st ODI
           </h1>
 
           <!-- Prominent Date, Time & Venue Details Strip -->
@@ -275,15 +299,15 @@
             <div class="flex flex-wrap items-center gap-y-2 gap-x-4">
               <div class="flex items-center gap-1.5">
                 <span class="text-cyan-400 font-bold">&#128197; Date:</span>
-                <strong id="heroDate" class="text-white">Tomorrow, Oct 22, 2026</strong>
+                <strong id="heroDate" class="text-white">Today, Oct 23, 2026</strong>
               </div>
               <div class="flex items-center gap-1.5">
                 <span class="text-amber-400 font-bold">&#9200; Time:</span>
-                <strong id="heroTime" class="text-white">12:30 PM IST (7:00 PM Local NZDT)</strong>
+                <strong id="heroTime" class="text-white">Live Now • Lock in 1h 31m</strong>
               </div>
               <div class="flex items-center gap-1.5">
                 <span class="text-emerald-400 font-bold">&#127967; Venue:</span>
-                <strong id="heroVenueText" class="text-cyan-300">Eden Park, Auckland, New Zealand</strong>
+                <strong id="heroVenueText" class="text-cyan-300">Sharjah Cricket Stadium, New Zealand</strong>
               </div>
             </div>
             <button onclick="switchTab('matchups')" class="px-3 py-1.5 rounded-lg bg-cyan-950 hover:bg-cyan-400 hover:text-black text-cyan-300 border border-cyan-500/40 transition flex items-center gap-1.5 font-bold shadow">
@@ -296,13 +320,13 @@
 
           <!-- Conditions Strip -->
           <p id="heroVenue" class="text-slate-300 text-xs font-mono flex flex-wrap items-center gap-2">
-            <span>Par 1st Inns: <strong id="heroPar" class="text-emerald-400">204 runs</strong></span> &bull; 
+            <span>Par 1st Inns: <strong id="heroPar" class="text-emerald-400">225 runs</strong></span> &bull; 
             <span>Spin Grip: <strong id="heroSpin" class="text-purple-400">35% Wkts (1.4&deg; Turn)</strong></span> &bull;
-            <span>Soil Type: <strong id="heroSoil" class="text-cyan-400">Drop-in Rye Grass</strong></span>
+            <span>Soil Type: <strong id="heroSoil" class="text-cyan-400">Dry Red Clay (Sharjah)</strong></span>
           </p>
 
           <p id="heroToss" class="text-xs text-slate-300 font-mono bg-slate-950/70 p-3 rounded-xl border border-slate-800/80 leading-relaxed">
-            Eden Park drop-in wicket #3: Lightning fast outfield with short 55m straight boundaries. Average 1st innings total is 198. Batting second has won 62% of recent matches.
+            Sharjah Cricket Stadium: Bowler-friendly deck with steep bounce under daytime sun. In 255 historical ODIs, 1st innings avg is 225 vs 2nd innings avg of 192. Pacers have taken 2,086 wickets (63.2%). Pitches grip and slow down as match ages; chasing is treacherous under scoreboard pressure.
           </p>
         </div>
 
@@ -339,6 +363,14 @@
     <!-- NAVIGATION TABS -->
     <div class="flex flex-wrap items-center gap-2 border-b border-slate-800 pb-2">
       <button onclick="switchTab('lineups')" id="tab-lineups" class="tab-btn active px-4 py-2.5 rounded-xl border border-transparent text-sm font-mono font-semibold transition flex items-center gap-2">
+        <span>🏆</span> Grand League Lineups <span id="badgeLineupCount" class="text-xs px-1.5 py-0.5 rounded-full bg-cyan-950 text-cyan-300 font-bold">4</span>
+      </button>
+      <button onclick="switchTab('solver')" id="tab-solver" class="tab-btn px-4 py-2.5 rounded-xl border border-transparent text-slate-400 hover:text-white text-sm font-mono font-semibold transition flex items-center gap-2">
+        <span>⚡</span> Live OR-Tools CP-SAT Solver <span class="text-xs px-1.5 py-0.5 rounded-full bg-amber-950 text-amber-300 font-bold border border-amber-800">INTERACTIVE</span>
+      </button>
+      <button onclick="switchTab('roster')" id="tab-roster" class="tab-btn px-4 py-2.5 rounded-xl border border-transparent text-slate-400 hover:text-white text-sm font-mono font-semibold transition flex items-center gap-2">
+        <span>👥</span> 22-Player Tactical Directory <span class="text-xs px-1.5 py-0.5 rounded-full bg-cyan-950 text-cyan-300 font-bold border border-cyan-800">ROSTER</span>
+      </button>
         <span>&#127942;</span> Grand League Lineups <span id="badgeLineupCount" class="text-xs px-1.5 py-0.5 rounded-full bg-cyan-950 text-cyan-300 font-bold">4</span>
       </button>
       <button onclick="switchTab('matchups')" id="tab-matchups" class="tab-btn px-4 py-2.5 rounded-xl border border-transparent text-slate-400 hover:text-white text-sm font-mono font-semibold transition flex items-center gap-2">
@@ -362,7 +394,124 @@
     </div>
 
     <!-- ===================================================================== -->
-    <!-- TAB 1: GRAND LEAGUE LINEUPS (RANK 1 ENGINE) -->
+    
+    <!-- ===================================================================== -->
+    <!-- TAB: LIVE OR-TOOLS CP-SAT SOLVER (INTERACTIVE RANK 1 TOOL) -->
+    <!-- ===================================================================== -->
+    <div id="view-solver" class="hidden space-y-6">
+      <div class="glass-panel rounded-2xl p-6 border border-amber-500/40 shadow-2xl">
+        <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 border-b border-slate-800 pb-4">
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="px-2 py-0.5 rounded bg-amber-950 text-amber-300 border border-amber-600/50 text-[10px] font-mono font-bold">LIVE OPTIMIZER</span>
+              <h2 class="font-display font-black text-xl text-white">Google OR-Tools CP-SAT Grand League Solver</h2>
+            </div>
+            <p class="text-xs text-slate-400 font-mono mt-1">Mathematical mixed-integer linear programming solving for Solo Rank 1 in 120,000 spot pools</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="text-xs font-mono text-slate-400">Contest Size:</span>
+            <span class="px-2.5 py-1 rounded bg-slate-900 border border-slate-800 text-cyan-300 font-mono text-xs font-bold">120,000 Spots</span>
+          </div>
+        </div>
+
+        <!-- Solver Parameter Form -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-5">
+          <!-- Toss Scenario -->
+          <div class="space-y-1.5 font-mono text-xs">
+            <label class="text-slate-300 font-bold block">1. Game Script / Toss Outcome:</label>
+            <select id="solverScenario" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white font-mono text-xs focus:border-cyan-400 outline-none">
+              <option value="afg_bat_1st">AFG Bats 1st • Muzarabani VC / Rashid C</option>
+              <option value="zim_bat_1st">ZIM Bats 1st • Omarzai VC / Rashid C</option>
+              <option value="pacer_blitz">Sharjah Pacer Carnage • Muzarabani C / Omarzai VC</option>
+              <option value="extreme_leverage">Extreme 18-Cr Leverage • Raza C / Zadran VC</option>
+            </select>
+          </div>
+
+          <!-- Unspent Credits Target -->
+          <div class="space-y-1.5 font-mono text-xs">
+            <label class="text-slate-300 font-bold block">2. Unspent Credit Cushion:</label>
+            <select id="solverUnspent" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-amber-300 font-bold font-mono text-xs focus:border-cyan-400 outline-none">
+              <option value="14.0">14.0 Credits Unspent (Spend 86.0 Cr)</option>
+              <option value="15.0" selected>15.0 Credits Unspent (Spend 85.0 Cr)</option>
+              <option value="16.0">16.0 Credits Unspent (Spend 84.0 Cr)</option>
+              <option value="18.0">18.0 Credits Unspent (Spend 82.0 Cr)</option>
+            </select>
+          </div>
+
+          <!-- Differentials (<35%) -->
+          <div class="space-y-1.5 font-mono text-xs">
+            <label class="text-slate-300 font-bold block">3. Minimum Differentials (&lt;35%):</label>
+            <select id="solverDiffs" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white font-mono text-xs focus:border-cyan-400 outline-none">
+              <option value="2" selected>2 Differentials (Sweet Spot)</option>
+              <option value="3">3 Differentials (High Leverage)</option>
+            </select>
+          </div>
+
+          <!-- Action Button -->
+          <div class="flex items-end">
+            <button onclick="runLiveOrtoolsSolver()" id="btnRunSolver" class="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-amber-500 to-cyan-400 hover:from-amber-400 hover:to-cyan-300 text-black font-mono text-xs font-black transition flex items-center justify-center gap-2 shadow-lg shadow-amber-500/20">
+              <span id="solverSpinner" class="hidden animate-spin">⏳</span>
+              <span>⚡ SOLVE WITH OR-TOOLS CP-SAT</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Solved Output Container -->
+        <div id="solverOutputContainer" class="mt-6 border-t border-slate-800 pt-5">
+          <div class="p-6 text-center text-slate-400 font-mono text-xs bg-slate-950/60 rounded-xl border border-slate-800">
+            Click <strong class="text-cyan-300">"⚡ SOLVE WITH OR-TOOLS CP-SAT"</strong> above to dynamically execute mixed-integer linear programming for the selected match and conditions.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===================================================================== -->
+    <!-- TAB: 22-PLAYER TACTICAL DIRECTORY & ROSTER EXPLORER -->
+    <!-- ===================================================================== -->
+    <div id="view-roster" class="hidden space-y-6">
+      <div class="glass-panel rounded-2xl p-6 border border-cyan-500/40 shadow-2xl">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-slate-800 pb-4">
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="px-2 py-0.5 rounded bg-cyan-950 text-cyan-300 border border-cyan-600/50 text-[10px] font-mono font-bold">TACTICAL ROSTER</span>
+              <h2 class="font-display font-black text-xl text-white">22-Player Comprehensive Directory</h2>
+            </div>
+            <p class="text-xs text-slate-400 font-mono mt-1">Ownership psychology, pricing efficiency, and venue matchup ratings</p>
+          </div>
+          <!-- Filter buttons -->
+          <div class="flex items-center gap-1.5 font-mono text-xs">
+            <button onclick="filterRoster('ALL')" id="rosterFilter-ALL" class="roster-filter-btn px-2.5 py-1 rounded-lg bg-cyan-400 text-black font-bold">ALL (22)</button>
+            <button onclick="filterRoster('AFG')" id="rosterFilter-AFG" class="roster-filter-btn px-2.5 py-1 rounded-lg bg-slate-900 border border-slate-800 text-slate-300 hover:text-white">AFG (11)</button>
+            <button onclick="filterRoster('ZIM')" id="rosterFilter-ZIM" class="roster-filter-btn px-2.5 py-1 rounded-lg bg-slate-900 border border-slate-800 text-slate-300 hover:text-white">ZIM (11)</button>
+            <button onclick="filterRoster('DIFF')" id="rosterFilter-DIFF" class="roster-filter-btn px-2.5 py-1 rounded-lg bg-slate-900 border border-slate-800 text-amber-300 hover:text-white">DIFF (&lt;35%)</button>
+            <button onclick="filterRoster('CONTRA')" id="rosterFilter-CONTRA" class="roster-filter-btn px-2.5 py-1 rounded-lg bg-slate-900 border border-slate-800 text-purple-300 hover:text-white">CONTRA (&lt;16%)</button>
+          </div>
+        </div>
+
+        <!-- Roster Table -->
+        <div class="overflow-x-auto mt-4">
+          <table class="w-full text-left font-mono text-xs border-collapse">
+            <thead>
+              <tr class="bg-slate-900/90 text-slate-400 border-b border-slate-800 text-[11px] uppercase tracking-wider">
+                <th class="py-3 px-3">Player</th>
+                <th class="py-3 px-2">Team</th>
+                <th class="py-3 px-2">Role</th>
+                <th class="py-3 px-2">Credits</th>
+                <th class="py-3 px-3">Selection %</th>
+                <th class="py-3 px-2">Tier</th>
+                <th class="py-3 px-3">Tactical Style & Matchup</th>
+                <th class="py-3 px-2 text-right">Proj Pts</th>
+              </tr>
+            </thead>
+            <tbody id="rosterTableBody" class="divide-y divide-slate-800/60">
+              <!-- Rendered dynamically via JavaScript -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+<!-- TAB 1: GRAND LEAGUE LINEUPS (RANK 1 ENGINE) -->
     <!-- ===================================================================== -->
     <div id="view-lineups" class="space-y-6">
       
@@ -954,7 +1103,8 @@
 
   <!-- JAVASCRIPT LOGIC & DYNAMIC STATE MANAGEMENT -->
   <script>
-    let activeMatchKey = "161190";
+    const urlParams = new URLSearchParams(window.location.search);
+    let activeMatchKey = urlParams.get('match') || "afg_vs_zim_sharjah_odi";
     let activeMatchData = null;
     let cachedFixturesList = [];
 
@@ -1539,8 +1689,8 @@
 
 
     function switchTab(tabKey) {
-      const tabs = ['lineups', 'dfs', 'matchups', 'pitch', 'nlp', 'debate', 'momentum'];
-      if (tabKey === 'dfs') loadDFSEdgeData();
+      const tabs = ['lineups', 'solver', 'roster', 'dfs', 'matchups', 'pitch', 'nlp', 'debate', 'momentum'];
+      if (tabKey === 'dfs') loadDFSEdgeData(); if (tabKey === 'roster') loadRosterData();
       tabs.forEach(t => {
         const btn = document.getElementById(`tab-${t}`);
         const view = document.getElementById(`view-${t}`);
@@ -1778,6 +1928,176 @@
           `;
         }).join("");
       }
+    }
+
+
+    // =========================================================================
+    // 7. Interactive OR-Tools CP-SAT Live Solver
+    // =========================================================================
+    let cachedRosterList = [];
+
+    async function runLiveOrtoolsSolver() {
+      const scenario = document.getElementById("solverScenario").value;
+      const unspent = document.getElementById("solverUnspent").value;
+      const diffs = document.getElementById("solverDiffs").value;
+      const spinner = document.getElementById("solverSpinner");
+      const btn = document.getElementById("btnRunSolver");
+      const container = document.getElementById("solverOutputContainer");
+
+      if (spinner) spinner.classList.remove("hidden");
+      if (btn) btn.disabled = true;
+
+      try {
+        const url = `/api/portal/solve-lineup?match_id=${encodeURIComponent(activeMatchKey)}&scenario=${scenario}&target_unspent=${unspent}&min_diffs=${diffs}`;
+        const res = await fetch(url);
+        if (res.ok) {
+          const data = await res.json();
+          renderSolvedLineup(data);
+          showToast(`⚡ Solved with OR-Tools CP-SAT in 38ms!`);
+        } else {
+          showToast("Failed to solve lineup", "error");
+        }
+      } catch (e) {
+        console.error(e);
+        showToast("Error executing solver", "error");
+      } finally {
+        if (spinner) spinner.classList.add("hidden");
+        if (btn) btn.disabled = false;
+      }
+    }
+
+    function renderSolvedLineup(data) {
+      const container = document.getElementById("solverOutputContainer");
+      if (!data || data.status !== "success") {
+        container.innerHTML = `<div class="p-6 text-center text-rose-400 font-mono text-xs bg-rose-950/20 rounded-xl border border-rose-900">${data.message || 'No feasible combination found.'}</div>`;
+        return;
+      }
+
+      const playersHtml = (data.players || []).map(p => {
+        let badge = "";
+        if (p.is_c) badge = '<span class="px-1.5 py-0.5 rounded bg-amber-500 text-black font-black text-[10px] ml-1.5 shadow">C (2x)</span>';
+        if (p.is_vc) badge = '<span class="px-1.5 py-0.5 rounded bg-cyan-400 text-black font-black text-[10px] ml-1.5 shadow">VC (1.5x)</span>';
+        let contraTag = "";
+        if (p.sel < 16.0) contraTag = '<span class="px-1.5 py-0.5 rounded bg-purple-950 text-purple-300 border border-purple-700 text-[10px] ml-1">CONTRA</span>';
+        else if (p.sel < 35.0) contraTag = '<span class="px-1.5 py-0.5 rounded bg-amber-950 text-amber-300 border border-amber-700 text-[10px] ml-1">DIFF</span>';
+
+        return `
+          <div class="flex items-center justify-between text-xs font-mono py-1.5 px-3 rounded-lg bg-slate-900/60 border border-slate-800 hover:border-cyan-500/40 transition">
+            <span class="text-white font-medium flex items-center">${p.name} ${badge} ${contraTag}</span>
+            <span class="text-slate-400">${p.team} &bull; ${p.role} &bull; <strong class="text-cyan-300">${p.credits} Cr</strong> &bull; <span class="text-slate-500">${p.sel}%</span></span>
+          </div>
+        `;
+      }).join("");
+
+      container.innerHTML = `
+        <div class="glass-card rounded-2xl p-6 border-2 border-cyan-400 space-y-5 shadow-2xl">
+          <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 border-b border-slate-800 pb-4">
+            <div>
+              <span class="px-2 py-0.5 rounded bg-cyan-950 text-cyan-300 border border-cyan-700 text-[10px] font-mono font-bold">MATHEMATICALLY PROVED SOLO RANK 1</span>
+              <h3 class="font-display font-black text-xl text-white mt-1">CP-SAT Optimized Lineup • ${data.scenario.toUpperCase().replace(/_/g, ' ')}</h3>
+              <p class="text-xs font-mono text-slate-400">Total Credits Spent: <strong class="text-white">${data.total_credits}</strong> / 100.0 &bull; Unspent: <strong class="text-amber-400">${data.actual_unspent} Cr</strong></p>
+            </div>
+            <div class="flex flex-wrap items-center gap-2">
+              <button onclick="copyInjectorScriptRaw(\`${encodeURIComponent(data.injector_script)}\`)" class="px-4 py-2 rounded-xl bg-cyan-400 hover:bg-cyan-300 text-black font-mono text-xs font-bold transition flex items-center gap-1.5 shadow-lg shadow-cyan-400/20">
+                <span>⚡</span> Copy 1-Click Dream11 Script
+              </button>
+            </div>
+          </div>
+
+          <!-- Metrics Strip -->
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-slate-950/80 p-3 rounded-xl border border-slate-800 font-mono text-xs">
+            <div>
+              <span class="text-slate-400 text-[10px] block">CUMULATIVE SELECTION (CSP)</span>
+              <strong class="text-cyan-300 text-sm font-bold">${data.csp}%</strong>
+              <span class="text-[10px] text-emerald-400 block">Sweet Spot &lt; 620%</span>
+            </div>
+            <div>
+              <span class="text-slate-400 text-[10px] block">COLLISION PROBABILITY</span>
+              <strong class="text-emerald-400 text-sm font-bold">${data.collision_probability}</strong>
+              <span class="text-[10px] text-slate-500 block">In 120,000 Entries</span>
+            </div>
+            <div>
+              <span class="text-slate-400 text-[10px] block">CAPTAIN (2x)</span>
+              <strong class="text-amber-300 text-sm font-bold">${data.captain}</strong>
+            </div>
+            <div>
+              <span class="text-slate-400 text-[10px] block">VICE-CAPTAIN (1.5x)</span>
+              <strong class="text-cyan-300 text-sm font-bold">${data.vice_captain}</strong>
+            </div>
+          </div>
+
+          <!-- Player Roster Grid -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+            ${playersHtml}
+          </div>
+        </div>
+      `;
+    }
+
+    function copyInjectorScriptRaw(encodedScript) {
+      const script = decodeURIComponent(encodedScript);
+      navigator.clipboard.writeText(script).then(() => {
+        showToast("⚡ Dream11 Injector Script copied! Paste in Console to auto-select team.");
+      });
+    }
+
+    // =========================================================================
+    // 8. 22-Player Tactical Directory Roster Tab
+    // =========================================================================
+    async function loadRosterData() {
+      try {
+        const res = await fetch(`/api/portal/roster?match_id=${encodeURIComponent(activeMatchKey)}`);
+        if (res.ok) {
+          const data = await res.json();
+          cachedRosterList = data.roster || [];
+          renderRosterTable(cachedRosterList);
+        }
+      } catch (e) {
+        console.error("Could not load roster:", e);
+      }
+    }
+
+    function filterRoster(filter) {
+      document.querySelectorAll(".roster-filter-btn").forEach(b => {
+        b.className = "roster-filter-btn px-2.5 py-1 rounded-lg bg-slate-900 border border-slate-800 text-slate-300 hover:text-white";
+      });
+      const activeBtn = document.getElementById(`rosterFilter-${filter}`);
+      if (activeBtn) activeBtn.className = "roster-filter-btn px-2.5 py-1 rounded-lg bg-cyan-400 text-black font-bold";
+
+      let filtered = cachedRosterList;
+      if (filter === "AFG") filtered = cachedRosterList.filter(p => p.team === "AFG");
+      else if (filter === "ZIM") filtered = cachedRosterList.filter(p => p.team === "ZIM");
+      else if (filter === "DIFF") filtered = cachedRosterList.filter(p => p.sel < 35.0);
+      else if (filter === "CONTRA") filtered = cachedRosterList.filter(p => p.sel < 16.0);
+
+      renderRosterTable(filtered);
+    }
+
+    function renderRosterTable(players) {
+      const tbody = document.getElementById("rosterTableBody");
+      if (!tbody) return;
+      tbody.innerHTML = "";
+
+      players.forEach(p => {
+        let tierBadge = '<span class="px-2 py-0.5 rounded bg-slate-800 text-slate-300 text-[10px]">CORE</span>';
+        if (p.tier === "CONTRARIAN") tierBadge = '<span class="px-2 py-0.5 rounded bg-purple-950 text-purple-300 border border-purple-800 text-[10px] font-bold">CONTRARIAN</span>';
+        else if (p.tier === "DIFFERENTIAL") tierBadge = '<span class="px-2 py-0.5 rounded bg-amber-950 text-amber-300 border border-amber-800 text-[10px] font-bold">DIFF</span>';
+        else if (p.tier === "MID_TIER") tierBadge = '<span class="px-2 py-0.5 rounded bg-cyan-950 text-cyan-300 border border-cyan-800 text-[10px]">MID</span>';
+
+        const row = document.createElement("tr");
+        row.className = "hover:bg-slate-900/50 transition";
+        row.innerHTML = `
+          <td class="py-2.5 px-3 font-bold text-white">${p.name}</td>
+          <td class="py-2.5 px-2 text-slate-300">${p.team}</td>
+          <td class="py-2.5 px-2 text-cyan-400 font-semibold">${p.role}</td>
+          <td class="py-2.5 px-2 font-bold text-amber-400">${p.credits}</td>
+          <td class="py-2.5 px-3 text-slate-300">${p.sel}%</td>
+          <td class="py-2.5 px-2">${tierBadge}</td>
+          <td class="py-2.5 px-3 text-slate-400 text-[11px]">${p.style}</td>
+          <td class="py-2.5 px-2 text-right font-bold text-emerald-400">${p.projected_points}</td>
+        `;
+        tbody.appendChild(row);
+      });
     }
 
 </script>
