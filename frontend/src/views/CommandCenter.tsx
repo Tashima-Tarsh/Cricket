@@ -134,7 +134,7 @@ export const CommandCenter: React.FC<{
               {liveTossFeed?.toss_statement || "Toss delayed due to wet outfield / rain."}
             </div>
             <div className="text-[11px] text-slate-400 font-mono">
-              Captains: {liveTossFeed?.captains?.[currentMatch?.teams?.[0]?.name] || currentMatch?.teams?.[0]?.captain || "Team 1 Captain"} vs {liveTossFeed?.captains?.[currentMatch?.teams?.[1]?.name] || currentMatch?.teams?.[1]?.captain || "Team 2 Captain"}
+              Captains: {liveTossFeed?.captains?.[match?.teams?.home?.name] || match?.teams?.home?.name || "Team 1"} vs {liveTossFeed?.captains?.[match?.teams?.away?.name] || match?.teams?.away?.name || "Team 2"}
             </div>
           </div>
 
@@ -327,7 +327,7 @@ export const CommandCenter: React.FC<{
             <div className="flex items-center gap-2">
               <Swords size={18} className="text-emerald-400" />
               <h2 className="text-base font-bold text-white tracking-tight uppercase font-mono">
-                Key Opposition Matchups ({currentMatch?.teams?.[0]?.short_name || "Team A"} vs {currentMatch?.teams?.[1]?.short_name || "Team B"})
+                Key Opposition Matchups ({match?.teams?.home?.code || "Team A"} vs {match?.teams?.away?.code || "Team B"})
               </h2>
             </div>
             <button

@@ -111,7 +111,7 @@ export const FieldStrategy: React.FC = () => {
 
   // Cricket Law Validation Rules (ICC Clause 28.7.4)
   const isWomens = (currentMatch?.format || "").toUpperCase().includes("W") ||
-                   (currentMatch?.title || "").toLowerCase().includes("women") ||
+                   (currentMatch?.name || "").toLowerCase().includes("women") ||
                    (currentMatch?.id || "").toLowerCase().includes("_w_");
   const maxOutsidePermitted = selectedPhase === "Powerplay" ? 2 : (isWomens ? 4 : 5);
   const isOutsideLegal = outsideCircleCount <= maxOutsidePermitted;
