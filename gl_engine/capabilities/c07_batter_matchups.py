@@ -23,7 +23,6 @@ class CricketBatterMatchups:
         ])
 
     def execute(self) -> Dict[str, Any]:
-        matchup_matrix = []
         key_advantages = []
         key_danger_zones = []
 
@@ -52,11 +51,25 @@ class CricketBatterMatchups:
                     "tactical_note": f"{m.batter_name} dominates {m.bowler_name} striking at {m.strike_rate}."
                 })
 
-        style_insights = [
-            "India's Top 5 contains 3 Left-Handers (Abhishek, Ishan, Tilak): Roston Chase (offbreak) will be utilized in powerplay & middle overs.",
-            "Shivam Dube strikes at 209+ against left-arm orthodox spinners (Akeal Hosein / Motie). Dube is a major matchup counter-pick.",
-            "Kuldeep Yadav's chinaman/googly historically troubles West Indies middle-order power hitters (Powell, Rutherford strike <95 against Kuldeep with high dismissal rates)."
-        ]
+        # Dynamically generate tactical style insights from actual matchups and squad composition
+        style_insights = []
+        for danger in key_danger_zones[:2]:
+            style_insights.append(danger["tactical_note"])
+        for adv in key_advantages[:2]:
+            style_insights.append(adv["tactical_note"])
+
+        if self.players:
+            lhb_count = sum(1 for p in self.players if "LHB" in (p.batting_style or "").upper() or "LEFT" in (p.batting_style or "").upper())
+            off_spinners = [p.name for p in self.players if "OFF" in (p.bowling_style or "").upper() or "OB" in (p.bowling_style or "").upper()]
+            if lhb_count > 0 and off_spinners:
+                style_insights.append(
+                    f"Lineup tactical matchup: {lhb_count} left-handed batter(s) in active squads face off-spin threats ({', '.join(off_spinners[:2])}) in powerplay and middle overs."
+                )
+
+        if not style_insights:
+            style_insights.append(
+                "Head-to-head delivery sample is limited for this fixture. Matchup assessments rely on role priors and venue pace/spin distribution."
+            )
 
         return {
             "capability": "cricket-batter-matchups",
