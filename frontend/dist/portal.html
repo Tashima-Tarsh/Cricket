@@ -275,7 +275,7 @@
             <div class="flex flex-wrap items-center gap-y-2 gap-x-4">
               <div class="flex items-center gap-1.5">
                 <span class="text-cyan-400 font-bold">&#128197; Date:</span>
-                <strong id="heroDate" class="text-white">Tomorrow, Oct 22, 2026</strong>
+                <strong id="heroDate" class="text-white">Today, Oct 24, 2026</strong>
               </div>
               <div class="flex items-center gap-1.5">
                 <span class="text-amber-400 font-bold">&#9200; Time:</span>
@@ -1074,7 +1074,7 @@
           </div>
 
           <div class="text-[11px] font-mono text-slate-300 space-y-1.5 bg-slate-950/70 p-2.5 rounded-lg border border-slate-800/80">
-            <div class="flex items-center gap-1.5"><span class="text-cyan-400 font-bold">&#128197;</span> <span class="truncate font-semibold text-slate-200">${m.date || 'Today, Oct 21, 2026'}</span></div>
+            <div class="flex items-center gap-1.5"><span class="text-cyan-400 font-bold">&#128197;</span> <span class="truncate font-semibold text-slate-200">${m.date || 'Today, Oct 24, 2026'}</span></div>
             <div class="flex items-center gap-1.5"><span class="text-amber-400 font-bold">&#9200;</span> <span class="truncate text-slate-300">${m.time || '7:00 PM IST'}</span></div>
             <div class="flex items-center gap-1.5 truncate"><span class="text-emerald-400 font-bold">&#127967;</span> <span class="truncate text-slate-400" title="${m.venue || 'Stadium'}">${m.venue || 'Stadium'}</span></div>
           </div>
@@ -1217,7 +1217,7 @@
       document.getElementById("heroCountdown").innerText = m.countdown || "Lock Deadline Approaching";
 
       // Prominent Date, Time, Venue updates
-      document.getElementById("heroDate").innerText = m.date || "Today, Oct 21, 2026";
+      document.getElementById("heroDate").innerText = m.date || "Today, Oct 24, 2026";
       document.getElementById("heroTime").innerText = m.time || "7:00 PM IST (1:30 PM GMT)";
       document.getElementById("heroVenueText").innerText = m.venue || "International Stadium";
 
