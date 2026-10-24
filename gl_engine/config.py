@@ -11,9 +11,9 @@ load_dotenv()
 class FantasyScoringConfig(BaseModel):
     # Batting Points
     run: float = 1.0
-    boundary_four: float = 1.0
-    boundary_six: float = 2.0
-    duck: float = -2.0  # (except bowlers batting 8+)
+    boundary_four: float = 1.0  # +1 extra bonus on top of 4 runs scored
+    boundary_six: float = 2.0   # +2 extra bonus on top of 6 runs scored
+    duck: float = -2.0          # (except bowlers batting 8+)
     runs_30_bonus: float = 4.0
     runs_50_bonus: float = 8.0
     runs_100_bonus: float = 16.0
@@ -23,24 +23,27 @@ class FantasyScoringConfig(BaseModel):
         "over_170": 6.0,
         "150_to_170": 4.0,
         "130_to_150": 2.0,
+        "70_to_130": 0.0,
         "60_to_70": -2.0,
         "50_to_59": -4.0,
         "under_50": -6.0
     })
 
     # Bowling Points
-    wicket: float = 25.0
+    wicket: float = 30.0        # Official Dream11 T20 wicket = 30 pts (updated from 25)
+    dot_ball: float = 1.0       # Official Dream11 T20 dot ball = +1 pt
     bowled_lbw_bonus: float = 8.0
     maiden_over: float = 12.0
     three_wickets_bonus: float = 4.0
     four_wickets_bonus: float = 8.0
     five_wickets_bonus: float = 16.0
     
-    # Economy Rate Bonus/Penalty (min 2 overs bowled)
+    # Economy Rate Bonus/Penalty (min 2 overs / 12 balls bowled)
     economy_bonuses: Dict[str, float] = Field(default_factory=lambda: {
         "under_5": 6.0,
         "5_to_6": 4.0,
         "6_to_7": 2.0,
+        "7_to_10": 0.0,
         "10_to_11": -2.0,
         "11_to_12": -4.0,
         "over_12": -6.0

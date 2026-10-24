@@ -109,7 +109,11 @@ export const FieldStrategy: React.FC = () => {
   const legSideCount = fielders.filter((f) => f.x < 0).length;
   const behindSquareLeg = fielders.filter((f) => f.x < 0 && f.y > 0).length;
 
-  const maxOutsidePermitted = selectedPhase === "Powerplay" ? 2 : 5;
+  // Cricket Law Validation Rules (ICC Clause 28.7.4)
+  const isWomens = (currentMatch?.format || "").toUpperCase().includes("W") ||
+                   (currentMatch?.title || "").toLowerCase().includes("women") ||
+                   (currentMatch?.id || "").toLowerCase().includes("_w_");
+  const maxOutsidePermitted = selectedPhase === "Powerplay" ? 2 : (isWomens ? 4 : 5);
   const isOutsideLegal = outsideCircleCount <= maxOutsidePermitted;
   const isBehindSquareLegLegal = behindSquareLeg <= 2;
   const isLegalityPassed = isOutsideLegal && isBehindSquareLegLegal;

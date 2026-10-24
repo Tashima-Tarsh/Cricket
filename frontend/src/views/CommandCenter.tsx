@@ -134,7 +134,7 @@ export const CommandCenter: React.FC<{
               {liveTossFeed?.toss_statement || "Toss delayed due to wet outfield / rain."}
             </div>
             <div className="text-[11px] text-slate-400 font-mono">
-              Captains: {liveTossFeed?.captains?.India || "Shreyas Iyer"} (IND) vs {liveTossFeed?.captains?.["West Indies"] || "Shai Hope"} (WI)
+              Captains: {liveTossFeed?.captains?.[currentMatch?.teams?.[0]?.name] || currentMatch?.teams?.[0]?.captain || "Team 1 Captain"} vs {liveTossFeed?.captains?.[currentMatch?.teams?.[1]?.name] || currentMatch?.teams?.[1]?.captain || "Team 2 Captain"}
             </div>
           </div>
 
@@ -283,7 +283,7 @@ export const CommandCenter: React.FC<{
             <Swords size={16} className="text-cyan-400" />
           </div>
           <div className="text-3xl font-extrabold text-white font-mono tracking-tight">{battles.length || 44}</div>
-          <p className="text-xs text-slate-400 mt-1">Strict IND vs WI matchups. Zero intra-squad contamination.</p>
+          <p className="text-xs text-slate-400 mt-1">Strict cross-team bilateral matchups. Zero intra-squad contamination.</p>
           <div className="mt-3 pt-3 border-t border-white/5 flex items-center justify-between text-[11px] font-mono text-cyan-400">
             <span>IND Bat vs WI Bowl</span>
             <span>WI Bat vs IND Bowl</span>
@@ -327,7 +327,7 @@ export const CommandCenter: React.FC<{
             <div className="flex items-center gap-2">
               <Swords size={18} className="text-emerald-400" />
               <h2 className="text-base font-bold text-white tracking-tight uppercase font-mono">
-                Key Opposition Matchups (IND vs WI)
+                Key Opposition Matchups ({currentMatch?.teams?.[0]?.short_name || "Team A"} vs {currentMatch?.teams?.[1]?.short_name || "Team B"})
               </h2>
             </div>
             <button
@@ -538,7 +538,7 @@ export const CommandCenter: React.FC<{
         >
           <Swords size={18} className="text-cyan-400 group-hover:scale-110 transition-transform" />
           <div className="text-xs font-bold text-white">Battle Arena</div>
-          <div className="text-[10px] text-slate-400 font-mono">44 IND vs WI H2H</div>
+          <div className="text-[10px] text-slate-400 font-mono">Historical Bilateral H2H</div>
         </button>
 
         <button

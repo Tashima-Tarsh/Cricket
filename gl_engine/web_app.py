@@ -959,20 +959,32 @@ def get_duckdb_stats():
         return {"status": "busy", "note": "Database currently syncing in background", "error": str(e)}
 
 @app.get("/api/duckdb/deliveries")
-def get_duckdb_deliveries(limit: int = 100, phase: str = "ALL", batter: str = "", bowler: str = ""):
-    """Returns real ball-by-ball records from the DuckDB columnar engine."""
+def get_duckdb_deliveries(limit: int = 100, phase: str = "ALL", batter: str = "", bowler: str = "", match_id: str = ""):
+    """Returns real ball-by-ball records from the DuckDB columnar engine filtered by match_id, phase, and player."""
     import duckdb
     from pathlib import Path
-    db_path = Path(__file__).parent.parent / "t20.duckdb"
+    db_path = Path(__file__).parent.parent / "data" / "cricsheet_wt20.duckdb"
+    if not db_path.exists():
+        alt = Path(__file__).parent.parent / "t20.duckdb"
+        if alt.exists():
+            db_path = alt
     if not db_path.exists():
         return {"status": "error", "message": "Database not found", "deliveries": []}
     try:
         con = duckdb.connect(str(db_path), read_only=True)
-        query = "SELECT match_id, innings, over, ball, batter, bowler, non_striker, runs_batter, runs_extras, runs_total, is_wicket, wicket_type, player_dismissed, phase FROM deliveries WHERE 1=1"
+        query = """SELECT match_id, innings, over, ball, batter, bowler, non_striker, 
+                          runs_batter, runs_extras, runs_total, is_wicket, wicket_type, 
+                          player_dismissed, 
+                          CASE WHEN over < 6 THEN 'pp' WHEN over < 16 THEN 'mid' ELSE 'death' END as phase 
+                   FROM deliveries WHERE 1=1"""
         params = []
+        if match_id:
+            query += " AND CAST(match_id AS VARCHAR) = ?"
+            params.append(str(match_id))
         if phase and phase != "ALL":
-            query += " AND phase = ?"
-            params.append(phase)
+            p_val = "pp" if "power" in phase.lower() or phase.lower() == "pp" else ("death" if "death" in phase.lower() else "mid")
+            query += " AND (CASE WHEN over < 6 THEN 'pp' WHEN over < 16 THEN 'mid' ELSE 'death' END) = ?"
+            params.append(p_val)
         if batter:
             query += " AND LOWER(batter) LIKE ?"
             params.append(f"%{batter.lower()}%")

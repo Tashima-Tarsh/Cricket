@@ -22,6 +22,7 @@ class BowlLine:
     wickets: int = 0
     lbw_bowled: int = 0
     maidens: int = 0
+    dots: int = 0
 
 
 @dataclass
@@ -33,43 +34,69 @@ class FieldLine:
 
 
 def sr_bonus(runs: int, balls: int) -> float:
+    """Official Dream11 T20 Strike Rate Bonus / Penalty (min 10 balls).
+    SR > 170: +6 pts
+    150.01 - 170: +4 pts
+    130 - 150: +2 pts
+    70 - 129.99: 0 pts (No bonus, no penalty)
+    60 - 69.99: -2 pts
+    50 - 59.99: -4 pts
+    Below 50: -6 pts
+    """
     if balls < MIN_BALLS_SR:
         return 0.0
     sr = 100.0 * runs / balls
-    if sr > 170:
+    if sr > 170.0:
         return 6.0
-    if sr > 150:
+    if sr > 150.0:
         return 4.0
-    if sr >= 130:
+    if sr >= 130.0:
         return 2.0
-    if sr >= 60:
+    if sr >= 70.0:
+        return 0.0
+    if sr >= 60.0:
         return -2.0
-    if sr >= 50:
+    if sr >= 50.0:
         return -4.0
     return -6.0
 
 
 def eco_bonus(runs: int, balls: int) -> float:
+    """Official Dream11 T20 Economy Rate Bonus / Penalty (min 2 overs / 12 balls).
+    < 5.0 RPO: +6 pts
+    5.0 - 5.99: +4 pts
+    6.0 - 7.0: +2 pts
+    7.01 - 10.0: 0 pts
+    10.01 - 11.0: -2 pts
+    11.01 - 12.0: -4 pts
+    > 12.0 RPO: -6 pts
+    """
     if balls < MIN_BALLS_ECO:
         return 0.0
     e = runs / (balls / 6.0)
-    if e <= 5:
+    if e <= 5.0:
         return 6.0
-    if e < 6:
+    if e < 6.0:
         return 4.0
-    if e < 7:
+    if e <= 7.0:
         return 2.0
-    if e <= 10:
+    if e <= 10.0:
         return 0.0
-    if e <= 11:
+    if e <= 11.0:
         return -2.0
-    if e <= 12:
+    if e <= 12.0:
         return -4.0
     return -6.0
 
 
-def points(bat: BatLine, bowl: BowlLine, fld: FieldLine) -> float:
+def points(bat: BatLine, bowl: BowlLine, fld: FieldLine, is_xi: bool = False) -> float:
+    """Calculates official fantasy points for a player across batting, bowling, and fielding.
+    Includes dot ball (+1 pt), starting XI (+4 pts), and correct non-penalizing strike rate bands.
+    """
     p = 0.0
+    if is_xi:
+        p += 4.0
+
     if bat.batted:
         p += bat.runs + bat.fours + 2 * bat.sixes + sr_bonus(bat.runs, bat.balls)
         if bat.out and bat.runs == 0:
@@ -80,7 +107,8 @@ def points(bat: BatLine, bowl: BowlLine, fld: FieldLine) -> float:
             p += 8.0
         elif bat.runs >= 30:
             p += 4.0
-    p += 30.0 * bowl.wickets + 8.0 * bowl.lbw_bowled + 12.0 * bowl.maidens
+
+    p += 30.0 * bowl.wickets + 8.0 * bowl.lbw_bowled + 12.0 * bowl.maidens + 1.0 * bowl.dots
     if bowl.wickets >= 5:
         p += 12.0
     elif bowl.wickets >= 4:
@@ -88,8 +116,10 @@ def points(bat: BatLine, bowl: BowlLine, fld: FieldLine) -> float:
     elif bowl.wickets >= 3:
         p += 4.0
     p += eco_bonus(bowl.runs, bowl.balls)
+
     p += 8.0 * fld.catches + 12.0 * fld.stumpings
     p += 12.0 * fld.runout_direct + 6.0 * fld.runout_indirect
     if fld.catches >= 3:
         p += 4.0
+
     return max(p, FLOOR)

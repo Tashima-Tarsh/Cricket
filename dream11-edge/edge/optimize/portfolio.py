@@ -6,8 +6,11 @@ from .constraints import is_legal
 from .solver import solve_core
 
 
-def evaluate(squad, cap, sims, idx, fsc):
+def evaluate(squad, cap, vic, sims, idx, fsc):
+    """Evaluates lineup finish ranks against simulated field incorporating 2.0x Captain and 1.5x Vice-Captain."""
     s = sims[:, [idx[i] for i in squad]].sum(1) + sims[:, idx[cap]]
+    if vic is not None and vic in idx:
+        s = s + 0.5 * sims[:, idx[vic]]
     nf = fsc.shape[0]
     step = max(1, sims.shape[0] // 5000)
     fsc_sub = fsc[:, ::step]
@@ -57,7 +60,7 @@ def build(ctx, sims, idx, fsc, n, rng, risk=0.0, locked=(), banned=()):
         cvc.add((cap, vic))
 
     for e in pool:
-        e.update(evaluate(e["squad"], e["cap"], sims, idx, fsc))
+        e.update(evaluate(e["squad"], e["cap"], e.get("vic"), sims, idx, fsc))
 
     pool.sort(key=lambda e: e["p_top001"], reverse=True)
     return enforce_exposure(pool, ctx, cfg.max_exposure)

@@ -45,7 +45,7 @@ export const BallByBallLab: React.FC = () => {
   const fetchDuckdbDeliveries = async (phase = filterPhase) => {
     setIsLoadingDuckdb(true);
     try {
-      const url = `/api/duckdb/deliveries?limit=150&phase=${phase !== "ALL" ? phase : ""}`;
+      const url = `/api/duckdb/deliveries?limit=150&phase=${phase !== "ALL" ? phase : ""}&match_id=${encodeURIComponent(currentMatch?.id || "")}`;
       const res = await fetch(url);
       if (res.ok) {
         const data = await res.json();

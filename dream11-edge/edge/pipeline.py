@@ -1,6 +1,8 @@
 """Full orchestration. CLI and dashboard both call this."""
 from __future__ import annotations
 from datetime import datetime
+from pathlib import Path
+from typing import Optional
 from zoneinfo import ZoneInfo
 import numpy as np
 import pandas as pd
@@ -13,6 +15,42 @@ from .optimize import portfolio as PF
 from .optimize.constraints import Ctx
 
 
+_DELIVERY_CACHE: Optional[pd.DataFrame] = None
+
+
+def load_historical_balls(ref_date=None) -> Optional[pd.DataFrame]:
+    """Queries real historical ball-by-ball deliveries up to ref_date without lookahead leakage."""
+    global _DELIVERY_CACHE
+    db_path = settings().data_dir / "cricsheet_wt20.duckdb"
+    if not db_path.exists():
+        alt = Path(__file__).resolve().parent.parent.parent / "data" / "cricsheet_wt20.duckdb"
+        if alt.exists():
+            db_path = alt
+
+    if not db_path.exists():
+        return None
+
+    try:
+        import duckdb
+        con = duckdb.connect(str(db_path), read_only=True)
+        query = """
+            SELECT 
+                match_id, match_date, over, ball,
+                batter AS batter_id, bowler AS bowler_id,
+                runs_batter AS runs,
+                CASE WHEN is_wicket = 1 THEN 'W' ELSE CAST(runs_batter AS VARCHAR) END AS outcome,
+                CASE WHEN over < 6 THEN 'pp' WHEN over < 16 THEN 'mid' ELSE 'death' END AS phase,
+                '' AS bowl_style
+            FROM deliveries
+        """
+        if ref_date is not None:
+            date_str = ref_date.strftime("%Y-%m-%d")
+            query += f" WHERE match_date < '{date_str}'"
+        return con.execute(query).df()
+    except Exception:
+        return None
+
+
 def build_match(roster: pd.DataFrame, match: dict, *, n_sims=None, n_field=None,
                 n_entries=None, risk=0.0, locked=(), banned=(), seed=11,
                 progress=None):
@@ -22,7 +60,8 @@ def build_match(roster: pd.DataFrame, match: dict, *, n_sims=None, n_field=None,
     n_entries = n_entries or st.sim.n_entries
 
     ref = datetime.now(ZoneInfo(st.tz))
-    feats = build_features(match, roster, None, ref)
+    balls = load_historical_balls(ref)
+    feats = build_features(match, roster, balls, ref)
     proj = PM.project_frame(feats)
     roster = roster.drop(columns=["proj", "sd", "p_dnb"], errors="ignore").merge(
         proj, on="player_id", how="left")
@@ -86,4 +125,3 @@ def demo_roster() -> pd.DataFrame:
     df = pd.DataFrame(rows)
     df["own_pct"] = proxy_ownership(df.bat_pos.rsub(12) * 4.0)
     return df
-
