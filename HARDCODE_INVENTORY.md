@@ -33,3 +33,4 @@
 2. **Deterministic & Auditable Scoring**: Fantasy points must match official rules (including dot balls +1, wickets +30, boundaries +1/+2, milestones +4/+8/+16).
 3. **No Uncalibrated "Rank 1" or "Calibrated" Claims**: Solvers find constrained mathematical optima; they do not guarantee tournament placement.
 4. **Environment Port Parity**: Backend and frontend configs must agree on port 8001 by default, never assuming port 8000.
+

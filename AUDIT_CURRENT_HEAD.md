@@ -176,3 +176,4 @@ Each finding is verified directly against executable code and classified as `CON
 | 9 | `c11_fantasy_scoring.py:dots` | HIGH | CONFIRMED | Added dot ball scoring & ODI format support |
 | 10 | `vite.config.ts:proxy` | MEDIUM | CONFIRMED | Configured default port 8001 |
 | 11 | `field_simulator.py:calibrated_gpp_verdict` | LOW | PARTIALLY VERIFIED | Labeled as `MODEL_ESTIMATE_UNCALIBRATED` |
+
