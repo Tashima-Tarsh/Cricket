@@ -24,6 +24,34 @@ FEATURE_COLS = [
 ]
 
 
+def prepare_prematch_features(frame: pd.DataFrame) -> pd.DataFrame:
+    """Use history from dates strictly before the target date, including doubleheaders."""
+    df = frame.copy()
+    df["date"] = pd.to_datetime(df["date"], utc=True).dt.normalize()
+    if df["date"].isna().any():
+        raise ValueError("Every training row needs a valid match date")
+    df = df.sort_values(["date", "player"], kind="stable").reset_index(drop=True)
+    # These observed quantities belong to completed matches; only their lagged
+    # date aggregates may enter the target match's feature vector.
+    df["observed_position"] = df["min_over"].apply(lambda o: 1 if o <= 1 else (3 if o <= 4 else (5 if o <= 11 else 7)))
+    columns = ["runs", "balls", "balls_bowled", "runs_conceded", "death_balls", "pp_balls", "fantasy_points", "observed_position"]
+    daily = df.groupby(["player", "date"], sort=True)[columns].sum()
+    daily["appearances"] = df.groupby(["player", "date"]).size()
+    prior = daily.groupby(level=0).cumsum() - daily
+    n = prior["appearances"].replace(0, np.nan)
+    features = pd.DataFrame(index=prior.index)
+    features["batting_position"] = (prior["observed_position"] / n).fillna(7.0)
+    features["overs_bowled"] = (prior["balls_bowled"] / n / 6).fillna(0.0)
+    features["prior_avg_fantasy_pts"] = (prior["fantasy_points"] / n).fillna(32.0)
+    features["prior_strike_rate"] = (100 * prior["runs"] / prior["balls"].replace(0, np.nan)).fillna(125.0)
+    features["prior_batting_avg"] = (prior["runs"] / n).fillna(22.0)
+    features["prior_economy"] = (6 * prior["runs_conceded"] / prior["balls_bowled"].replace(0, np.nan)).fillna(8.2)
+    features["death_overs_rate"] = (prior["death_balls"] / prior["balls_bowled"].replace(0, np.nan)).fillna(0.0)
+    features["powerplay_overs_rate"] = (prior["pp_balls"] / prior["balls_bowled"].replace(0, np.nan)).fillna(0.0)
+    df = df.drop(columns=list(features.columns), errors="ignore").merge(features.reset_index(), on=["player", "date"], validate="many_to_one")
+    return df.sort_values(["date", "player"], kind="stable").reset_index(drop=True)
+
+
 class XGBoostFantasyPredictor:
     def __init__(self, model_path: Optional[str] = None):
         if not model_path:
@@ -31,6 +59,7 @@ class XGBoostFantasyPredictor:
         self.model_path = Path(model_path)
         self.model = None
         self.is_trained = False
+        self.training_provenance = {"status": "UNVERIFIED_ARTIFACT", "leakage_audit": "[VERIFY REQUIRED]"}
         try:
             import xgboost as xgb
             self.model = xgb.XGBRegressor(
@@ -45,6 +74,9 @@ class XGBoostFantasyPredictor:
             if self.model_path.exists():
                 try:
                     self.model.load_model(str(self.model_path))
+                    provenance_path = self.model_path.with_suffix(".provenance.json")
+                    if provenance_path.exists():
+                        self.training_provenance = json.loads(provenance_path.read_text(encoding="utf-8"))
                     self.is_trained = True
                 except Exception:
                     pass
@@ -87,10 +119,16 @@ class XGBoostFantasyPredictor:
         }
 
     def train_on_dataframe(self, df: pd.DataFrame) -> Dict[str, Any]:
-        """Trains the XGBoost regressor on a tabular player dataset with strict zero-leakage guarantee.
+        """Trains the XGBoost regressor on a tabular player dataset with a documented feature and holdout contract.
         Predictor features are strictly derived from prior match history or pre-match roles;
         current match fantasy_points is strictly the target y.
         """
+        df = df.copy().reset_index(drop=True)
+        dated = "date" in df.columns and "player" in df.columns
+        if dated:
+            df = prepare_prematch_features(df)
+        elif df.attrs.get("data_source") != "SYNTHETIC":
+            raise ValueError("Historical training requires player, date and completed-match observations")
         # Ensure required columns exist, impute defaults if missing
         X = pd.DataFrame()
         def _get_series(col: str, default_val: float):
@@ -149,13 +187,17 @@ class XGBoostFantasyPredictor:
         # Target variable (strictly in-match fantasy outcome)
         y = df["fantasy_points"].astype(float)
 
-        # Chronological Out-of-Time Train / Test Evaluation
-        split_idx = max(1, int(len(df) * 0.8))
-        X_train, X_test = X[FEATURE_COLS].iloc[:split_idx], X[FEATURE_COLS].iloc[split_idx:]
-        y_train, y_test = y.iloc[:split_idx], y.iloc[split_idx:]
-
-        if len(X_test) == 0:
-            split_idx = max(1, int(len(X) * 0.8))
+        # Split entire dates; players from one fixture/day cannot straddle the boundary.
+        if dated:
+            dates = sorted(df["date"].unique())
+            if len(dates) < 2:
+                raise ValueError("At least two distinct dates are required for a holdout")
+            cutoff = dates[min(len(dates)-1, max(1, int(len(dates)*0.8)))]
+            train_mask = df["date"] < cutoff
+            X_train, X_test = X[FEATURE_COLS][train_mask], X[FEATURE_COLS][~train_mask]
+            y_train, y_test = y[train_mask], y[~train_mask]
+        else:
+            split_idx = max(1, int(len(df)*0.8))
             X_train, X_test = X[FEATURE_COLS].iloc[:split_idx], X[FEATURE_COLS].iloc[split_idx:]
             y_train, y_test = y.iloc[:split_idx], y.iloc[split_idx:]
 
@@ -174,20 +216,23 @@ class XGBoostFantasyPredictor:
         self.model.save_model(str(self.model_path))
 
         provenance = {
-            "status": "VERIFIED_ZERO_LEAKAGE",
-            "leakage_audit": "PASSED: Target fantasy_points completely isolated from input features. All rolling statistics strictly shifted by >= 1 match.",
-            "validation_methodology": "Chronological out-of-time evaluation (80% train / 20% holdout)",
+            "status": "PRIOR_DATE_FEATURES_HOLDOUT" if dated else "SYNTHETIC_BASELINE",
+            "feature_contract": "prior-date-v1",
+            "independent_validation": "[VERIFY REQUIRED]",
+            "leakage_audit": "Historical features exclude the target date; independent audit pending." if dated else "Synthetic training; no historical performance claim.",
+            "validation_methodology": "Whole-date chronological holdout" if dated else "Synthetic row holdout",
             "rmse": round(rmse, 2),
             "r2": round(r2, 3),
             "samples": len(df)
         }
         self.training_provenance = provenance
-        print(f"[XGBoost] Model trained successfully (Zero Leakage)! RMSE: {rmse:.2f}, R2: {r2:.3f}. Saved to {self.model_path}")
+        self.model_path.with_suffix(".provenance.json").write_text(json.dumps(provenance, indent=2), encoding="utf-8")
+        print(f"[XGBoost] Model trained; independent validation pending. RMSE: {rmse:.2f}, R2: {r2:.3f}. Saved to {self.model_path}")
         return provenance
 
     def train_from_duckdb(self, duckdb_path: Optional[Path] = None) -> Dict[str, Any]:
         """Trains the XGBoost regressor directly on 194,239 Cricsheet deliveries across 1,243 T20 matches in DuckDB.
-        Guarantees strictly chronological out-of-time evaluation with zero target leakage.
+        Uses earlier-date features and a chronological whole-date holdout.
         """
         import duckdb
         path = duckdb_path or (Path(__file__).parent.parent / "t20.duckdb")
@@ -265,17 +310,7 @@ class XGBoostFantasyPredictor:
         if len(df) < 50:
             return self._train_baseline_synthetic()
 
-        # Feature engineering with strict expanding mean shifted by 1 match (zero target leakage)
-        df["batting_position"] = df["min_over"].apply(lambda o: 1 if o <= 1 else (2 if o <= 2 else (3 if o <= 4 else (4 if o <= 7 else (5 if o <= 11 else 7)))))
-        df["overs_bowled"] = df["balls_bowled"] / 6.0
-        
-        # Chronological expanding lags
-        df["career_strike_rate"] = df.groupby("player")["runs"].transform(lambda r: (r.shift(1).expanding().sum() / df.loc[r.index, "balls"].shift(1).expanding().sum().replace(0, 1)) * 100).fillna(125.0)
-        df["career_batting_avg"] = df.groupby("player")["runs"].transform(lambda r: r.shift(1).expanding().mean()).fillna(22.0)
-        df["career_economy"] = df.groupby("player")["runs_conceded"].transform(lambda rc: (rc.shift(1).expanding().sum() / (df.loc[rc.index, "balls_bowled"].shift(1).expanding().sum().replace(0, 1) / 6.0))).fillna(8.2)
-        df["prior_avg_fantasy_pts"] = df.groupby("player")["fantasy_points"].transform(lambda fp: fp.shift(1).expanding().mean()).fillna(32.0)
-        df["death_overs_rate"] = (df["death_balls"] / df["balls_bowled"].replace(0, 1)).fillna(0.0)
-        df["powerplay_overs_rate"] = (df["pp_balls"] / df["balls_bowled"].replace(0, 1)).fillna(0.0)
+        # train_on_dataframe constructs all predictive roles/volumes from earlier dates.
         df["venue_par_score"] = 175.0
         df["pace_pct"] = 62.0
         df["dew_factor"] = 0.38
@@ -325,6 +360,7 @@ class XGBoostFantasyPredictor:
             })
 
         df = pd.DataFrame(synthetic_rows)
+        df.attrs["data_source"] = "SYNTHETIC"
         return self.train_on_dataframe(df)
 
     def predict_player(
@@ -332,7 +368,7 @@ class XGBoostFantasyPredictor:
         player: Player,
         venue: Optional[VenueConditions] = None,
         weather: Optional[WeatherReport] = None,
-        is_overcast_or_rain: bool = True
+        is_overcast_or_rain: bool = False
     ) -> Dict[str, float]:
         """Predicts mean, 90th percentile ceiling, 10th percentile floor, and volatility.
         Incorporates atmospheric physics (rain delay / overcast / damp red soil) into projections.

@@ -147,6 +147,8 @@ export const FantasyLab: React.FC<FantasyLabProps> = ({ lineups: initialLineups,
       if (!response.ok) throw new Error(typeof data.detail === "string" ? data.detail : `Solve failed (${response.status}).`);
       if (!Array.isArray(data.lineups) || !data.lineups.length) throw new Error("No feasible lineup satisfies these settings. Adjust the credit band, overlap, or player locks.");
       setLineups(data.lineups); setActiveLineupIndex(0); setResultTime(data.generated_at || new Date().toISOString());
+      if (data.ownership_status === "UNAVAILABLE_NEUTRAL_PRIOR") setSolveError("Ownership estimates are unavailable. Displayed 50% values are neutral assumptions; CSP and differential-count constraints were not applied.");
+      if (data.status === "partial") setSolveError(`Generated ${data.lineups.length} of ${lineupCount} requested lineups. The remaining requests were infeasible under these constraints.`);
       if (custom) setActiveScenarioFeedback(`Solved ${data.lineups.length} lineups using ${selectedScenarioScript}.`);
     } catch (error) {
       setSolveError(error instanceof Error ? error.message : "Optimization failed. No substitute results were generated.");
@@ -214,7 +216,7 @@ export const FantasyLab: React.FC<FantasyLabProps> = ({ lineups: initialLineups,
               p_top_0_1_pct: sim ? sim.p_gt_700 : undefined,
               tactical_rationale: sim ? `100k MC Sim: Mean ${sim.mean} pts, P90 ${sim.p90} pts, P99 ${sim.p99} pts. Duplicates: ${sim.projected_duplicates}` : "Multidisciplinary scenario portfolio",
               gl_rank_potential: sim ? `EV: ₹${sim.est_ev} (ROI: +${sim.net_roi_pct}%)` : "Not evaluated",
-              uniqueness_score: sim && sim.projected_duplicates === 0 ? 99.9 : Math.max(10, Math.round(100 - ((sim ? sim.projected_duplicates : 5) * 6)))
+              uniqueness_score: null
             };
           });
           if (!scenarioLineups.length) throw new Error("No saved scenarios available.");
@@ -236,6 +238,7 @@ export const FantasyLab: React.FC<FantasyLabProps> = ({ lineups: initialLineups,
 
   return (
     <div className="space-y-6">
+      <p className="evidence-note">[VERIFY REQUIRED] Player projections and ownership are assumptions. Field ranks and duplicate estimates use synthetic opponents, not independently calibrated contest results.</p>
       {solveError && (
         <p role="alert" className="p-3.5 rounded-xl bg-rose-500/20 text-rose-300 border border-rose-500/30 text-xs font-mono">
           {solveError}
@@ -971,10 +974,10 @@ export const FantasyLab: React.FC<FantasyLabProps> = ({ lineups: initialLineups,
             <div className="pt-3 border-t border-white/10">
               <div className="flex justify-between text-xs font-sans mb-2">
                 <span className="text-slate-400">Uniqueness Score:</span>
-                <span className="text-emerald-400 font-bold">{selectedLineup.uniqueness_score}/100</span>
+                <span className="text-emerald-400 font-bold">{selectedLineup.uniqueness_score == null ? "Not calibrated" : `${selectedLineup.uniqueness_score}/100`}</span>
               </div>
               <div className="h-2 w-full bg-white/[0.05] rounded-full overflow-hidden">
-                <div className="h-full bg-gradient-to-r from-emerald-500 to-amber-500 rounded-full" style={{ width: `${selectedLineup.uniqueness_score}%` }}></div>
+                <div className="h-full bg-gradient-to-r from-emerald-500 to-amber-500 rounded-full" style={{ width: `${selectedLineup.uniqueness_score ?? 0}%` }}></div>
               </div>
               <div className="text-xs font-sans text-slate-400 mt-1.5">
                 Zero chance of field duplication in 500K - 700K spot contests

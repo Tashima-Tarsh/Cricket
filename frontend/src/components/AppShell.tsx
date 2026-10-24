@@ -44,7 +44,7 @@ const groups: { label: string; items: NavItem[] }[] = [
   {
     label: "Opposition Intel",
     items: [
-      { id: "battle-arena", label: "H2H Battles (44)", icon: Swords },
+      { id: "battle-arena", label: "H2H Battles", icon: Swords },
       { id: "pitch-lab", label: "Pitch & Venue Lab", icon: Compass },
       { id: "field-strategy", label: "Field Strategy", icon: Shield },
       { id: "game-plan", label: "Over-by-Over Plan", icon: Clock },
@@ -157,7 +157,7 @@ export const AppShell: React.FC<{ children: React.ReactNode; onOpenMatchSetup: (
               <span className="text-white text-base font-bold tracking-tight">STRIKE//OS</span>
               <span className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-mono font-bold tracking-widest">PRO</span>
             </div>
-            <span>Ground Truth Cricket Intelligence</span>
+            <span>Cricket analysis workspace</span>
           </div>
         </button>
 
@@ -174,7 +174,7 @@ export const AppShell: React.FC<{ children: React.ReactNode; onOpenMatchSetup: (
           <div className="flex items-center gap-1.5 bg-slate-950/80 border border-white/10 p-1 rounded-lg shadow-inner">
             <span className="text-[10px] font-mono uppercase px-1.5 text-slate-400 font-bold flex items-center gap-1">
               <CloudRain size={13} className={activeOvers < 20 ? "text-amber-400 animate-bounce" : "text-slate-400"} />
-              {activeOvers < 20 ? `${activeOvers} OV (DLS)` : "20 OV"}
+              {activeOvers < 20 ? `${activeOvers} OV (ILLUSTRATIVE)` : "20 OV"}
             </span>
 
             {/* Stepper buttons & direct input */}
@@ -219,7 +219,7 @@ export const AppShell: React.FC<{ children: React.ReactNode; onOpenMatchSetup: (
                     ? (ov < 20 ? "bg-amber-500 text-slate-950 font-extrabold shadow-md" : "bg-emerald-500 text-slate-950 font-extrabold shadow-md")
                     : "text-slate-400 hover:text-white hover:bg-white/5"
                 }`}
-                title={`Curtain match to ${ov} overs (DLS recalculation)`}
+                title={`Curtain match to ${ov} overs (heuristic projections)`}
               >
                 {ov}
               </button>
@@ -253,7 +253,7 @@ export const AppShell: React.FC<{ children: React.ReactNode; onOpenMatchSetup: (
             <div>
               <p className="eyebrow flex items-center gap-2">
                 <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-400" />
-                VERIFIED CRICSHEET DUCKDB ENGINE &bull; 194,239 BALLS &bull; CHINNASWAMY TELEMETRY
+                LOCAL ANALYSIS &bull; FIXTURE & MODEL ASSUMPTIONS REQUIRE VERIFICATION
               </p>
               <h2 className="text-lg font-semibold text-white tracking-tight mt-0.5">
                 {currentMatch.name} &bull; {currentMatch.venue?.name}
@@ -319,11 +319,11 @@ export const AppShell: React.FC<{ children: React.ReactNode; onOpenMatchSetup: (
                   ? "Synchronizing DuckDB Telemetry & CP-SAT Optimizations..."
                   : stateStatus === "error"
                   ? stateError
-                  : `Ground Truth Verified: 194,239 deliveries | 104 Chinnaswamy T20s | XGBoost Chronological Engine | Generated ${lastUpdated ? new Date(lastUpdated).toLocaleTimeString() : "Live"}`}
+                  : `Local snapshot | Uncalibrated projections | Generated ${lastUpdated ? new Date(lastUpdated).toLocaleTimeString() : "Live"}`}
               </span>
             </div>
             <button
-              onClick={() => refreshState()}
+              onClick={() => refreshState(currentMatch.id)}
               disabled={stateStatus === "loading"}
               className="flex items-center gap-1.5"
             >

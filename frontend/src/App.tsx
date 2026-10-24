@@ -39,7 +39,6 @@ const MainAppContent: React.FC = () => {
   const [isMatchSetupOpen, setIsMatchSetupOpen] = useState<boolean>(false);
 
   const handleApplyMatch = (newMatch: MatchInfo) => {
-    setCurrentMatch(newMatch);
     void refreshState(newMatch.id);
   };
 

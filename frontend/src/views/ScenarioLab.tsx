@@ -1,11 +1,11 @@
-import React, { useState } from "react";
-import { 
-  CloudRain, 
-  TrendingUp, 
-  ShieldAlert, 
-  Sliders, 
-  Compass, 
-  Layers, 
+import React, { useState, useRef } from "react";
+import {
+  CloudRain,
+  TrendingUp,
+  ShieldAlert,
+  Sliders,
+  Compass,
+  Layers,
   RotateCcw,
   Zap,
   BarChart3,
@@ -42,7 +42,7 @@ export const computeScenario = (overs: number): DLSScenario => {
   const extraBowlers = validOvers % 5;
   const baseBowlers = extraBowlers > 0 ? 5 - extraBowlers : 5;
   const maxQuota = baseQuota + (extraBowlers > 0 ? 1 : 0);
-  const quotaBreakdown = extraBowlers > 0 
+  const quotaBreakdown = extraBowlers > 0
     ? `${extraBowlers} bowlers × ${baseQuota + 1} ov, ${baseBowlers} bowlers × ${baseQuota} ov`
     : `All 5 bowlers × ${baseQuota} ov`;
 
@@ -103,7 +103,12 @@ export const ScenarioLab: React.FC = () => {
   const { currentMatch, selectedTossChoice, setSelectedTossChoice, activeOvers, setActiveOvers } = useMatchContext();
   const selectedOvers = activeOvers || 20;
   const setSelectedOvers = setActiveOvers;
-  const [shortenedLineups, setShortenedLineups] = useState<Lineup[]>([]);
+  const [lineupResult, setLineupResult] = useState<{key:string; lineups:Lineup[]} | null>(null);
+  const resultKey = `${currentMatch.id}:${selectedOvers}`;
+  const latestKey = useRef(resultKey);
+  latestKey.current = resultKey;
+  const shortenedLineups = lineupResult?.key === resultKey ? lineupResult.lineups : [];
+  const [lineupError, setLineupError] = useState("");
   const [isLoadingLineups, setIsLoadingLineups] = useState<boolean>(false);
   const [copiedTeamIdx, setCopiedTeamIdx] = useState<number | null>(null);
 
@@ -136,15 +141,17 @@ export const ScenarioLab: React.FC = () => {
   const scoreDist = getScoreDistributions();
 
   const handleGenerateShortenedLineups = async () => {
-    setIsLoadingLineups(true);
+    setIsLoadingLineups(true); setLineupError(""); setLineupResult(null);
+    const requestKey = resultKey;
     try {
-      const res = await fetch(`http://127.0.0.1:8000/api/ortools/optimize?overs=${selectedOvers}&teams=5`);
+      const params = new URLSearchParams({match_id:currentMatch.id, overs:String(selectedOvers), teams:"5"});
+      const res = await fetch(`/api/ortools/optimize?${params}`, {signal:AbortSignal.timeout(60000)});
       const data = await res.json();
-      if (data && data.lineups) {
-        setShortenedLineups(data.lineups);
-      }
+      if (!res.ok) throw new Error(typeof data.detail === "string" ? data.detail : "Lineup generation failed.");
+      if (!data.lineups?.length) throw new Error("No feasible lineup satisfies these settings.");
+      if (latestKey.current === requestKey) setLineupResult({key:requestKey, lineups:data.lineups});
     } catch (err) {
-      console.error("Failed to generate shortened match lineups:", err);
+      if (latestKey.current === requestKey) setLineupError(err instanceof Error ? err.message : "Lineup generation failed.");
     } finally {
       setIsLoadingLineups(false);
     }
@@ -164,6 +171,8 @@ export const ScenarioLab: React.FC = () => {
 
   return (
     <div className="space-y-6">
+      {lineupError && <p role="alert">{lineupError}</p>}
+      <p className="evidence-note">[VERIFY REQUIRED] Illustrative resource curves and assumed win equity. This is not an official or licensed DLS calculator and must not determine match results.</p>
       {/* Top Banner & Control Deck */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-5 rounded-xl bg-slate-900/80 border border-white/10 shadow-lg">
         <div className="flex items-center gap-3">
@@ -174,11 +183,11 @@ export const ScenarioLab: React.FC = () => {
             <h1 className="text-xl font-bold tracking-wider text-white flex items-center gap-2">
               RAIN & REDUCED OVERS LAB
               <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-300">
-                DLS ENGINE v3.4
+                ILLUSTRATIVE RAIN MODEL
               </span>
             </h1>
             <p className="text-xs text-slate-400 font-sans">
-              M. Chinnaswamy Stadium, Bengaluru • Overcast Rain Delay • Red Soil Pacer Bias 59.6%
+              {currentMatch.venue.name} | Assumed 20-over baseline; no verified weather or pitch observation
             </p>
           </div>
         </div>
@@ -187,7 +196,7 @@ export const ScenarioLab: React.FC = () => {
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 bg-slate-950 p-2.5 rounded-xl border border-white/10 shadow-inner">
           <div className="flex items-center gap-2">
             <span className="text-[10px] font-mono text-slate-400 uppercase font-bold whitespace-nowrap">OVERS (5–20):</span>
-            
+
             {/* Direct Number Stepper & Input */}
             <div className="flex items-center bg-slate-900 border border-white/15 rounded-lg overflow-hidden">
               <button
@@ -253,13 +262,13 @@ export const ScenarioLab: React.FC = () => {
 
       {/* Grid: 3 Analytical Panels */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        
+
         {/* Panel 1: DLS Target & Parameter Breakdown */}
         <div className="rounded-xl bg-slate-900/80 border border-white/10 p-5 space-y-4 shadow-md">
           <div className="flex items-center justify-between pb-3 border-b border-white/10">
             <div className="flex items-center gap-2 text-white font-bold">
               <CloudRain size={18} className="text-sky-400" />
-              <span>DLS & Over Constraints</span>
+              <span>Heuristic rain estimates & over constraints</span>
             </div>
             <span className="text-[10px] font-mono text-sky-300 bg-sky-500/10 px-2 py-0.5 rounded border border-sky-500/20">
               {selectedOvers} Ov Curtailment
@@ -285,7 +294,7 @@ export const ScenarioLab: React.FC = () => {
             <div className="p-3 rounded-lg bg-slate-950/70 border border-white/5 space-y-1">
               <div className="text-[10px] font-mono text-slate-400 uppercase">CHASE WIN BIAS</div>
               <div className="text-lg font-bold font-mono text-purple-400">{scenario.chaseAdvantagePct}%</div>
-              <div className="text-[11px] text-slate-400">DLS chase advantage</div>
+              <div className="text-[11px] text-slate-400">Heuristic chase estimate</div>
             </div>
           </div>
 
@@ -331,7 +340,7 @@ export const ScenarioLab: React.FC = () => {
               <span>Toss Decision & Win Equity</span>
             </div>
             <span className="text-[10px] font-mono text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">
-              Monte Carlo DLS
+              Illustrative rain scenario
             </span>
           </div>
 
@@ -381,20 +390,20 @@ export const ScenarioLab: React.FC = () => {
               <span className="text-emerald-400 font-bold">CHASING: {chaseEquity}%</span>
               <span className="text-cyan-400 font-bold">DEFENDING: {defendEquity}%</span>
             </div>
-            
+
             <div className="h-3 w-full bg-slate-800 rounded-full overflow-hidden flex border border-white/10">
-              <div 
-                className="h-full bg-emerald-500 transition-all duration-500" 
-                style={{ width: `${chaseEquity}%` }} 
+              <div
+                className="h-full bg-emerald-500 transition-all duration-500"
+                style={{ width: `${chaseEquity}%` }}
               />
-              <div 
-                className="h-full bg-cyan-500 transition-all duration-500" 
-                style={{ width: `${defendEquity}%` }} 
+              <div
+                className="h-full bg-cyan-500 transition-all duration-500"
+                style={{ width: `${defendEquity}%` }}
               />
             </div>
 
             <div className="flex justify-between text-[11px] font-mono text-slate-400">
-              <span>Chinnaswamy DLS Chasing Bias</span>
+              <span>Assumed chasing bias</span>
               <span>Defend Index: {(defendEquity / 10).toFixed(1)}/10</span>
             </div>
           </div>
@@ -439,7 +448,7 @@ export const ScenarioLab: React.FC = () => {
                   <span className="text-emerald-400 font-mono font-semibold">{item.prob}%</span>
                 </div>
                 <div className="h-1.5 w-full bg-slate-800 rounded-full overflow-hidden">
-                  <div 
+                  <div
                     className={`h-full ${item.color} rounded-full transition-all duration-500`}
                     style={{ width: `${item.prob * 2}%` }}
                   />
@@ -455,7 +464,7 @@ export const ScenarioLab: React.FC = () => {
               <span>INTERRUPTION TRIGGER RULE</span>
             </div>
             <p className="text-xs text-slate-300 leading-normal font-sans">
-              If rain stops play after 5.0 overs of Innings 2, match result is determined immediately by DLS par score. 
+              If rain stops play after 5.0 overs of Innings 2, official playing conditions and an authorised DLS calculation are required; this illustration cannot determine the result.
               Death-over specialist bowlers lose points if match is terminated early.
             </p>
           </div>
@@ -510,7 +519,7 @@ export const ScenarioLab: React.FC = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {shortenedLineups.map((lineup, idx) => (
-              <div 
+              <div
                 key={idx}
                 className="p-4 rounded-xl bg-slate-900/80 border border-white/10 hover:border-emerald-500/50 transition-all flex flex-col justify-between space-y-3 shadow-lg"
               >
@@ -552,7 +561,7 @@ export const ScenarioLab: React.FC = () => {
                       const isC = p.id === lineup.captain.id;
                       const isVC = p.id === lineup.vice_captain.id;
                       return (
-                        <span 
+                        <span
                           key={p.id}
                           className={`text-[10px] font-mono px-1.5 py-0.5 rounded ${
                             isC ? "bg-emerald-600 text-white font-bold"

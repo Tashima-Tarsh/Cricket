@@ -421,26 +421,7 @@ def fetch_espn_cricinfo_live_matches(force_refresh: bool = False) -> List[Dict[s
     if not matches:
         matches = _fetch_from_espn_rss()
 
-    # 3. Tertiary Fallback: Series bilateral fixture catalogue
-    if not matches:
-        matches = [
-            {
-                "id": "ind_vs_wi_5th_t20_2026",
-                "title": "India vs West Indies, 5th T20I (Series Decider)",
-                "team_home": "India",
-                "team_away": "West Indies",
-                "score_home": "Series 2-2",
-                "score_away": "Decider",
-                "state": "UPCOMING",
-                "status": "TODAY 7:00 PM",
-                "provider": "Local Bilateral Series Catalog",
-                "data_provenance": "CANONICAL_FIXTURE",
-                "details": "M. Chinnaswamy Stadium, Bengaluru • Series locked 2-2",
-                "link": "https://www.cricinfo.com/series/west-indies-in-india-2026",
-                "pitch_report": "Red soil with steep bounce. 922m altitude carry.",
-                "toss": "Toss at 6:30 PM IST (Chasing Win Equity: 68.2%)"
-            }
-        ]
+    # Offline feeds return no current fixtures. Bundled scenarios live in /api/catalog.
 
     _CACHED_MATCHES = matches
     _CACHE_TIMESTAMP = now
@@ -459,23 +440,13 @@ def get_ind_wi_live_toss_feed() -> Dict[str, Any]:
         return _LIVE_TOSS_CACHE
 
     result: Dict[str, Any] = {
-        "status": "LIVE",
-        "match_name": "India vs West Indies, 5th T20I (Series Decider)",
-        "venue": "M. Chinnaswamy Stadium, Bengaluru",
-        "is_toss_done": False,
-        "toss_winner": None,
-        "toss_choice": None,
-        "toss_statement": "Toss delayed due to wet outfield / rain",
-        "ground_condition": "Outfield wet. KSCA SubAir automated vacuum drainage operating.",
-        "rain_probability_pct": 78,
-        "weather_condition": "Thunderstorms / Intermittent rain",
-        "temperature_f": 72,
-        "overs_curtailed": True,
-        "projected_overs": 10,
-        "cutoff_time_ist": "9:41 PM IST (5-over shootout cutoff)",
-        "captains": {"India": "Shreyas Iyer", "West Indies": "Shai Hope"},
-        "latest_commentary": "KSCA officials inspecting pitch area; outfield being dried via SubAir system.",
-        "data_provenance": "ESPNCRICINFO_LIVE_SDK"
+        "status": "UNAVAILABLE", "data_provenance": "UNAVAILABLE",
+        "match_name": "India vs West Indies, 5th T20I (bundled fixture)",
+        "is_toss_done": False, "toss_winner": None, "toss_choice": None,
+        "toss_statement": "No verified toss observation available.", "captains": {},
+        "rain_probability_pct": None, "weather_condition": None, "temperature_f": None,
+        "ground_condition": None, "overs_curtailed": None, "projected_overs": None,
+        "cutoff_time_ist": None, "latest_commentary": None,
     }
 
     try:
@@ -491,6 +462,8 @@ def get_ind_wi_live_toss_feed() -> Dict[str, Any]:
             st = match_data.get("status") or match_data.get("statusText")
             if st:
                 result["ground_condition"] = st
+                result["status"] = "PROVIDER_RESPONSE"
+                result["data_provenance"] = "ESPNCRICINFO_RESPONSE_UNVERIFIED_FRESHNESS"
 
             toss_info = info.get("toss", {})
             if toss_info.get("winner_team") and toss_info.get("decision"):
@@ -500,7 +473,7 @@ def get_ind_wi_live_toss_feed() -> Dict[str, Any]:
                 result["toss_statement"] = f"{result['toss_winner']} won the toss and elected to {result['toss_choice']} first."
             else:
                 result["is_toss_done"] = False
-                result["toss_statement"] = f"Toss delayed: {st or 'Wet outfield / rain interruption'}."
+                result["toss_statement"] = st or "Toss information unavailable."
 
             captains_list = info.get("captains", [])
             for cap in captains_list:

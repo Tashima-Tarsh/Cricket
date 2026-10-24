@@ -77,79 +77,41 @@ class UnifiedCricketDataHub:
         self.roanuz_fantasy = RoanuzFantasyClient(roanuz_project_key, roanuz_api_key)
 
     def get_providers_status(self) -> Dict[str, Any]:
-        """Returns connection, authentication, and configuration status across all 5 providers."""
+        """Configuration plus measured local readiness; external services are not probed here."""
         import duckdb
+        import time
+        import importlib.util
         from pathlib import Path
-        
-        duckdb_path = Path(__file__).parent.parent.parent / "t20.duckdb"
-        duckdb_matches = 0
-        duckdb_deliveries = 0
-        if duckdb_path.exists():
+        path = Path(__file__).parent.parent.parent / "t20.duckdb"
+        local = {"active": False, "status": "UNAVAILABLE", "mode": "UNAVAILABLE",
+                 "authenticated": None, "reachable": False, "freshly_synchronised": None,
+                 "latency_ms": None, "records_indexed": None, "matches_cached": None,
+                 "last_sync": None, "info": PROVIDER_METADATA["cricsheet"]}
+        if path.exists():
+            started = time.perf_counter()
             try:
-                con = duckdb.connect(str(duckdb_path), read_only=True)
-                duckdb_matches = con.execute("SELECT count(*) FROM matches").fetchone()[0]
-                duckdb_deliveries = con.execute("SELECT count(*) FROM deliveries").fetchone()[0]
-                con.close()
+                with duckdb.connect(str(path), read_only=True) as con:
+                    matches = con.execute("SELECT count(*) FROM matches").fetchone()[0]
+                    deliveries = con.execute("SELECT count(*) FROM deliveries").fetchone()[0]
+                local.update(active=True, status="LOCAL_ARCHIVE_READY", mode="DUCKDB_COLUMNAR",
+                             reachable=True, matches_cached=matches, records_indexed=deliveries,
+                             latency_ms=round((time.perf_counter()-started)*1000, 2))
             except Exception:
                 pass
-
-        return {
-            "cricsheet": {
-                "active": True,
-                "status": "LOCAL_ARCHIVE_READY",
-                "mode": "DUCKDB_COLUMNAR",
-                "authenticated": True,
-                "latency_ms": 0.4,
-                "matches_cached": duckdb_matches or len(self.cricsheet.list_matches()),
-                "records_indexed": duckdb_deliveries,
-                "info": PROVIDER_METADATA["cricsheet"]
-            },
-            "cricketdata": {
-                "active": self.cricketdata.is_live,
-                "status": "AUTHENTICATED_LIVE" if self.cricketdata.is_live else "STANDBY_FALLBACK",
-                "mode": "LIVE" if self.cricketdata.is_live else "SIMULATED_FALLBACK",
-                "authenticated": self.cricketdata.is_live,
-                "latency_ms": 120 if self.cricketdata.is_live else None,
-                "records_indexed": 48 if self.cricketdata.is_live else 0,
-                "info": PROVIDER_METADATA["cricketdata"]
-            },
-            "sportmonks": {
-                "active": self.sportmonks.is_live,
-                "status": "AUTHENTICATED_LIVE" if self.sportmonks.is_live else "STANDBY_FALLBACK",
-                "mode": "LIVE" if self.sportmonks.is_live else "SIMULATED_FALLBACK",
-                "authenticated": self.sportmonks.is_live,
-                "latency_ms": 180 if self.sportmonks.is_live else None,
-                "records_indexed": 32 if self.sportmonks.is_live else 0,
-                "info": PROVIDER_METADATA["sportmonks"]
-            },
-            "roanuz_match": {
-                "active": self.roanuz_match.is_live,
-                "status": "AUTHENTICATED_LIVE" if self.roanuz_match.is_live else "STANDBY_FALLBACK",
-                "mode": "LIVE" if self.roanuz_match.is_live else "SIMULATED_FALLBACK",
-                "authenticated": self.roanuz_match.is_live,
-                "latency_ms": 150 if self.roanuz_match.is_live else None,
-                "records_indexed": 64 if self.roanuz_match.is_live else 0,
-                "info": PROVIDER_METADATA["roanuz_match"]
-            },
-            "roanuz_fantasy": {
-                "active": self.roanuz_fantasy.is_live,
-                "status": "AUTHENTICATED_LIVE" if self.roanuz_fantasy.is_live else "STANDBY_FALLBACK",
-                "mode": "LIVE" if self.roanuz_fantasy.is_live else "SIMULATED_FALLBACK",
-                "authenticated": self.roanuz_fantasy.is_live,
-                "latency_ms": 140 if self.roanuz_fantasy.is_live else None,
-                "records_indexed": 128 if self.roanuz_fantasy.is_live else 0,
-                "info": PROVIDER_METADATA["roanuz_fantasy"]
-            },
-            "cricdata": {
-                "active": True,
-                "status": "AUTHENTICATED_LIVE",
-                "mode": "LIVE_DIRECT_CLIENT",
-                "authenticated": True,
-                "latency_ms": 320.0,
-                "records_indexed": 14,
-                "info": PROVIDER_METADATA["cricdata"]
-            }
-        }
+        result = {"cricsheet": local}
+        for pid, client in (("cricketdata", self.cricketdata), ("sportmonks", self.sportmonks),
+                            ("roanuz_match", self.roanuz_match), ("roanuz_fantasy", self.roanuz_fantasy)):
+            configured = bool(client.is_live)
+            result[pid] = {"active": False, "configured": configured,
+                           "status": "CONFIGURED_UNVERIFIED" if configured else "UNAVAILABLE",
+                           "mode": "NOT_PROBED", "authenticated": None, "reachable": None,
+                           "freshly_synchronised": None, "latency_ms": None,
+                           "records_indexed": None, "last_sync": None, "info": PROVIDER_METADATA[pid]}
+        result["cricdata"] = {"active": False, "configured": importlib.util.find_spec("cricdata") is not None,
+                              "status": "NOT_PROBED", "mode": "NOT_PROBED", "authenticated": None,
+                              "reachable": None, "freshly_synchronised": None, "latency_ms": None,
+                              "records_indexed": None, "last_sync": None, "info": PROVIDER_METADATA["cricdata"]}
+        return result
 
     def fetch_unified_live_match(self, match_id: str = "ind-vs-wi-t20i-2026") -> Dict[str, Any]:
         """Gathers and cross-references live match data across all available providers."""

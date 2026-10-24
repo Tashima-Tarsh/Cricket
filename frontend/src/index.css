@@ -435,7 +435,15 @@ h1, h2, h3, h4, h5, h6 {
 
 /* Subtle Telemetry Badges (replacing harsh warning boxes) */
 .evidence-note {
-  display: none;
+  display: block;
+  padding: 0.75rem 1rem;
+  margin-block: 0.75rem;
+  border: 1px solid #c4b486;
+  border-radius: 0.25rem;
+  background: #faf6e8;
+  color: #463d24;
+  font-size: 0.875rem;
+  line-height: 1.6;
 }
 
 .telemetry-citation {

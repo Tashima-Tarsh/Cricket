@@ -2,7 +2,7 @@
 India vs West Indies, 4th T20I at Rajiv Gandhi Stadium, Hyderabad.
 Features full smooth scrolling, matchup & fast wicket falling simulations, and 1-click copy.
 """
-from fastapi import FastAPI, HTTPException, Query, Body
+from fastapi import FastAPI, HTTPException, Query, Body, Header, Request
 from fastapi.responses import HTMLResponse, FileResponse, Response
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
@@ -19,9 +19,14 @@ from .xgboost_model import XGBoostFantasyPredictor
 from .ortools_optimizer import ORToolsCricketOptimizer
 from .rain_model import RainReducedOversEngine
 from .csv_exporter import BulkPlatformExporter
-from .match_catalog import get_match_data, SERIES_FIXTURES, MATCH_FILE_5TH
+from .match_catalog import get_match_data, SERIES_FIXTURES, MATCH_FILE_5TH, UnknownMatchError
 import time
 import os
+import math
+import secrets
+import importlib.util
+import platform
+from pydantic import ValidationError
 import numpy as np
 from .models import Player
 
@@ -156,30 +161,52 @@ def get_single_venue_pitch_intelligence(venue_query: str):
         "verified_leaderboard": leaderboard
     }
 
+@app.exception_handler(UnknownMatchError)
+async def unknown_match_handler(request: Request, exc: UnknownMatchError):
+    from fastapi.responses import JSONResponse
+    return JSONResponse(status_code=409, content={"detail": str(exc)})
+
+
+def resolve_match_players(match_id=None):
+    """One fixture resolver for state, optimization and exports; no default on unknown IDs."""
+    from .universal_engine import get_universal_engine
+    clean_id = (match_id or "ind_w_vs_zim_w_2026_02").removeprefix("display_")
+    engine = get_universal_engine()
+    if clean_id in engine._matches:
+        meta = engine._matches[clean_id]
+        raw = engine._profile_match_players(meta)
+        if len(raw) < 11:
+            raise HTTPException(503, "Fixture player pool is unavailable")
+        return meta, [Player(**p) for p in raw]
+    data = get_match_data(clean_id)
+    if len(data["players"]) < 11:
+        raise HTTPException(503, "Fixture player pool is unavailable")
+    players, _ = get_enriched_players(data["players"])
+    return data["match_info"], players
+
+
 @app.get("/api/health")
 def get_health():
-    """Health check endpoint providing subsystem statuses, database metrics, and model versions."""
+    """Process liveness plus measured database readiness; no external health claims."""
+    import duckdb
     from .wt20_analytics import DB_PATH
-    return {
-        "status": "healthy",
-        "service": "Cricket Intelligence Platform & Grand League Optimizer",
-        "version": "2.4.0",
-        "timestamp": datetime.now(timezone.utc).isoformat(),
-        "database": {
-            "engine": "DuckDB",
-            "path": str(DB_PATH),
-            "status": "connected" if DB_PATH.exists() else "not_found",
-            "deliveries_indexed": 134722,
-            "matches_indexed": 597
-        },
-        "models": {
-            "bayesian": "Hierarchical Bayesian Zero-Inflated Poisson-Gamma with Partial Pooling",
-            "optimizer": "Google OR-Tools CP-SAT (Integer Linear Programming)",
-            "status": "operational"
-        },
-        "target_fixture": "ind_w_vs_zim_w_2026_02",
-        "python_version": "3.11+"
-    }
+    database = {"engine": "DuckDB", "status": "not_found", "deliveries_indexed": None,
+                "matches_indexed": None, "latency_ms": None}
+    started = time.perf_counter()
+    if DB_PATH.exists():
+        try:
+            with duckdb.connect(str(DB_PATH), read_only=True) as con:
+                database["deliveries_indexed"] = con.execute("SELECT count(*) FROM deliveries").fetchone()[0]
+                database["matches_indexed"] = con.execute("SELECT count(*) FROM matches").fetchone()[0]
+            database.update(status="connected", latency_ms=round((time.perf_counter()-started)*1000, 2))
+        except Exception:
+            database["status"] = "unavailable"
+    solver_available = importlib.util.find_spec("ortools") is not None
+    return {"status": "healthy" if database["status"] == "connected" and solver_available else "degraded",
+            "timestamp": datetime.now(timezone.utc).isoformat(), "database": database,
+            "python_version": platform.python_version(),
+            "models": {"optimizer": "installed" if solver_available else "unavailable",
+                       "validation": "[VERIFY REQUIRED]", "providers": "not_probed"}}
 
 @app.get("/api/match/current")
 def get_current_match(match_id: Optional[str] = None):
@@ -204,18 +231,38 @@ def get_current_match(match_id: Optional[str] = None):
     }
 
 @app.post("/api/match/ingest")
-def ingest_match_endpoint(payload: Dict[str, Any] = Body(...)):
+def ingest_match_endpoint(payload: Dict[str, Any] = Body(...), authorization: Optional[str] = Header(None)):
     """Dynamically ingests ANY new match or custom playing XIs, running DuckDB ball-by-ball
     profiling and OR-Tools CP-SAT lineup optimization in real-time."""
     from .universal_engine import get_universal_engine
+    token = os.getenv("CRICKET_ADMIN_TOKEN")
+    if not token:
+        raise HTTPException(503, "Custom ingestion is disabled. Configure CRICKET_ADMIN_TOKEN on the server.")
+    if not secrets.compare_digest(authorization or "", "Bearer " + token):
+        raise HTTPException(401, "An administrator bearer token is required.")
     engine = get_universal_engine()
-    return engine.ingest_match(payload)
+    try:
+        state = engine.ingest_match(payload)
+    except (ValidationError, ValueError, TypeError) as exc:
+        raise HTTPException(422, str(exc)) from exc
+    _STATE_CACHES.clear()
+    _STATE_CACHE_TIMES.clear()
+    return state
 
 @app.get("/api/matches")
 @app.get("/api/catalog")
 def get_matches_catalog():
     from .universal_engine import get_universal_engine
-    return {"matches": get_universal_engine().list_available_matches()}
+    from .match_catalog import SERIES_FIXTURES
+    matches = get_universal_engine().list_available_matches()
+    ids = {m["id"] for m in matches}
+    for item in SERIES_FIXTURES.values():
+        if item["id"] not in ids:
+            ids.add(item["id"])
+            matches.append({"id": item["id"], "name": item["name"], "format": item["format"],
+                            "status": "BUNDLED FIXTURE | [VERIFY REQUIRED]",
+                            "venue_name": item["venue"]["name"], "data_provenance": "UNVERIFIED_BUNDLED_FIXTURE"})
+    return {"matches": matches}
 
 @app.get("/api/players")
 def get_all_players_intelligence(match_id: Optional[str] = None):
@@ -355,119 +402,34 @@ def get_data():
     return load_data()
 
 @app.get("/api/state")
-def get_full_state(
-    match_id: Optional[str] = "ind_w_vs_zim_w_2026_02", 
-    overs: int = 20,
-    force_refresh: bool = False
-):
-    """Returns the unified real production state with sub-50ms cached performance.
-    Supports reduced overs (5 to 20) with DLS calculations and shortened-game optimization.
-    """
-    global _STATE_CACHES, _STATE_CACHE_TIMES
-    clean_id = (match_id or "ind_w_vs_zim_w_2026_02").replace("display_", "")
+def get_full_state(match_id: Optional[str] = "ind_w_vs_zim_w_2026_02",
+                   overs: int = Query(20, ge=5, le=20), force_refresh: bool = False):
+    """Selected fixture with overs-dependent heuristic projections and constrained lineups."""
+    clean_id = (match_id or "ind_w_vs_zim_w_2026_02").removeprefix("display_")
     cache_key = f"{clean_id}_{overs}"
     now = time.time()
-    if not force_refresh and cache_key in _STATE_CACHES and (now - _STATE_CACHE_TIMES.get(cache_key, 0) < _STATE_CACHE_TTL):
+    if not force_refresh and cache_key in _STATE_CACHES and now - _STATE_CACHE_TIMES.get(cache_key, 0) < _STATE_CACHE_TTL:
         return {**_STATE_CACHES[cache_key], "cached": True}
-
-    # Primary path: Universal Dynamic Match Engine
-    from .universal_engine import get_universal_engine
-    engine = get_universal_engine()
-    unified_state = engine.get_unified_state(match_id=clean_id, force_refresh=force_refresh)
-    unified_state["overs"] = overs
-    unified_state["rain_constraints"] = None
-    unified_state["venue_players"] = []
-    unified_state["live_matches"] = []
-    _STATE_CACHES[cache_key] = unified_state
-    _STATE_CACHE_TIMES[cache_key] = now
-    return unified_state
-
-    match_data = get_match_data(clean_id)
-    players_objs, enriched_players = get_enriched_players(match_data["players"])
-    venue_info = match_data.get("match_info", {}).get("venue", {})
-    rain_constraints = RainReducedOversEngine.get_over_constraints(overs)
-    if overs < 20:
-        players_objs = RainReducedOversEngine.adjust_player_projections(players_objs, overs, venue_info)
-        enriched_players = [p.model_dump() for p in players_objs]
-
-    # 2. Real Google OR-Tools CP-SAT Grand League Lineups (79-85 Cr Anti-Chalk, >=700k spots)
-    opt = ORToolsCricketOptimizer(players_objs)
-    real_lineups = opt.generate_grand_league_portfolio(
-        num_teams=5,
-        min_differentials_per_team=3,
-        max_overlap_between_teams=8,
-        spots=700000,
-        credit_strategy="79-85",
-        venue_conditions=venue_info,
-        overs=overs
-    )
-
-    # 3. Real Provider Status Telemetry (Authentic Reporting)
+    meta, players = resolve_match_players(clean_id)
+    venue = meta.get("venue", {})
+    opt = ORToolsCricketOptimizer(players)
+    lineups = opt.generate_grand_league_portfolio(num_teams=5, min_differentials_per_team=3,
+                  max_overlap_between_teams=8, credit_strategy="79-85", venue_conditions=venue, overs=overs)
     from .providers import UnifiedCricketDataHub
-    hub = UnifiedCricketDataHub()
-    prov_status = hub.get_providers_status()
-    providers_telemetry = []
-    for p_id, p_info in prov_status.items():
-        providers_telemetry.append({
-            "id": p_id,
-            "name": p_info.get("info", {}).get("name", p_id.upper()),
-            "status": p_info.get("status", "STANDBY_FALLBACK"),
-            "mode": p_info.get("mode", "SIMULATED_FALLBACK"),
-            "authenticated": p_info.get("authenticated", False),
-            "latency_ms": p_info.get("latency_ms") if p_info.get("latency_ms") is not None else 0.0,
-            "records_indexed": p_info.get("records_indexed", p_info.get("matches_cached", 0)),
-            "last_sync": "Active Stream" if p_info.get("authenticated") else "Local Repository / Fallback",
-            "best_use": p_info.get("info", {}).get("best_use", "Cricket telemetry & live feeds"),
-            "endpoint": p_info.get("info", {}).get("documentation", f"https://api.{p_id}.org/v1")
-        })
-
-    # 4. Real Live Matches from ESPN Cricinfo RSS XML Feed (with TTL cache)
-    from .live_feed import fetch_espn_cricinfo_live_matches
-    live_matches = fetch_espn_cricinfo_live_matches()
-
-    # 5. Real Head-to-Head Battles from Cricsheet
-    battles_engine = get_battles_engine()
-    battles_list = []
-    for m in battles_engine.matchups:
-        b_item = battles_engine.query_h2h_battle(m["batter"], m["bowler"])
-        if b_item:
-            battles_list.append({
-                "batter_id": m["batter"].lower().replace(" ", "_"),
-                "batter_name": b_item.batter_name,
-                "bowler_id": m["bowler"].lower().replace(" ", "_"),
-                "bowler_name": b_item.bowler_name,
-                "balls": b_item.balls_faced,
-                "runs": b_item.runs_scored,
-                "dismissals": b_item.dismissals,
-                "strike_rate": b_item.strike_rate,
-                "dot_pct": b_item.dot_ball_pct,
-                "boundaries_count": b_item.fours + b_item.sixes,
-                "advantage": "Bowler Dominant" if "Bowler" in b_item.tactical_advantage else ("Batter Dominant" if "Batter" in b_item.tactical_advantage else "Competitive Balance"),
-                "tactical_notes": f"{b_item.bowling_style} matchup. {b_item.tactical_advantage}.",
-                "win_probability_batter": 68.0 if "Batter" in b_item.tactical_advantage else (34.0 if "Bowler" in b_item.tactical_advantage else 50.0)
-            })
-
-    # 6. Real Venue & Match Data from canonical catalog
-    match_info_data = match_data.get("match_info", {})
-    venue_name_slug = match_info_data.get("venue", {}).get("name", "chinnaswamy").lower()
-    venue_players = battles_engine.get_venue_player_telemetry(venue_name_slug)
-
-    result = {
-        "status": "success",
-        "generated_at": datetime.now(timezone.utc).isoformat(),
-        "cached": False,
-        "match": match_info_data,
-        "overs": overs,
-        "rain_constraints": rain_constraints,
-        "players": enriched_players,
-        "lineups": [l.model_dump() for l in real_lineups],
-        "battles": battles_list,
-        "venue_players": venue_players,
-        "providers": providers_telemetry,
-        "live_matches": live_matches
-    }
-    _STATE_CACHES[cache_key] = result
-    _STATE_CACHE_TIMES[cache_key] = now
+    providers = [dict(info, id=pid, name=info.get("info", {}).get("name", pid))
+                 for pid, info in UnifiedCricketDataHub().get_providers_status().items()]
+    from .universal_engine import get_universal_engine
+    battles = get_universal_engine()._build_battle_matrix([p.model_dump() for p in opt.players], meta)
+    result = {"status": "success", "generated_at": datetime.now(timezone.utc).isoformat(),
+              "cached": False, "match": meta, "overs": overs,
+              "rain_constraints": RainReducedOversEngine.get_over_constraints(overs),
+              "players": [p.model_dump() for p in opt.players],
+              "lineups": [l.model_dump() for l in lineups],
+              "solver_status": "success" if len(lineups) == 5 else ("partial" if lineups else "infeasible"),
+              "battles": battles, "venue_players": [], "providers": providers, "live_matches": [],
+              "data_provenance": {"fixture": meta.get("data_provenance", "UNVERIFIED_BUNDLED_FIXTURE"),
+                                  "projections": "UNCALIBRATED_HEURISTIC", "battles": "LOCAL_ARCHIVE" if battles else "UNAVAILABLE"}}
+    _STATE_CACHES[cache_key], _STATE_CACHE_TIMES[cache_key] = result, now
     return result
 
 @app.get("/api/venue/player-stats")
@@ -490,7 +452,7 @@ def get_series_fixtures():
     for f in SERIES_FIXTURES.values():
         if f["id"] not in seen:
             seen.add(f["id"])
-            unique_fixtures.append(f)
+            unique_fixtures.append(dict(f, status="BUNDLED FIXTURE | [VERIFY REQUIRED]", data_provenance="UNVERIFIED_BUNDLED_FIXTURE"))
     return {"fixtures": unique_fixtures}
 
 @app.get("/api/cricsheet/matches")
@@ -505,7 +467,8 @@ def get_live_matches():
     """Fetches real-time live matches from ESPN Cricinfo and Cricbuzz live feeds."""
     matches = fetch_espn_cricinfo_live_matches()
     return {
-        "status": "success",
+        "status": "success" if matches else "unavailable",
+        "data_provenance": "PROVIDER_FEED" if matches else "UNAVAILABLE",
         "count": len(matches),
         "matches": matches
     }
@@ -538,7 +501,7 @@ def get_xgboost_forecast(match_id: Optional[str] = "ind_vs_wi_5th_t20_2026"):
         for p in players
     ]
     forecasts.sort(key=lambda x: x["ceiling_90th"], reverse=True)
-    return {"forecasts": forecasts}
+    return {"forecasts": forecasts, "model_provenance": predictor.training_provenance, "intervals": "HEURISTIC_UNCALIBRATED"}
 
 @app.get("/api/ortools/optimize")
 @app.get("/api/lineups")
@@ -559,53 +522,59 @@ def get_ortools_lineups(
     exposure: Optional[str] = None,
     confirmed_xi: Optional[str] = None
 ):
-    # User specification: Lineups always for fields >= 7 Lakhs (700,000 spots)
-    effective_spots = max(spots, 700000)
-    clean_id = (match_id or "ind_w_vs_zim_w_2026_02").replace("display_", "")
-
-    from .universal_engine import get_universal_engine
-    engine = get_universal_engine()
-    state = engine.get_unified_state(match_id=clean_id)
-    return {
-        "generated_at": state.get("generated_at", datetime.now(timezone.utc).isoformat()),
-        "risk": risk,
-        "credit_strategy": "15-20 Credits Unspent",
-        "effective_field_size": effective_spots,
-        "lineups": state.get("lineups", []),
-        "portfolio_metrics": state.get("portfolio_metrics", {})
-    }
-
-    match_data = get_match_data(clean_id)
-    players, _ = get_enriched_players(match_data["players"])
-    venue_info = match_data.get("match_info", {}).get("venue", {})
-    
-    if not 1 <= teams <= 20 or not 0 <= max_overlap <= 11:
-        raise HTTPException(422, "Teams must be 1–20; overlap must be 0–11.")
+    # Validate before loading profiles or invoking any solver/simulation.
+    if not 1 <= teams <= 20 or not 0 <= max_overlap <= 11 or not 5 <= overs <= 20:
+        raise HTTPException(422, "Teams must be 1-20, overlap 0-11, overs 5-20.")
+    if not 1 <= spots <= 5000000:
+        raise HTTPException(422, "Contest size must be 1-5,000,000.")
     if risk not in {"BALANCED", "HIGH_CEILING", "DIFFERENTIAL_HEAVY"}:
         raise HTTPException(422, "Unknown risk setting.")
     if credit_strategy not in {"79-85", "87-89", "90-95"}:
         raise HTTPException(422, "Unknown credit band.")
+    if (min_credits is None) != (max_credits is None):
+        raise HTTPException(422, "Both custom credit bounds are required.")
+    if min_credits is not None and not (math.isfinite(min_credits) and math.isfinite(max_credits) and 0 <= min_credits <= max_credits <= 100):
+        raise HTTPException(422, "Credit bounds must be finite and ordered within 0-100.")
+    effective_spots = max(spots, 700000)
+    clean_id = (match_id or "ind_w_vs_zim_w_2026_02").removeprefix("display_")
+    meta, players = resolve_match_players(clean_id)
+    venue_info = meta.get("venue", {})
+    ownership_available = all(p.ownership_available for p in players)
+    if risk == "DIFFERENTIAL_HEAVY" and not ownership_available:
+        raise HTTPException(422, "Differential-heavy optimization requires supplied ownership estimates for all players.")
 
     locked_list = [x.strip() for x in locked.split(",") if x.strip()] if locked else []
     excluded_list = [x.strip() for x in excluded.split(",") if x.strip()] if excluded else []
     
+    known_ids = {p.id for p in players}
+    if not (set(locked_list) | set(excluded_list)) <= known_ids:
+        raise HTTPException(422, "Unknown player ID in locks or exclusions.")
+    if set(locked_list) & set(excluded_list):
+        raise HTTPException(422, "A player cannot be both locked and excluded.")
+    if len(set(locked_list)) > 11:
+        raise HTTPException(422, "Cannot lock more than 11 players.")
+
     # 30-Minute Toss Lock: if confirmed_xi is provided, all other players are automatically benched/excluded!
     if confirmed_xi:
         confirmed_set = set(x.strip() for x in confirmed_xi.split(",") if x.strip())
+        if not confirmed_set <= known_ids or len(confirmed_set) < 11:
+            raise HTTPException(422, "Confirmed XI must contain at least 11 known player IDs.")
         for p in players:
-            if p.id not in confirmed_set and not any(k in p.id for k in confirmed_set):
+            if p.id not in confirmed_set:
                 excluded_list.append(p.id)
 
     # Parse exposure limits, e.g. "ind_abhishek:50,wi_hope:40"
     exposure_limits = {}
     if exposure:
-        for item in exposure.split(","):
-            if ":" in item:
+        try:
+            for item in exposure.split(","):
                 pid, val = item.split(":", 1)
-                try:
-                    exposure_limits[pid.strip()] = float(val.strip())
-                except ValueError:
-                    pass
+                pct = float(val)
+                if pid.strip() not in known_ids or not math.isfinite(pct) or not 0 <= pct <= 100:
+                    raise ValueError("Unknown player or invalid percentage")
+                exposure_limits[pid.strip()] = pct
+        except ValueError as exc:
+            raise HTTPException(422, "Exposure must be known_player_id:percentage (0-100).") from exc
 
     scenario_weights = {
         "IND_BOWLS_FIRST": {"ind_bias": 1.12, "wi_bias": 1.0},
@@ -623,7 +592,7 @@ def get_ortools_lineups(
         template = {"name": scenario or "Custom captain", "tag": scenario or "CUSTOM", "rationale": "User-selected scenario weights; not verified match conditions.", **scenario_weights.get(scenario, {})}
         if captain != "AUTO":
             name = captain_names.get(captain)
-            selected = next((p for p in players if name and name.lower() in p.name.lower()), None)
+            selected = next((p for p in players if p.id == captain or (name and name.lower() in p.name.lower())), None)
             if selected is None:
                 raise HTTPException(422, "Requested captain is not in the connected player pool.")
             template["preferred_c"] = selected.id
@@ -674,7 +643,13 @@ def get_ortools_lineups(
         "solver": "Google OR-Tools CP-SAT",
         "contest_spots": effective_spots,
         "credit_strategy": credit_strategy,
+        "status": "success" if len(lineups) == teams else ("partial" if lineups else "infeasible"),
+        "teams_requested": teams,
         "teams_generated": len(lineups),
+        "metrics_status": "SYNTHETIC_FIELD_UNCALIBRATED",
+        "ownership_status": "SUPPLIED_ESTIMATES" if ownership_available else "UNAVAILABLE_NEUTRAL_PRIOR",
+        "constraints_unavailable": [] if ownership_available else ["CSP and minimum differential count require ownership estimates"],
+        "effective_field_size": effective_spots,
         "lineups": lineup_dicts,
         "syndicate_telemetry": syndicate_stats
     }
@@ -691,41 +666,16 @@ def export_lineups_csv(
     exposure: Optional[str] = None,
     confirmed_xi: Optional[str] = None
 ):
-    """Exports 20-team Grand League lineups strictly formatted for Dream11 or My11Circle bulk contest entry."""
-    clean_id = (match_id or "ind_vs_wi_5th_t20_2026").replace("display_", "")
-    match_data = get_match_data(clean_id)
-    players, _ = get_enriched_players(match_data["players"])
-    venue_info = match_data.get("match_info", {}).get("venue", {})
-
-    locked_list = [x.strip() for x in locked.split(",") if x.strip()] if locked else []
-    excluded_list = [x.strip() for x in excluded.split(",") if x.strip()] if excluded else []
-    
-    if confirmed_xi:
-        confirmed_set = set(x.strip() for x in confirmed_xi.split(",") if x.strip())
-        for p in players:
-            if p.id not in confirmed_set and not any(k in p.id for k in confirmed_set):
-                excluded_list.append(p.id)
-
-    exposure_limits = {}
-    if exposure:
-        for item in exposure.split(","):
-            if ":" in item:
-                pid, val = item.split(":", 1)
-                try:
-                    exposure_limits[pid.strip()] = float(val.strip())
-                except ValueError:
-                    pass
-
-    opt = ORToolsCricketOptimizer(players)
-    lineups = opt.generate_grand_league_portfolio(
-        num_teams=min(20, max(1, teams)),
-        overs=overs,
-        credit_strategy=credit_strategy,
-        venue_conditions=venue_info,
-        locked_player_ids=locked_list,
-        excluded_player_ids=excluded_list,
-        player_exposure_limits=exposure_limits
-    )
+    """Export through the same validated service contract as the interactive solver."""
+    if format.lower() not in {"dream11", "my11circle"}:
+        raise HTTPException(422, "Unknown export format")
+    result = get_ortools_lineups(teams=teams, overs=overs, credit_strategy=credit_strategy,
+                               match_id=match_id, locked=locked, excluded=excluded,
+                               exposure=exposure, confirmed_xi=confirmed_xi)
+    if not result["lineups"]:
+        raise HTTPException(409, "No feasible lineups satisfy the requested export settings")
+    from .models import Lineup
+    lineups = [Lineup(**lineup) for lineup in result["lineups"]]
 
     if format.lower() == "my11circle":
         csv_content = BulkPlatformExporter.export_my11circle_csv(lineups)
@@ -788,15 +738,15 @@ def simulate_rain_overs(
     }
 
 @app.get("/api/analyst/query")
-def query_ai_analyst(q: str = Query(..., description="Tactical query for the cricket intelligence engine"), match_id: Optional[str] = "ind_vs_wi_5th_t20_2026"):
+def query_ai_analyst(q: str = Query(..., min_length=1, max_length=2000, description="Tactical query for the cricket intelligence engine"), match_id: Optional[str] = "ind_vs_wi_5th_t20_2026"):
     """Grounded cricket intelligence query engine querying t20.duckdb and XGBoost models."""
     import duckdb
     from pathlib import Path
 
     clean_id = (match_id or "ind_vs_wi_5th_t20_2026").replace("display_", "")
-    match_data = get_match_data(clean_id)
-    players, enriched = get_enriched_players(match_data["players"])
-    venue_info = match_data.get("match_info", {}).get("venue", {})
+    meta, players = resolve_match_players(clean_id)
+    enriched = [p.model_dump() for p in players]
+    venue_info = meta.get("venue", {})
 
     db_path = Path(__file__).parent.parent / "t20.duckdb"
     con = None
@@ -811,7 +761,7 @@ def query_ai_analyst(q: str = Query(..., description="Tactical query for the cri
     batter_cand = next((p for p in mentioned_players if p.role in ["BAT", "WK"]), None)
     bowler_cand = next((p for p in mentioned_players if p.role in ["BOWL", "AR"]), None)
 
-    citations = ["DuckDB Columnar Delivery Ledger (194,239 balls indexed)", "XGBoost Historical Predictor v2.4 (Zero Leakage)"]
+    citations = ["Local fixture context [VERIFY REQUIRED]"]
     metrics = []
 
     if (batter_cand and bowler_cand) or ("vs" in q_lower and ("pooran" in q_lower or "kuldeep" in q_lower or "samson" in q_lower or "bumrah" in q_lower)):
@@ -847,7 +797,7 @@ def query_ai_analyst(q: str = Query(..., description="Tactical query for the cri
                 f"• **Batter Strike Rate:** {sr} SR\n" \
                 f"• **Dot Ball Percentage:** {dot_pct}%\n" \
                 f"• **Boundary Count:** {boundaries} boundaries\n\n" \
-                f"**Tactical Assessment:** "
+                f"**Rule-based interpretation [VERIFY REQUIRED]:** "
         if dismissals >= 2:
             reply += f"{bw_name} has demonstrated wicket-taking dominance against {b_name}. Bowler holds clear tactical leverage in middle overs."
         elif sr > 150:
@@ -871,7 +821,7 @@ def query_ai_analyst(q: str = Query(..., description="Tactical query for the cri
         top_diff = differentials[0] if differentials else enriched[0]
 
         reply = f"**Optimal Grand League Differential Captain Engine:**\n\n" \
-                f"Evaluating zero-leakage XGBoost models (chronologically split) and ownership leverage:\n\n" \
+                f"Illustrative ranking from supplied projections and ownership assumptions [VERIFY REQUIRED]:\n\n" \
                 f"• **Primary Target:** **{top_diff['name']}** ({top_diff['role']} - {top_diff['team']})\n" \
                 f"• **Projected Ownership:** {top_diff.get('projected_ownership', 25.0)}% (Strong anti-chalk leverage)\n" \
                 f"• **Model Ceiling (90th Percentile):** {round(top_diff.get('ceiling_score', 85.0), 1)} Fantasy Points\n" \
@@ -881,33 +831,33 @@ def query_ai_analyst(q: str = Query(..., description="Tactical query for the cri
         metrics = [
             {"label": "TARGET CEILING", "value": f"{round(top_diff.get('ceiling_score', 85.0), 1)} pts", "color": "text-emerald-700"},
             {"label": "OWNERSHIP", "value": f"{top_diff.get('projected_ownership', 25.0)}%", "color": "text-stone-800"},
-            {"label": "MODEL STATUS", "value": "ZERO LEAKAGE", "color": "text-blue-700"}
+            {"label": "MODEL STATUS", "value": "UNVERIFIED", "color": "text-blue-700"}
         ]
         citations.append(f"Player: {top_diff['name']} ({clean_id})")
 
     elif "dls" in q_lower or "rain" in q_lower:
         from .player_battles_mcp import PlayerBattlesMCPEngine
         battles = PlayerBattlesMCPEngine()
-        dls_res = battles.compute_dls_target(first_runs=190, first_overs=20, second_overs=14, wickets_lost=2)
+        dls_res = battles.compute_dls_target(first_innings_runs=190, first_innings_overs=20, second_innings_overs=14, interruption_wickets=2)
 
-        reply = f"**DLS Rain Interruption Telemetry:**\n\n" \
+        reply = f"**Illustrative rain scenario; not official DLS:**\n\n" \
                 f"Simulating second-innings rain reduction from 20 to 14 overs:\n\n" \
                 f"• **First Innings Baseline:** 190/5 (20.0 overs)\n" \
                 f"• **Interrupted Overs:** 14.0 overs allocated\n" \
-                f"• **Adjusted Target:** {dls_res.get('revised_target', 142)} runs in 14.0 overs\n" \
-                f"• **Required Run Rate:** {round(dls_res.get('revised_target', 142) / 14.0, 2)} RPO\n\n" \
+                f"• **Adjusted Target:** {dls_res['dls_revised_target']} runs in 14.0 overs\n" \
+                f"• **Required Run Rate:** {round(dls_res['dls_revised_target'] / 14.0, 2)} RPO\n\n" \
                 f"**Tactical Impact:** Chasing side requires top-order boundary hitters immediately to stay ahead of the DLS par curve."
 
         metrics = [
-            {"label": "REVISED TARGET", "value": f"{dls_res.get('revised_target', 142)}", "color": "text-emerald-700"},
+            {"label": "REVISED TARGET", "value": f"{dls_res['dls_revised_target']}", "color": "text-emerald-700"},
             {"label": "TARGET OVERS", "value": "14.0", "color": "text-stone-800"},
-            {"label": "RESOURCE CURVE", "value": "Standard DLS", "color": "text-stone-800"}
+            {"label": "RESOURCE CURVE", "value": "Illustrative heuristic", "color": "text-stone-800"}
         ]
-        citations.append("ICC Duckworth-Lewis-Stern Resource Curves")
+        citations.append("Local heuristic resource model; not licensed DLS [VERIFY REQUIRED]")
 
     elif any(term in q_lower for term in ["venue", "pitch", "stadium", "bengaluru", "chinnaswamy", "ground", "soil"]):
         v = venue_info
-        reply = f"**Venue Intelligence: {v.get('name', 'Venue')}**\n\n" \
+        reply = f"**Unverified venue context: {v.get('name', 'Venue')}**\n\n" \
                 f"• **City:** {v.get('city', 'Bengaluru')}\n" \
                 f"• **Soil Structure:** {v.get('soil_type', 'Red clay')}\n" \
                 f"• **Average 1st Innings Score:** {v.get('avg_first_innings', 188)} runs\n" \
@@ -929,7 +879,7 @@ def query_ai_analyst(q: str = Query(..., description="Tactical query for the cri
             m_total = con.execute("SELECT count(*) FROM matches").fetchone()[0]
             d_total = con.execute("SELECT count(*) FROM deliveries").fetchone()[0]
         else:
-            m_total, d_total = 1243, 194239
+            m_total, d_total = 0, 0
 
         reply = f"**Cricket Tactical Intelligence Dispatch:**\n\n" \
                 f"Active Match Context: **{match_data.get('match_info', {}).get('name', 'India vs West Indies')}**\n" \
@@ -953,13 +903,15 @@ def query_ai_analyst(q: str = Query(..., description="Tactical query for the cri
     if con:
         con.close()
 
+    reply = "Rule-based response. Assumptions and interpretations require verification.\n\n" + reply
     return {
         "status": "success",
         "query": q,
         "reply": reply,
         "metrics": metrics,
         "citations": citations,
-        "provenance": "EVIDENCE_RETRIEVAL"
+        "provenance": "RULE_BASED_RETRIEVAL",
+        "analysis_method": "Keyword templates and available local records; not an LLM or calibrated forecast"
     }
 
 @app.get("/api/ortools/ten-scenarios")
@@ -1274,7 +1226,7 @@ def extract_match_roster(match_data: Dict[str, Any]) -> List[Dict[str, Any]]:
 
 
 @app.get("/api/portal/dfs-contest-sim")
-def run_dfs_contest_simulation(match_id: str = "161190", n_sims: int = 2500):
+def run_dfs_contest_simulation(match_id: str = "161190", n_sims: int = Query(2500, ge=1, le=5000)):
     """Executes full Copula Correlation + Dream11 Contest Simulation across match lineups."""
     from .dfs_distribution_copula import EmpiricalDistributionCopula
     from .dfs_contest_simulator import DFSContestSimulator, Dream11ContestStructure

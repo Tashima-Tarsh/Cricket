@@ -16,9 +16,11 @@ from pathlib import Path
 import json
 import re
 import time
+import uuid
 from datetime import datetime, timezone
 import duckdb
 import numpy as np
+from .match_catalog import UnknownMatchError
 try:
     from ortools.sat.python import cp_model
     HAS_ORTOOLS = True
@@ -31,11 +33,18 @@ DB_PATH = Path(__file__).parent.parent / "data" / "cricsheet_wt20.duckdb"
 class UniversalMatchEngine:
     """Master engine orchestrating match ingestion, player profiling, matchups, and GL solving."""
     
-    def __init__(self):
+    def __init__(self, store_path=None):
         self._active_match_id = "ind_w_vs_zim_w_2026_02"
         self._matches: Dict[str, Dict[str, Any]] = {}
         self._cached_states: Dict[str, Dict[str, Any]] = {}
         self._init_default_fixtures()
+        for fixture in self._matches.values():
+            fixture["data_provenance"] = "UNVERIFIED_BUNDLED_FIXTURE"
+            fixture["status"] = "BUNDLED FIXTURE | [VERIFY REQUIRED]"
+        from .fixture_store import FixtureStore
+        self._store = FixtureStore(store_path)
+        for fixture in self._store.load():
+            self._matches[fixture["id"]] = fixture
 
     def _init_default_fixtures(self):
         """Loads canonical baseline fixtures into the engine."""
@@ -241,6 +250,7 @@ class UniversalMatchEngine:
                     "name": m["name"],
                     "format": m["format"],
                     "status": m["status"],
+                    "data_provenance": m.get("data_provenance", "UNVERIFIED_BUNDLED_FIXTURE"),
                     "venue_name": m.get("venue", {}).get("name", ""),
                     "teams": f"{m['teams']['home']['name']} vs {m['teams']['away']['name']}"
                 })
@@ -248,6 +258,8 @@ class UniversalMatchEngine:
 
     def ingest_match(self, payload: Dict[str, Any]) -> Dict[str, Any]:
         """Dynamically ingests ANY new match or updates active match parameters."""
+        from .fixture_store import CustomFixture
+        payload = CustomFixture.model_validate(payload).model_dump()
         raw_name = payload.get("match_name") or payload.get("name") or "Custom Fixture"
         m_id = payload.get("match_id") or re.sub(r'[^a-z0-9_]+', '_', raw_name.lower()).strip('_')
         
@@ -310,7 +322,8 @@ class UniversalMatchEngine:
                         "bowl_style": p.get("bowl_style", "Right-arm medium"),
                         "is_c": p.get("is_c", False),
                         "is_vc": p.get("is_vc", False),
-                        "is_wk": p.get("is_wk", False)
+                        "is_wk": p.get("is_wk", False),
+                        "projected_ownership": p.get("projected_ownership")
                     })
             return parsed
 
@@ -332,6 +345,9 @@ class UniversalMatchEngine:
             "playing_xi_away": xi_away
         }
 
+        match_record["data_provenance"] = "USER_SUPPLIED_UNVERIFIED"
+        match_record["status"] = "USER SUPPLIED | [VERIFY REQUIRED]"
+        self._store.save(match_record)
         self._matches[m_id] = match_record
         self._active_match_id = m_id
         # Invalidate cache
@@ -342,8 +358,7 @@ class UniversalMatchEngine:
         """Builds and returns the comprehensive production state for the requested fixture."""
         m_id = match_id or self._active_match_id
         if m_id not in self._matches:
-            # Fallback to default
-            m_id = "ind_w_vs_zim_w_2026_02"
+            raise UnknownMatchError(f"Unknown or disconnected match: {m_id}")
 
         if not force_refresh and m_id in self._cached_states:
             return self._cached_states[m_id]
@@ -450,25 +465,27 @@ class UniversalMatchEngine:
                     }
                 }
                 raw_pool.append(p_dict)
+            if conn:
+                conn.close()
             return raw_pool
 
         # Generic auto-profiling from DuckDB
         for xi, team_code in [(match_meta["playing_xi_home"], home_code), (match_meta["playing_xi_away"], away_code)]:
             for p in xi:
                 p_name = p["name"]
-                pid = f"{team_code.lower()}_{re.sub(r'[^a-z0-9]+', '_', p_name.lower()).strip('_')}"
+                # Preserve Unicode names and distinguish punctuation without ID collisions.
+                pid = f"{team_code.lower()}_{uuid.uuid5(uuid.NAMESPACE_URL, p_name.casefold()).hex}"
                 
                 # Query DuckDB
                 runs, balls, wkts, balls_bowled, runs_conceded = 0, 0, 0, 0, 0
                 if conn:
                     try:
-                        q_bat = chr(39) + f"%{p_name.split()[-1]}%" + chr(39)
-                        res_b = conn.execute(f"SELECT SUM(runs_batter), COUNT(1) FROM deliveries WHERE batter LIKE {q_bat}").fetchone()
+                        res_b = conn.execute("SELECT SUM(runs_batter), COUNT(1) FROM deliveries WHERE batter = ?", [p_name]).fetchone()
                         if res_b and res_b[1]:
                             runs = res_b[0] or 0
                             balls = res_b[1] or 0
 
-                        res_w = conn.execute(f"SELECT COUNT(1), SUM(runs_total), SUM(CASE WHEN is_wicket=true THEN 1 ELSE 0 END) FROM deliveries WHERE bowler LIKE {q_bat}").fetchone()
+                        res_w = conn.execute("SELECT COUNT(1), SUM(runs_total), SUM(CASE WHEN is_wicket=true THEN 1 ELSE 0 END) FROM deliveries WHERE bowler = ?", [p_name]).fetchone()
                         if res_w and res_w[0]:
                             balls_bowled = res_w[0] or 0
                             runs_conceded = res_w[1] or 0
@@ -493,7 +510,8 @@ class UniversalMatchEngine:
                     "batting_order_projected": p.get("order", 6),
                     "expected_overs": 4.0 if p.get("role") in ("BOWL", "AR") else 0.0,
                     "is_confirmed_xi": True,
-                    "projected_ownership": 55.0 if p.get("credits", 8.0) >= 9.0 else 35.0,
+                    "projected_ownership": p["projected_ownership"] if p.get("projected_ownership") is not None else 50.0,
+                    "ownership_available": p.get("projected_ownership") is not None,
                     "projected_points": exp_pts,
                     "ceiling_score": ceiling,
                     "floor_score": round(exp_pts * 0.5, 1),
@@ -519,40 +537,42 @@ class UniversalMatchEngine:
                         "floor_pts": round(exp_pts * 0.5, 1)
                     }
                 })
+        if conn:
+            conn.close()
         return raw_pool
 
-    def _build_battle_matrix(self, players: List[Dict[str, Any]], match_meta: Dict[str, Any]) -> List[Dict[str, Any]]:
-        """Calculates batter vs bowler matchups across teams."""
-        home_code = match_meta["teams"]["home"]["code"]
-        away_code = match_meta["teams"]["away"]["code"]
-        batters = [p for p in players if p["team"] == home_code and p["role"] in ("BAT", "WK", "AR") and p.get("is_confirmed_xi")]
-        bowlers = [p for p in players if p["team"] == away_code and p["role"] in ("BOWL", "AR") and p.get("is_confirmed_xi")]
-
+    def _build_battle_matrix(self, players, match_meta):
+        """Return recorded cross-team matchups only; absent evidence stays absent."""
+        if not DB_PATH.exists():
+            return []
         battles = []
-        for b in batters[:4]:
-            for bo in bowlers[:4]:
-                sr = round(110.0 + (hash(b["id"] + bo["id"]) % 45), 1)
-                balls = 12 + (hash(b["id"] + bo["id"]) % 24)
-                runs = int(round(balls * (sr / 100.0)))
-                wkts = 1 if (hash(bo["id"]) % 3 == 0) else 0
-                adv = "Batter Dominant" if sr > 130 else ("Bowler Dominant" if wkts > 0 else "Competitive Balance")
-                battles.append({
-                    "batter_id": b["id"],
-                    "batter_name": b["name"],
-                    "bowler_id": bo["id"],
-                    "bowler_name": bo["name"],
-                    "balls": balls,
-                    "runs": runs,
-                    "dismissals": wkts,
-                    "strike_rate": sr,
-                    "dot_pct": 38.5,
-                    "boundaries_count": int(runs / 5),
-                    "advantage": adv,
-                    "tactical_notes": f"Historical surface battle: {adv}. Cutters and back-of-hand pace variations grip on black soil.",
-                    "win_probability_batter": 65.0 if "Batter" in adv else (35.0 if "Bowler" in adv else 50.0)
-                })
+        try:
+            with duckdb.connect(str(DB_PATH), read_only=True) as con:
+                for batter in players:
+                    if batter["role"] not in {"WK", "BAT", "AR"}:
+                        continue
+                    for bowler in players:
+                        if bowler["team"] == batter["team"] or bowler["role"] not in {"BOWL", "AR"}:
+                            continue
+                        row = con.execute("""SELECT count(*), coalesce(sum(runs_batter),0),
+                            sum(CASE WHEN is_wicket THEN 1 ELSE 0 END),
+                            sum(CASE WHEN runs_batter=0 THEN 1 ELSE 0 END),
+                            sum(CASE WHEN runs_batter>=4 THEN 1 ELSE 0 END)
+                            FROM deliveries WHERE batter=? AND bowler=?""",
+                            [batter["name"], bowler["name"]]).fetchone()
+                        if not row[0]:
+                            continue
+                        balls, runs, dismissals, dots, boundaries = row
+                        battles.append({"batter_id": batter["id"], "batter_name": batter["name"],
+                            "bowler_id": bowler["id"], "bowler_name": bowler["name"],
+                            "balls": balls, "runs": runs, "dismissals": dismissals,
+                            "strike_rate": round(100*runs/balls, 1), "dot_pct": round(100*dots/balls, 1),
+                            "boundaries_count": boundaries, "advantage": "Competitive Balance",
+                            "tactical_notes": "Recorded historical deliveries; no calibrated control probability or Bayesian adjustment.",
+                            "win_probability_batter": None, "data_provenance": "LOCAL_ARCHIVE"})
+        except duckdb.Error:
+            return []
         return battles
-
 
     def classify_match_archetype(self, match_meta: Dict[str, Any]) -> str:
         """Classifies fixture into one of the 4 Universal Grand League Archetypes:
@@ -602,8 +622,8 @@ class UniversalMatchEngine:
         """Runs OR-Tools CP-SAT to solve exactly 4 unique Grand League teams enforcing 15-20 Cr unspent."""
         # Use confirmed players
         pool = [p for p in players if p.get("is_confirmed_xi", True)]
-        if len(pool) < 22:
-            pool = players[:22]
+        if len(pool) < 11:
+            return {"status": "infeasible", "lineups": [], "portfolio_metrics": {}}
 
         home_code = match_meta["teams"]["home"]["code"]
         away_code = match_meta["teams"]["away"]["code"]
@@ -751,22 +771,26 @@ class UniversalMatchEngine:
 
         for idx, sc in enumerate(scenarios):
             team_res = self._solve_cp_sat_team(pool, sc, previous_selections, home_code, away_code)
+            if team_res is None:
+                continue
             solved_lineups.append(team_res)
             previous_selections.append([p["id"] for p in team_res["players"]])
 
         # Overlap matrix
-        overlap = [[0]*4 for _ in range(4)]
-        for i in range(4):
-            for j in range(4):
+        count = len(solved_lineups)
+        overlap = [[0]*count for _ in range(count)]
+        for i in range(count):
+            for j in range(count):
                 s1 = set(p["id"] for p in solved_lineups[i]["players"])
                 s2 = set(p["id"] for p in solved_lineups[j]["players"])
                 overlap[i][j] = len(s1.intersection(s2))
 
         return {
+            "status": "success" if count == 4 else ("partial" if count else "infeasible"),
             "lineups": solved_lineups,
             "portfolio_metrics": {
                 "overlap_matrix": overlap,
-                "max_pairwise_overlap": max(overlap[i][j] for i in range(4) for j in range(4) if i != j),
+                "max_pairwise_overlap": max((overlap[i][j] for i in range(count) for j in range(count) if i != j), default=0),
                 "contest_field_size": 500000,
                 "credit_strategy": "15-20 Credits Unspent"
             }
@@ -781,91 +805,13 @@ class UniversalMatchEngine:
         away_code: str
     ) -> Dict[str, Any]:
         """CP-SAT single team solve."""
-        if not HAS_ORTOOLS:
-            # High-speed combinatorial solver fallback
-            c_id = scenario["target_c"]
-            vc_id = scenario["target_vc"]
-            c_p = next((p for p in pool if p["id"] == c_id), pool[0])
-            vc_p = next((p for p in pool if p["id"] == vc_id), pool[1])
-            
-            # Select required C and VC first
-            chosen = [c_p, vc_p]
-            chosen_ids = {c_p["id"], vc_p["id"]}
-            
-            # Categorize remaining pool
-            rem_pool = [p for p in pool if p["id"] not in chosen_ids]
-            rem_pool.sort(key=lambda p: (p.get("ceiling_score", 45.0) / max(10.0, p.get("projected_ownership", 50.0))), reverse=True)
-            
-            # Fill roles ensuring: WK (1-4), BAT (3-6), AR (1-4), BOWL (3-6), Team home/away (4-7)
-            for p in rem_pool:
-                if len(chosen) >= 11:
-                    break
-                # test candidate
-                test_set = chosen + [p]
-                tot_cr = sum(x["credits"] for x in test_set)
-                if tot_cr > scenario.get("credit_max", 85.5) + (11 - len(test_set)) * 8.0:
-                    continue
-                h_cnt = sum(1 for x in test_set if x["team"] == home_code)
-                a_cnt = sum(1 for x in test_set if x["team"] == away_code)
-                if h_cnt > 7 or a_cnt > 7:
-                    continue
-                chosen.append(p)
-                chosen_ids.add(p["id"])
-                
-            # If not 11, fill greedily
-            for p in rem_pool:
-                if len(chosen) >= 11:
-                    break
-                if p["id"] not in chosen_ids:
-                    chosen.append(p)
-                    chosen_ids.add(p["id"])
-                    
-            selected = []
-            for p in chosen:
-                p_copy = dict(p)
-                p_copy["is_captain"] = (p["id"] == c_id)
-                p_copy["is_vice_captain"] = (p["id"] == vc_id)
-                selected.append(p_copy)
-                
-            tot_cr = round(sum(p["credits"] for p in selected), 1)
-            cr_left = round(100.0 - tot_cr, 1)
-            tot_own = round(float(sum(p.get("projected_ownership", 50.0) for p in selected)), 1)
-            diff_count = len([p for p in selected if p.get("projected_ownership", 50.0) < 35.0])
-            
-            return {
-                "id": scenario["id"],
-                "name": scenario["name"],
-                "team_name": scenario["name"],
-                "scenario_tag": scenario["tag"],
-                "scenario_name": scenario["tag"],
-                "strategy": scenario["script"],
-                "tactical_rationale": scenario["script"],
-                "total_credits": tot_cr,
-                "credits_used": tot_cr,
-                "credits_left": cr_left,
-                "projected_points": round(sum(p.get("projected_points", 35.0) for p in selected) + c_p.get("projected_points", 35.0) + (vc_p.get("projected_points", 35.0)*0.5), 1),
-                "simulated_ceiling": round(sum(p.get("ceiling_score", 45.0) for p in selected) + c_p.get("ceiling_score", 45.0) + (vc_p.get("ceiling_score", 45.0)*0.5), 1),
-                "ceiling_points": round(sum(p.get("ceiling_score", 45.0) for p in selected) + c_p.get("ceiling_score", 45.0) + (vc_p.get("ceiling_score", 45.0)*0.5), 1),
-                "total_ownership_sum": tot_own,
-                "differential_count": diff_count,
-                "team_balance": {
-                    "WK": len([p for p in selected if p["role"]=="WK"]),
-                    "BAT": len([p for p in selected if p["role"]=="BAT"]),
-                    "AR": len([p for p in selected if p["role"]=="AR"]),
-                    "BOWL": len([p for p in selected if p["role"]=="BOWL"])
-                },
-                "gl_rank_potential": f"Elite Solo Equity (<= 2 Duplicates in 500k) | Unspent: {cr_left} Cr",
-                "captain": c_p,
-                "vice_captain": vc_p,
-                "players": selected,
-                "expected_duplicates": 1 if cr_left >= 15.0 else 3,
-                "projected_field_duplicates": 1 if cr_left >= 15.0 else 3,
-                "win_probability": 0.048,
-                "uniqueness_score": 99.8,
-                "csp": tot_own,
-                "mnc_summary": f"{len([p for p in selected if p.get('projected_ownership', 50)>=60])} Core | {len([p for p in selected if 25<=p.get('projected_ownership', 50)<60])} Rotation | {len([p for p in selected if p.get('projected_ownership', 50)<25])} Contrarian",
-                "cvc_combo_type": "Combo C (15-20 Cr Unspent Arbitrage)"
-            }
+        if not HAS_ORTOOLS or len(pool) < 11:
+            return None
+        ids = {p["id"] for p in pool}
+        if len(ids) != len(pool) or scenario["target_c"] == scenario["target_vc"]:
+            return None
+        if not {scenario["target_c"], scenario["target_vc"]} <= ids:
+            return None
 
         model = cp_model.CpModel()
         n = len(pool)
@@ -944,7 +890,7 @@ class UniversalMatchEngine:
                     p_copy["is_vice_captain"] = (p["id"] == vc_id)
                     selected.append(p_copy)
         else:
-            selected = pool[:11]
+            return None
 
         tot_cr = round(sum(p["credits"] for p in selected), 1)
         cr_left = round(100.0 - tot_cr, 1)
@@ -975,14 +921,15 @@ class UniversalMatchEngine:
                 "AR": len([p for p in selected if p["role"]=="AR"]),
                 "BOWL": len([p for p in selected if p["role"]=="BOWL"])
             },
-            "gl_rank_potential": f"Elite Solo Equity (<= 2 Duplicates in 500k) | Unspent: {cr_left} Cr",
+            "gl_rank_potential": f"Heuristic scenario | Unspent: {cr_left} Cr | [VERIFY REQUIRED]",
             "captain": c_p,
             "vice_captain": vc_p,
             "players": selected,
-            "expected_duplicates": 1 if cr_left >= 15.0 else 3,
-            "projected_field_duplicates": 1 if cr_left >= 15.0 else 3,
-            "win_probability": 0.048,
-            "uniqueness_score": 99.8,
+            "expected_duplicates": None,
+            "projected_field_duplicates": None,
+            "win_probability": None,
+            "metrics_status": "UNCALIBRATED_HEURISTIC",
+            "uniqueness_score": None,
             "csp": tot_own,
             "mnc_summary": f"{len([p for p in selected if p.get('projected_ownership', 50)>=60])} Core | {len([p for p in selected if 25<=p.get('projected_ownership', 50)<60])} Rotation | {len([p for p in selected if p.get('projected_ownership', 50)<25])} Contrarian",
             "cvc_combo_type": "Combo C (15-20 Cr Unspent Arbitrage)"
@@ -990,43 +937,12 @@ class UniversalMatchEngine:
 
     def _get_telemetry(self) -> List[Dict[str, Any]]:
         """Returns provider status records."""
-        return [
-            {
-                "id": "cricsheet_wt20", "name": "Cricsheet Archive (Relational DuckDB)", "status": "CONNECTED",
-                "mode": "DUCKDB_DIRECT", "authenticated": True, "latency_ms": 1.2,
-                "records_indexed": 134722, "last_sync": datetime.now(timezone.utc).isoformat(),
-                "best_use": "Ball-by-Ball delivery analysis & head-to-head batter vs bowler splits",
-                "endpoint": "local://data/cricsheet_wt20.duckdb"
-            },
-            {
-                "id": "espncricinfo_statsguru", "name": "ESPNcricinfo Statsguru Engine", "status": "CONNECTED",
-                "mode": "STATS_INGESTION", "authenticated": True, "latency_ms": 180.0,
-                "records_indexed": 3493, "last_sync": "Active Stream",
-                "best_use": "Authoritative historical career records & split performance windows",
-                "endpoint": "https://stats.espncricinfo.com"
-            },
-            {
-                "id": "cricbuzz_archives", "name": "Cricbuzz Scorecard Archives", "status": "CONNECTED",
-                "mode": "ARCHIVE_FEED", "authenticated": True, "latency_ms": 140.0,
-                "records_indexed": 1280, "last_sync": "Active Stream",
-                "best_use": "Live pitch commentary, ground dimensions & toss quotes",
-                "endpoint": "https://www.cricbuzz.com"
-            },
-            {
-                "id": "duckworth_mcp", "name": "duckworth-mcp DLS Protocol", "status": "ACTIVE",
-                "mode": "DLS_CALCULATOR", "authenticated": True, "latency_ms": 0.8,
-                "records_indexed": 1, "last_sync": "Loaded",
-                "best_use": "Resource loss and rain-interruption calculations",
-                "endpoint": "https://github.com/ankitksr/duckworth-mcp"
-            },
-            {
-                "id": "cricbase", "name": "CricBase Relational Schema", "status": "ACTIVE",
-                "mode": "NORMALIZED_SQL", "authenticated": True, "latency_ms": 1.1,
-                "records_indexed": 134722, "last_sync": "Embedded",
-                "best_use": "SQL indexing on phase, delivery extras and dismissals",
-                "endpoint": "https://github.com/daz-sports/CricBase"
-            }
-        ]
+        from .providers import UnifiedCricketDataHub
+        return [dict(info, id=pid, name=info.get("info", {}).get("name", pid),
+                     best_use=info.get("info", {}).get("best_use", ""),
+                     endpoint=info.get("info", {}).get("documentation", ""))
+                for pid, info in UnifiedCricketDataHub().get_providers_status().items()]
+
 
 _ENGINE_INSTANCE: Optional[UniversalMatchEngine] = None
 

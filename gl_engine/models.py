@@ -31,6 +31,7 @@ class Player(BaseModel):
     expected_overs: float = 0.0  # 0.0 to 4.0
     is_confirmed_xi: bool = True
     projected_ownership: float = 50.0  # 0 to 100%
+    ownership_available: bool = True
     stats: PlayerStats = Field(default_factory=PlayerStats)
     ceiling_score: float = 0.0
     floor_score: float = 0.0

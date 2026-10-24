@@ -76,11 +76,6 @@ class ORToolsCricketOptimizer:
         if min_credits is not None and max_credits is not None:
             eff_min_cr = float(min_credits)
             eff_max_cr = float(max_credits)
-        elif overs <= 12:
-            # In shortened matches (e.g. 9 overs), frontline playing assets require 84-90 Cr
-            # Leaving 10 to 16 Cr unspent eliminates field duplication while preventing bench keeper picks
-            eff_min_cr = 84.0
-            eff_max_cr = 90.0
         elif credit_strategy == "79-85":
             eff_min_cr = 79.0
             eff_max_cr = 85.0
@@ -101,7 +96,8 @@ class ORToolsCricketOptimizer:
             current_excluded = set(excluded_set)
             if player_exposure_limits:
                 for p_id, max_pct in player_exposure_limits.items():
-                    max_allowed_teams = max(1, int(round((max_pct / 100.0 if max_pct > 1.0 else max_pct) * num_teams)))
+                    # API exposure values are percentages, including 0 and 1.
+                    max_allowed_teams = int(np.floor(max_pct / 100.0 * num_teams))
                     if player_usage_counts.get(p_id, 0) >= max_allowed_teams:
                         current_excluded.add(p_id)
 
@@ -129,6 +125,9 @@ class ORToolsCricketOptimizer:
                 for lp in lineup.players:
                     player_usage_counts[lp.id] = player_usage_counts.get(lp.id, 0) + 1
 
+        # A partial portfolio must not inflate exposure percentages beyond the cap.
+        if player_exposure_limits and len(lineups) != num_teams:
+            return []
         return lineups
 
     def _solve_single_lineup(
@@ -229,8 +228,10 @@ class ORToolsCricketOptimizer:
         ownership_ints = [int(round(p.projected_ownership)) for p in self.players]
         max_csp = int(round(scenario.get("max_csp", 650)))
         min_csp = int(round(scenario.get("min_csp", 450)))
-        model.Add(sum(ownership_ints[i] * x[i] for i in range(n)) <= max_csp)
-        model.Add(sum(ownership_ints[i] * x[i] for i in range(n)) >= min_csp)
+        ownership_available = all(p.ownership_available for p in self.players)
+        if ownership_available:
+            model.Add(sum(ownership_ints[i] * x[i] for i in range(n)) <= max_csp)
+            model.Add(sum(ownership_ints[i] * x[i] for i in range(n)) >= min_csp)
 
         # 7. Contrarian X-Factor Pool Rule (<16% owned players)
         # Guarantees exactly 1 or 2 ultra-low ownership contrarians per team to win alone
@@ -254,8 +255,8 @@ class ORToolsCricketOptimizer:
 
         # 9. Differential requirement: sub-35% ownership picks
         diff_indices = [i for i, p in enumerate(self.players) if p.projected_ownership < 35.0]
-        if diff_indices and min_diffs > 0:
-            model.Add(sum(x[i] for i in diff_indices) >= min(min_diffs, len(diff_indices)))
+        if ownership_available and min_diffs > 0:
+            model.Add(sum(x[i] for i in diff_indices) >= min_diffs)
 
         # 10. Pairwise Overlap Constraint with previously generated lineups
         for prev in previous_selections:
@@ -264,12 +265,12 @@ class ORToolsCricketOptimizer:
         # 10b. Syndicate Player Locks (100% Exposure) & Exclusions (0% Exposure)
         if locked_player_ids:
             for i, p in enumerate(self.players):
-                if p.id in locked_player_ids or any(k in p.id for k in locked_player_ids):
+                if p.id in locked_player_ids:
                     model.Add(x[i] == 1)
 
         if excluded_player_ids:
             for i, p in enumerate(self.players):
-                if p.id in excluded_player_ids or any(k in p.id for k in excluded_player_ids):
+                if p.id in excluded_player_ids:
                     model.Add(x[i] == 0)
 
         # 11. Scenario preferred Captain / Vice-Captain soft or hard locks
@@ -388,23 +389,7 @@ class ORToolsCricketOptimizer:
         status = solver.Solve(model)
 
         if status not in [cp_model.OPTIMAL, cp_model.FEASIBLE]:
-            # Gracefully relax constraints: relax credits by 1.5 and min_diffs by 1
-            if scenario.get("preferred_c") or scenario.get("preferred_vc") or min_diffs > 1 or max_credits < 100.0:
-                relaxed_scenario = dict(scenario)
-                relaxed_scenario.pop("preferred_c", None)
-                relaxed_scenario.pop("preferred_vc", None)
-                return self._solve_single_lineup(
-                    scenario=relaxed_scenario,
-                    min_diffs=max(1, min_diffs - 1),
-                    max_overlap=max_overlap + 1,
-                    previous_selections=previous_selections,
-                    team_number=team_number,
-                    spots=spots,
-                    min_credits=max(75.0, min_credits - 1.5),
-                    max_credits=min(100.0, max_credits + 1.5),
-                    venue_conditions=venue_conditions,
-                    overs=overs
-                )
+            # Hard constraints must survive infeasibility. Never retry a different request.
             return None
 
         # Extract selected players

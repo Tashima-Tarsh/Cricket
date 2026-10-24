@@ -8,6 +8,10 @@ from typing import Dict, Any, Optional
 
 MATCH_FILE_5TH = Path(__file__).parent / "data" / "ind_wi_match.json"
 
+
+class UnknownMatchError(KeyError):
+    """Requested fixture has no connected metadata and player pool."""
+
 SERIES_FIXTURES = {
     "ind_wi_2026_01": {
         "id": "ind_wi_2026_01",
@@ -212,7 +216,10 @@ def get_match_data(match_id: Optional[str] = None) -> Dict[str, Any]:
         if live_data and live_data.get("players"):
             return live_data
 
-    # Load base players from verified 5th match file
+    if canonical_id not in SERIES_FIXTURES:
+        raise UnknownMatchError(f"Unknown or disconnected match: {canonical_id}")
+
+    # Load base players from bundled 5th match file
     base_players = []
     if MATCH_FILE_5TH.exists():
         with open(MATCH_FILE_5TH, "r", encoding="utf-8") as f:
@@ -220,7 +227,7 @@ def get_match_data(match_id: Optional[str] = None) -> Dict[str, Any]:
             base_players = full_json.get("players", [])
 
     # If canonical fixture is in catalog, use its specific venue and match metadata
-    fixture_meta = SERIES_FIXTURES.get(canonical_id, SERIES_FIXTURES["ind_vs_wi_5th_t20_2026"])
+    fixture_meta = dict(SERIES_FIXTURES[canonical_id], data_provenance="UNVERIFIED_BUNDLED_FIXTURE", status="BUNDLED FIXTURE | [VERIFY REQUIRED]")
 
     
     # Custom adjustments per fixture (ownership / stats tailored to match context)

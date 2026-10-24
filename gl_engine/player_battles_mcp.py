@@ -409,6 +409,9 @@ class PlayerBattlesMCPEngine:
         par_score_per_over = round(revised_target / max(1, second_innings_overs), 2)
 
         return {
+            "official_dls": False,
+            "data_provenance": "ILLUSTRATIVE_HEURISTIC",
+            "verification": "[VERIFY REQUIRED] Not for match adjudication",
             "first_innings_total": first_innings_runs,
             "first_innings_overs": first_innings_overs,
             "revised_second_innings_overs": second_innings_overs,
@@ -443,7 +446,7 @@ class PlayerBattlesMCPEngine:
             },
             {
                 "name": "cricket_dls_calculator",
-                "description": "Calculates official Duckworth-Lewis-Stern (DLS) revised target in rain-interrupted matches.",
+                "description": "Illustrative rain target estimate; not official or licensed DLS.",
                 "parameters": {
                     "type": "object",
                     "properties": {

@@ -6,7 +6,7 @@ Supported Tools:
 1. `list_daily_fixtures`: Discovers live, upcoming, and completed cricket matches worldwide.
 2. `deconstruct_pitch_commentary`: Extracts seam, spin, bounce, and captaincy quotes via zero-shot NLP.
 3. `query_player_h2h`: Ball-by-ball head-to-head batter vs bowler records from 328k DuckDB deliveries.
-4. `calculate_dls_target`: Official Duckworth-Lewis-Stern rain resource adjustment.
+4. `calculate_dls_target`: Illustrative rain resource estimate, not official DLS.
 5. `simulate_ball_by_ball`: 9-class discrete ball delivery Monte Carlo simulation.
 6. `solve_gpp_lineups`: Google OR-Tools CP-SAT optimizer enforcing 13.5-19.0 unspent credits and C/VC independence.
 """
@@ -78,7 +78,7 @@ class CricketMCPServer:
             },
             {
                 "name": "calculate_dls_target",
-                "description": "Calculates official ICC Duckworth-Lewis-Stern revised target, par run rate, and fantasy equity shifts.",
+                "description": "Illustrative rain-target estimate; not official or licensed DLS.",
                 "inputSchema": {
                     "type": "object",
                     "properties": {
@@ -96,10 +96,9 @@ class CricketMCPServer:
                 "inputSchema": {
                     "type": "object",
                     "properties": {
-                        "batter_skill": {"type": "number", "default": 0.55},
-                        "bowler_skill": {"type": "number", "default": 0.50},
-                        "phase": {"type": "string", "enum": ["POWERPLAY", "MIDDLE", "DEATH"], "default": "POWERPLAY"},
-                        "num_deliveries": {"type": "integer", "default": 120}
+                        "match_id": {"type": "string", "default": "ind_w_vs_zim_w_2026_02"},
+                        "n_sims": {"type": "integer", "minimum": 1, "maximum": 1000, "default": 100},
+                        "pitch_class": {"type": "string", "enum": ["BALANCED", "FLAT_HIGHWAY", "DRY_TURNER"], "default": "BALANCED"}
                     }
                 }
             },
@@ -143,14 +142,27 @@ class CricketMCPServer:
             )
 
         elif name == "simulate_ball_by_ball":
-            num_sims = arguments.get("num_deliveries", 100)
-            pitch_class = arguments.get("pitch_class", "FLAT_HIGHWAY")
-            sim_results = self.simulator.simulate_match_distribution(num_simulations=num_sims, pitch_class=pitch_class)
-            return {
-                "num_simulations": num_sims,
-                "pitch_class": pitch_class,
-                "player_distributions": sim_results
-            }
+            n_sims = arguments.get("n_sims", 100)
+            pitch_class = arguments.get("pitch_class", "BALANCED")
+            if type(n_sims) is not int or not 1 <= n_sims <= 1000:
+                raise ValueError("n_sims must be an integer between 1 and 1000")
+            if pitch_class not in {"BALANCED", "FLAT_HIGHWAY", "DRY_TURNER"}:
+                raise ValueError("Unknown pitch_class")
+            if set(arguments) - {"match_id", "n_sims", "pitch_class"}:
+                raise ValueError("Unknown simulation argument; use match_id, n_sims and pitch_class")
+            match_id = arguments.get("match_id", "ind_w_vs_zim_w_2026_02")
+            if match_id not in self.universal._matches:
+                raise ValueError("Unknown or disconnected match")
+            meta = self.universal._matches[match_id]
+            players = self.universal._profile_match_players(meta)
+            team_a = [p for p in players if p["team"] == meta["teams"]["home"]["code"]]
+            team_b = [p for p in players if p["team"] == meta["teams"]["away"]["code"]]
+            if len(team_a) != 11 or len(team_b) != 11:
+                raise ValueError("Simulation requires two complete playing XIs")
+            sim_results = self.simulator.simulate_match_distribution(
+                team_a=team_a, team_b=team_b, n_sims=n_sims, pitch_class=pitch_class)
+            return {"num_simulations": n_sims, "pitch_class": pitch_class,
+                    "data_provenance": "SIMULATED_UNCALIBRATED", "player_distributions": sim_results}
 
         elif name == "solve_gpp_lineups":
             match_id = arguments.get("match_id", "ind_w_vs_zim_w_2026_03")
@@ -184,7 +196,9 @@ class CricketMCPServer:
                     params = request.get("params", {})
                     t_name = params.get("name")
                     t_args = params.get("arguments", {})
-                    result = self.call_tool(t_name, t_args)
+                    from contextlib import redirect_stdout
+                    with redirect_stdout(sys.stderr):
+                        result = self.call_tool(t_name, t_args)
                     response = {
                         "jsonrpc": "2.0",
                         "id": req_id,

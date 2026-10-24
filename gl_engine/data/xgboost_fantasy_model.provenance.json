@@ -1,0 +1,10 @@
+{
+  "status": "PRIOR_DATE_FEATURES_HOLDOUT",
+  "feature_contract": "prior-date-v1",
+  "independent_validation": "[VERIFY REQUIRED]",
+  "leakage_audit": "Historical features exclude the target date; independent audit pending.",
+  "validation_methodology": "Whole-date chronological holdout",
+  "rmse": 31.03,
+  "r2": 0.017,
+  "samples": 17526
+}

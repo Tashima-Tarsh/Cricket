@@ -1,0 +1,14 @@
+{
+  "server": "fresh subprocess; terminated after checks",
+  "http_state": 200,
+  "fixture": "ind_vs_wi_5th_t20_2026",
+  "overs": 10,
+  "players": 22,
+  "requested_captain": "Tilak Varma",
+  "teams_generated": 1,
+  "credit_total": 85.0,
+  "csv_export": "passed",
+  "model_contract": "prior-date-v1",
+  "frontend_html": "passed",
+  "database_status": "connected"
+}

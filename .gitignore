@@ -18,6 +18,7 @@ gl_engine/*/__pycache__/
 .pytest_cache/
 .mypy_cache/
 .coverage
+data/custom_fixtures.sqlite3*
 htmlcov/
 
 # Logs and debug files

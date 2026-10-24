@@ -102,7 +102,7 @@ export interface HeadToHeadBattle {
   boundaries_count: number;
   advantage: "Batter Dominant" | "Bowler Dominant" | "Competitive Balance";
   tactical_notes: string;
-  win_probability_batter: number;
+  win_probability_batter: number | null;
 }
 
 export interface Lineup {
@@ -118,7 +118,7 @@ export interface Lineup {
   differential_count: number;
   tactical_rationale: string;
   gl_rank_potential: string;
-  uniqueness_score: number;
+  uniqueness_score?: number | null;
   projected_field_duplicates?: number;
   credits_left?: number;
   p_top_0_1_pct?: number;
@@ -151,8 +151,8 @@ export interface DataProviderTelemetry {
   id: string;
   name: string;
   status: "ONLINE" | "ONLINE / AUTHENTICATED_LIVE" | "STANDBY" | "SIMULATED_FALLBACK" | "LOCAL_ARCHIVE_READY" | "CONFIGURED_UNVERIFIED";
-  latency_ms: number;
-  records_indexed: number;
+  latency_ms: number | null;
+  records_indexed: number | null;
   last_sync: string;
   best_use: string;
   endpoint: string;

@@ -1,3 +1,9 @@
+> **Verification status:** research application; not production-verified. See
+> [audit repairs and remaining gates](docs/AUDIT_REPAIRS.md). Bundled fixtures,
+> ownership assumptions, rain estimates and model outputs are not verified live
+> data or calibrated contest probabilities. Custom fixture writes require
+> `CRICKET_ADMIN_TOKEN`. Existing model artifacts require independent validation.
+
 <div align="center">
 
 # 🏏 STRIKE//OS PRO
@@ -15,7 +21,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 <p align="center">
-  A production-grade, full-stack quantitative cricket platform combining <b>25 industry-standard analytics capabilities</b>, a <b>194,000+ delivery DuckDB columnar warehouse</b>, a <b>Hierarchical Bayesian shrinkage model</b>, <b>zero-leakage XGBoost projections</b>, and a <b>Google OR-Tools CP-SAT Grand League portfolio solver</b> across 12 reactive workspaces.
+  A research application for cricket analysis combining <b>25 industry-standard analytics capabilities</b>, a <b>194,000+ delivery DuckDB columnar warehouse</b>, a <b>Hierarchical Bayesian shrinkage model</b>, <b>experimental XGBoost projections</b>, and a <b>Google OR-Tools CP-SAT Grand League portfolio solver</b> across 12 reactive workspaces.
 </p>
 
 [Key Features](#-key-features) •
@@ -34,7 +40,7 @@
 
 - **⚡ Sub-10ms Columnar Analytics**: Powered by an embedded DuckDB columnar database indexing over **1,243 historical T20 matches** and **194,239+ ball-by-ball deliveries**.
 - **🎯 Mathematical Grand League Optimizer**: Solves complex combinatorial lineups using **Google OR-Tools CP-SAT (Constraint Programming - Satisfiability)** with strict Cumulative Selection Percentage (CSP $500\%-650\%$), M-N-C partitioning, and Captain/Vice-Captain combinatorics.
-- **🧠 Zero-Leakage XGBoost ML Predictor**: Gradient-boosted feature pipeline predicting mean fantasy points, 10th percentile floor, and 90th percentile ceiling scores without historical test leakage.
+- **🧠 Experimental XGBoost Predictor**: Gradient-boosted feature pipeline predicting mean fantasy points, 10th percentile floor, and 90th percentile ceiling scores using prior-date features; independent validation is pending.
 - **🔬 Hierarchical Bayesian Shrinkage**: Resolves small-sample Head-to-Head (H2H) duels using empirical Bayesian partial pooling against league-wide baselines.
 - **🎮 Spatial 3D WebGL / Three.js Pitch Simulator**: Real-time 3D pitch perspective, bounce lengths, boundary radius geometry, and fielder coordinate mapping.
 - **🌦️ DLS & Monte Carlo Rain Simulator**: Duckworth-Lewis-Stern resource calculation alongside 10 probabilistic match scenario scripts for weather interruptions.
@@ -238,7 +244,7 @@ source .venv/bin/activate
 
 ### Step 3: Install Backend Dependencies
 ```bash
-pip install -r requirements.txt
+pip install -e ".[dev]"
 ```
 
 ### Step 4: Environment Variables (Optional)
@@ -246,7 +252,7 @@ Copy `.env.example` to `.env` and fill in API keys if live polling is required:
 ```bash
 cp .env.example .env
 ```
-*(The platform operates seamlessly offline using DuckDB and pre-compiled historical intelligence even without external API keys).*
+Offline analysis uses available local data and labelled assumptions. Live feeds remain unavailable without a successful provider response.
 
 ---
 

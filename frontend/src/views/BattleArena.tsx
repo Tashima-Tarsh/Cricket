@@ -92,6 +92,7 @@ export const BattleArena: React.FC<BattleArenaProps> = ({ battles, trajectories 
 
   return (
     <div className="space-y-6">
+      <p className="evidence-note">Recorded matchups appear only when local delivery evidence is available. Pitch trajectories are sample illustrations, not live tracking data.</p>
       
       {/* 1. Header & Filter Bar */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-2 border-b border-stone-300">
@@ -389,28 +390,13 @@ export const BattleArena: React.FC<BattleArenaProps> = ({ battles, trajectories 
               </span>
             </div>
 
-            {/* Split probability bar */}
-            <div className="h-3 w-full bg-stone-100 rounded-full overflow-hidden flex border border-stone-300/60 p-0.5">
-              <div 
-                className="h-full    rounded-l-full transition-all duration-700" 
-                style={{ width: `${activeBattle.win_probability_batter}%` }}
-              ></div>
-              <div 
-                className="h-full    rounded-r-full transition-all duration-700" 
-                style={{ width: `${100 - activeBattle.win_probability_batter}%` }}
-              ></div>
-            </div>
-
-            <div className="flex justify-between text-xs font-sans telemetry-num mt-1.5 text-stone-800">
-              <span className="text-stone-800 font-bold">{activeBattle.win_probability_batter}% Batter Control</span>
-              <span className="text-stone-800 font-bold">{(100 - activeBattle.win_probability_batter).toFixed(1)}% Bowler Control</span>
-            </div>
+            <p className="evidence-note">Batter/bowler control probability is unavailable. Historical counts do not establish a win probability.</p>
 
             {/* Analytical Sample Size & Shrinkage Provenance */}
             {activeBattle.balls < 25 ? (
               <div className="mt-2.5 px-2.5 py-1 rounded bg-amber-500/10 border border-amber-500/30 text-[10px] font-mono text-amber-400 flex items-center justify-between">
                 <span>⚡ Limited Sample: N = {activeBattle.balls} balls (Empirical Shrinkage Mode)</span>
-                <span className="font-bold">Bayesian Prior Applied</span>
+                <span className="font-bold">Raw counts; no calibrated interval</span>
               </div>
             ) : (
               <div className="mt-2.5 px-2.5 py-1 rounded bg-cyan-500/10 border border-cyan-500/20 text-[10px] font-mono text-cyan-600 flex items-center justify-between">

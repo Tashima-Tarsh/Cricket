@@ -156,13 +156,13 @@ export const SettingsProviders: React.FC<SettingsProvidersProps> = ({ providers 
                   <div>
                     <div className="text-[9px] text-slate-500 uppercase font-mono">LATENCY</div>
                     <div className="text-slate-300 font-bold font-mono">
-                      {p.latency_ms > 0 ? `${p.latency_ms.toFixed(1)} ms` : "Direct Memory / Local"}
+                      {p.latency_ms !== null ? `${p.latency_ms.toFixed(1)} ms` : "Not measured"}
                     </div>
                   </div>
                   <div>
                     <div className="text-[9px] text-slate-500 uppercase font-mono">INDEXED RECORDS</div>
                     <div className="text-emerald-400 font-bold font-mono">
-                      {p.records_indexed > 0 ? `${p.records_indexed.toLocaleString()} rows` : "Standby (0 live)"}
+                      {p.records_indexed !== null ? `${p.records_indexed.toLocaleString()} rows` : "Unknown"}
                     </div>
                   </div>
                 </div>

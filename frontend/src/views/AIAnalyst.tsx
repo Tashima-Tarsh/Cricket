@@ -31,7 +31,7 @@ export const AIAnalyst: React.FC = () => {
       id: "msg_init",
       sender: "analyst",
       timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" }),
-      content: `STRIKE//OS Tactical Cricket Intelligence Engine online. Connected to Cricsheet DuckDB Historical Repository (1,243 matches, 194,239 balls indexed), Zero-Leakage XGBoost projections, and Google OR-Tools CP-SAT multi-lineup optimizer.\n\nReady for live tactical queries, batter vs bowler micro-telemetry, DLS par simulations, and Grand League captaincy differential analysis.`,
+      content: `Rule-based cricket analysis. Responses use keyword templates and available local records. No language model is connected. Sample fixtures, heuristic projections and unverified claims require checking against their original sources.`,
       citations: ["DuckDB Columnar Delivery Engine", "XGBoost Historical Predictor v2.4", "OR-Tools CP-SAT Engine"]
     }
   ]);
@@ -97,13 +97,13 @@ export const AIAnalyst: React.FC = () => {
             <Cpu size={14} /> Cricket intelligence engine
           </div>
           <h1 className="text-2xl lg:text-3xl font-bold text-white uppercase tracking-tight mt-1 flex items-center gap-3">
-            AI Tactical Analyst
+            Rule-based Cricket Analyst
             <span className="text-xs px-2.5 py-0.5 rounded border border-emerald-500/30 bg-emerald-500/10 text-emerald-300 font-mono">
-              EVIDENCE QUERY ENGINE (DUCKDB + XGBOOST)
+              RULE-BASED RETRIEVAL
             </span>
           </h1>
           <p className="text-xs text-slate-400 mt-0.5 font-sans">
-            Interactive sports data science reasoning grounded in DuckDB ball-by-ball deliveries, venue models, and OR-Tools solvers
+            Keyword-based responses from available local records; not an evaluated language model.
           </p>
         </div>
 

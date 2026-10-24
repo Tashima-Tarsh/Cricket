@@ -51,6 +51,14 @@ export const MatchSetupModal: React.FC<MatchSetupModalProps> = ({
   players
 }) => {
   const dialogRef = useDialog(isOpen, onClose);
+  const [adminToken, setAdminToken] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
+  const toXI = (code: string) => players.filter(p => p.team === code).map((p, i) => ({
+    name: p.name, role: p.role, credits: p.credits, order: i + 1,
+    bat_hand: p.batting_style, bowl_style: p.bowling_style || "Unknown"
+  }));
+  const [homeXI, setHomeXI] = useState(() => toXI(currentMatch.teams.home.code));
+  const [awayXI, setAwayXI] = useState(() => toXI(currentMatch.teams.away.code));
   const [feedError, setFeedError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<"series_fixtures" | "live_sync" | "custom_setup">("live_sync");
   const [categoryFilter, setCategoryFilter] = useState<string>("ALL");
@@ -103,6 +111,14 @@ export const MatchSetupModal: React.FC<MatchSetupModalProps> = ({
 
   useEffect(() => {
     if (isOpen) {
+      setHomeXI(toXI(currentMatch.teams.home.code));
+      setAwayXI(toXI(currentMatch.teams.away.code));
+      setMatchName(currentMatch.name);
+      setTeamHomeName(currentMatch.teams.home.name); setTeamHomeCode(currentMatch.teams.home.code);
+      setTeamAwayName(currentMatch.teams.away.name); setTeamAwayCode(currentMatch.teams.away.code);
+      setTossWinner(currentMatch.toss.winner); setTossChoice(currentMatch.toss.choice);
+      setPitchReport(currentMatch.venue.pitch_nature); setAvgFirstInnings(currentMatch.venue.avg_first_innings);
+      setDewFactor(currentMatch.venue.dew_factor); setAdminToken("");
       fetchSeriesFixtures();
       fetchLiveMatches();
     }
@@ -150,7 +166,7 @@ export const MatchSetupModal: React.FC<MatchSetupModalProps> = ({
   };
 
   // Submit custom match form
-  const handleSaveCustomMatch = (e: React.FormEvent) => {
+  const handleSaveCustomMatch = async (e: React.FormEvent) => {
     e.preventDefault();
     const updatedMatch: MatchInfo = {
       ...currentMatch,
@@ -183,8 +199,23 @@ export const MatchSetupModal: React.FC<MatchSetupModalProps> = ({
       }
     };
 
-    onApplyMatch(updatedMatch);
-    onClose();
+    setIsSaving(true); setFeedError(null);
+    try {
+      const response = await fetch("/api/match/ingest", {
+        method: "POST", signal: AbortSignal.timeout(60000),
+        headers: {"Content-Type": "application/json", "Authorization": `Bearer ${adminToken}`},
+        body: JSON.stringify({...updatedMatch, match_id: updatedMatch.id,
+          playing_xi_home: homeXI, playing_xi_away: awayXI})
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(typeof data.detail === "string" ? data.detail : "Fixture validation failed.");
+      if (data.match?.id !== updatedMatch.id || data.players?.length !== 22) throw new Error("Server did not confirm this fixture and both playing XIs.");
+      onApplyMatch(data.match, data.players);
+      setAdminToken("");
+      onClose();
+    } catch (error) {
+      setFeedError(error instanceof Error ? error.message : "Fixture could not be saved.");
+    } finally { setIsSaving(false); }
   };
 
   if (!isOpen) return null;
@@ -233,7 +264,7 @@ export const MatchSetupModal: React.FC<MatchSetupModalProps> = ({
             }`}
           >
             <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-            <Globe size={14} /> REAL MATCHES (18 OCT 2026) [{liveMatches.length}]
+            <Globe size={14} /> AVAILABLE FEED MATCHES [{liveMatches.length}]
           </button>
 
           <button
@@ -261,8 +292,8 @@ export const MatchSetupModal: React.FC<MatchSetupModalProps> = ({
 
         <p className="px-5 py-2 text-xs font-mono text-emerald-400 bg-emerald-500/10 border-b border-emerald-500/20">
           {activeTab === "live_sync"
-            ? "Live 18-10-2026 fixtures from ESPNcricinfo & Cricdata SDK. 1-click loading extracts confirmed playing XIs, scores, and real venues into Strike//OS."
-            : "Series fixtures include canonical player pools, venue parameters, and pitch conditions with full OR-Tools optimization support."}
+            ? "Provider fixtures require a connected playing XI before analysis. No default team will be substituted."
+            : "Bundled fixtures are unverified scenarios, not a current schedule. Review both playing XIs before saving a custom fixture."}
         </p>
 
         {feedError && <p role="alert" className="p-4 text-xs text-rose-400 bg-rose-500/10 border-b border-rose-500/20">{feedError}</p>}
@@ -273,7 +304,7 @@ export const MatchSetupModal: React.FC<MatchSetupModalProps> = ({
           <div className="p-5 overflow-y-auto space-y-4 flex-1">
             <div className="flex items-center justify-between">
               <span className="text-xs font-sans text-slate-300 uppercase tracking-wider flex items-center gap-1.5 font-bold">
-                <Layers size={13} className="text-emerald-400" /> Bilateral Series Matches (Ground Truth Data & Lineup Optimization)
+                <Layers size={13} className="text-emerald-400" /> Bundled fixtures [VERIFY REQUIRED]
               </span>
               <span className="text-[10px] font-mono text-emerald-400 font-bold bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">
                 1-CLICK LOAD & OPTIMIZE
@@ -645,6 +676,28 @@ export const MatchSetupModal: React.FC<MatchSetupModalProps> = ({
 
             </div>
 
+            <div className="space-y-4">
+              <p className="text-sm">Confirm all 22 players. Roles, credits and playing conditions are user supplied and require verification.</p>
+              {[{label: teamHomeName, xi: homeXI, setXI: setHomeXI}, {label: teamAwayName, xi: awayXI, setXI: setAwayXI}].map(({label, xi, setXI}, side) => (
+                <fieldset key={side} className="space-y-2 min-w-0">
+                  <legend className="font-bold">{label}: playing XI ({xi.length}/11)</legend>
+                  {xi.map((p, index) => <div key={index} className="grid grid-cols-2 sm:grid-cols-5 gap-2">
+                    <input aria-label={`${label} player ${index + 1} name`} value={p.name} required onChange={e => setXI(xi.map((q, i) => i === index ? {...q, name:e.target.value} : q))} className="border p-2 min-w-0" />
+                    <select aria-label={`${label} player ${index + 1} role`} value={p.role} onChange={e => setXI(xi.map((q, i) => i === index ? {...q, role:e.target.value as Player["role"]} : q))} className="border p-2">
+                      {["WK", "BAT", "AR", "BOWL"].map(role => <option key={role}>{role}</option>)}
+                    </select>
+                    <input aria-label={`${label} player ${index + 1} credits`} type="number" step="0.5" min="0.5" max="20" value={p.credits} required onChange={e => setXI(xi.map((q, i) => i === index ? {...q, credits:Number(e.target.value)} : q))} className="border p-2 min-w-0" />
+                    <select aria-label={`${label} player ${index + 1} batting hand`} value={p.bat_hand} onChange={e => setXI(xi.map((q, i) => i === index ? {...q, bat_hand:e.target.value as Player["batting_style"]} : q))} className="border p-2"><option>RHB</option><option>LHB</option></select>
+                    <input aria-label={`${label} player ${index + 1} bowling style`} value={p.bowl_style} onChange={e => setXI(xi.map((q, i) => i === index ? {...q, bowl_style:e.target.value} : q))} className="border p-2 min-w-0" />
+                  </div>)}
+                </fieldset>
+              ))}
+              <label className="block text-sm">Administrator token
+                <input aria-label="Administrator token" type="password" autoComplete="off" value={adminToken} required onChange={e => setAdminToken(e.target.value)} className="block border p-2 w-full" />
+              </label>
+              <p className="text-xs">Used for this save request only. The server administrator supplies this token.</p>
+            </div>
+
             {/* Submit */}
             <div className="pt-4 border-t border-white/10 flex justify-end gap-3">
               <button
@@ -656,10 +709,10 @@ export const MatchSetupModal: React.FC<MatchSetupModalProps> = ({
               </button>
 
               <button
-                type="submit"
+                type="submit" disabled={isSaving || homeXI.length !== 11 || awayXI.length !== 11}
                 className="px-6 py-2.5 rounded bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs font-sans flex items-center gap-2 transition-all shadow-md"
               >
-                <CheckCircle2 size={16} /> APPLY LOCAL MATCH SETUP
+                <CheckCircle2 size={16} /> {isSaving ? "SAVING FIXTURE?" : "SAVE & APPLY MATCH"}
               </button>
             </div>
           </form>

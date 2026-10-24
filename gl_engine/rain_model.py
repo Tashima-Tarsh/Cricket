@@ -79,6 +79,9 @@ class RainReducedOversEngine:
             fantasy_adjustment = "Max out top 3 batters. Captain high-SR opener (Abhishek/Samson/Hope). Bowler selection based purely on wicket probability."
 
         return {
+            "data_provenance": "ILLUSTRATIVE_HEURISTIC",
+            "official_dls": False,
+            "verification": "[VERIFY REQUIRED] Not a licensed DLS resource model",
             "overs": valid_overs,
             "is_shortened": valid_overs < 20,
             "max_bowler_quota": max_bowler_quota,

@@ -24,14 +24,14 @@ class WorkspaceApiTests(unittest.TestCase):
         self.assertEqual(response.status_code, 409)
 
     def test_custom_captain_and_scenario_are_solved(self):
-        response = self.client.get("/api/ortools/optimize?teams=1&scenario=PACE_DOMINANCE&captain=MAYANK&risk=BALANCED")
+        response = self.client.get("/api/ortools/optimize?teams=1&scenario=PACE_DOMINANCE&captain=TILAK&risk=BALANCED&match_id=ind_vs_wi_5th_t20_2026")
         self.assertEqual(response.status_code, 200)
         data = response.json()
         self.assertIn("generated_at", data)
         self.assertEqual(data["risk"], "BALANCED")
         self.assertEqual(len(data["lineups"]), 1)
         lineup = data["lineups"][0]
-        self.assertIn("Mayank", lineup["captain"]["name"])
+        self.assertIn("Tilak", lineup["captain"]["name"])
         self.assertEqual(lineup["scenario_tag"], "PACE_DOMINANCE")
         self.assertEqual(len({p["id"] for p in lineup["players"]}), 11)
         self.assertTrue(79 <= lineup["total_credits"] <= 85)
@@ -44,7 +44,7 @@ class WorkspaceApiTests(unittest.TestCase):
 
     def test_vice_captain_only_does_not_crash(self):
         players = [Player(**p) for p in json.loads(MATCH_FILE.read_text(encoding="utf-8"))["players"]]
-        vice = next(p for p in players if "Mayank" in p.name)
+        vice = next(p for p in players if "Tilak" in p.name)
         scenario = {"name":"Vice only", "tag":"TEST", "rationale":"Regression", "preferred_vc":vice.id}
         lineups = ORToolsCricketOptimizer(players).generate_grand_league_portfolio(num_teams=1, custom_scenarios=[scenario])
         self.assertTrue(lineups)
@@ -70,9 +70,9 @@ class WorkspaceApiTests(unittest.TestCase):
 
     def test_missing_snapshot_is_an_error_not_example_data(self):
         client = TestClient(app, raise_server_exceptions=False)
-        with patch("gl_engine.web_app._STATE_CACHE", None), patch("gl_engine.web_app.MATCH_FILE", Path("__missing_snapshot__.json")):
-            response = client.get("/api/state")
-        self.assertEqual(response.status_code, 500)
+        with patch("gl_engine.web_app._STATE_CACHES", {}), patch("gl_engine.match_catalog.MATCH_FILE_5TH", Path("__missing_snapshot__.json")):
+            response = client.get("/api/state?match_id=ind_vs_wi_5th_t20_2026")
+        self.assertEqual(response.status_code, 503)
         self.assertNotIn("players", response.text)
 
     def test_failed_live_feed_never_returns_fabricated_matches(self):

@@ -151,6 +151,8 @@ export const MatchContextProvider: React.FC<{ children: React.ReactNode }> = ({ 
   const [stateError, setStateError] = useState<string | null>(null);
   const [lastUpdated, setLastUpdated] = useState<string | null>(null);
   const requestRef = useRef<AbortController | null>(null);
+  const activeMatchRef = useRef(currentMatch.id);
+  activeMatchRef.current = currentMatch.id;
   const activeOversRef = useRef<number>(activeOvers);
   activeOversRef.current = activeOvers;
 
@@ -162,7 +164,7 @@ export const MatchContextProvider: React.FC<{ children: React.ReactNode }> = ({ 
     const timeout = window.setTimeout(() => controller.abort(), 60000);
     const oversToFetch = targetOvers !== undefined ? targetOvers : activeOversRef.current;
     try {
-      const matchParam = targetMatchId ? `match_id=${encodeURIComponent(targetMatchId)}&` : "";
+      const matchParam = `match_id=${encodeURIComponent(targetMatchId || activeMatchRef.current)}&`;
       const res = await fetch(`/api/state?${matchParam}overs=${oversToFetch}`, { signal: controller.signal });
       if (!res.ok) throw new Error(`State request failed (${res.status}).`);
       const data = await res.json();
