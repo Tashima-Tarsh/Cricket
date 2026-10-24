@@ -12,8 +12,7 @@ MASTER_FIXTURES = {
             "zim_vs_afg",
             "sharjah_odi",
             "today",
-            "live",
-            "161190"
+            "live"
         ],
         "title": "Afghanistan vs Zimbabwe, 1st ODI",
         "series": "Afghanistan vs Zimbabwe ODI Series 2026",

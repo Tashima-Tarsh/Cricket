@@ -33,8 +33,12 @@ from .models import Player
 ALLOWED_ORIGINS = [
     "http://localhost:8000",
     "http://127.0.0.1:8000",
+    "http://localhost:8001",
+    "http://127.0.0.1:8001",
     "http://localhost:5173",
     "http://127.0.0.1:5173",
+    "http://localhost:5174",
+    "http://127.0.0.1:5174",
     "http://localhost:3000",
     "http://127.0.0.1:3000"
 ]
@@ -881,9 +885,11 @@ def query_ai_analyst(q: str = Query(..., min_length=1, max_length=2000, descript
         else:
             m_total, d_total = 0, 0
 
+        active_match_name = meta.get("name") or meta.get("title") or clean_id
+        active_venue = venue_info.get("name") if isinstance(venue_info, dict) else str(venue_info or "Venue Ground")
         reply = f"**Cricket Tactical Intelligence Dispatch:**\n\n" \
-                f"Active Match Context: **{match_data.get('match_info', {}).get('name', 'India vs West Indies')}**\n" \
-                f"• Venue: {venue_info.get('name', 'Bengaluru')}\n" \
+                f"Active Match Context: **{active_match_name}**\n" \
+                f"• Venue: {active_venue}\n" \
                 f"• Connected Database: DuckDB ({m_total:,} matches, {d_total:,} deliveries indexed)\n" \
                 f"• Machine Learning Engine: XGBoost v2.4 (Zero-leakage historical lags)\n" \
                 f"• Combinatorial Solver: Google OR-Tools CP-SAT (79-85 Credit Anti-Chalk Portfolio)\n\n" \
@@ -1102,32 +1108,73 @@ def get_2026_schedule():
 
 @app.get("/api/portal/roster")
 def get_portal_match_roster(match_id: str = "afg_vs_zim_sharjah_odi"):
-    """Returns the comprehensive 22-player confirmed playing XI roster for the selected fixture."""
-    players_data = [
-        {"id": "AFG_GURBAZ", "name": "R Gurbaz", "team": "AFG", "role": "WK", "sel": 79.34, "credits": 8.5, "type": "RHB_WK", "tier": "CORE", "style": "Aggressive Opener / Wicketkeeper", "projected_points": 58.4},
-        {"id": "AFG_ZADRAN", "name": "I Zadran", "team": "AFG", "role": "BAT", "sel": 88.72, "credits": 7.0, "type": "RHB", "tier": "CORE", "style": "Orthodox ODI Anchor (Avg 48+)", "projected_points": 64.8},
-        {"id": "AFG_ATAL", "name": "S Atal", "team": "AFG", "role": "BAT", "sel": 82.41, "credits": 7.0, "type": "LHB", "tier": "CORE", "style": "Top-Order Powerplay Striker", "projected_points": 44.5},
-        {"id": "AFG_RSHAH", "name": "R Shah", "team": "AFG", "role": "AR", "sel": 31.61, "credits": 8.0, "type": "RHB_LB", "tier": "DIFFERENTIAL", "style": "Afghanistan Core #3 Accumulator", "projected_points": 56.2},
-        {"id": "AFG_SHAHIDI", "name": "H Shahidi", "team": "AFG", "role": "BAT", "sel": 13.50, "credits": 9.0, "type": "LHB", "tier": "CONTRARIAN", "style": "Captain / Spin & Seam Rescuer (13.5% Gem)", "projected_points": 58.0},
-        {"id": "AFG_OMARZAI", "name": "A Omarzai", "team": "AFG", "role": "AR", "sel": 91.81, "credits": 8.5, "type": "RHB_PACE", "tier": "CORE", "style": "8-10 Overs Pace + Middle-Order Finisher", "projected_points": 76.5},
-        {"id": "AFG_NABI", "name": "M Nabi", "team": "AFG", "role": "AR", "sel": 54.25, "credits": 8.0, "type": "RHB_SPIN", "tier": "MID_TIER", "style": "Veteran Off-Spin vs Zimbabwe LHBs", "projected_points": 49.0},
-        {"id": "AFG_RASHID", "name": "Rashid Khan", "team": "AFG", "role": "BOWL", "sel": 93.58, "credits": 9.0, "type": "RHB_SPIN", "tier": "CORE", "style": "World-Class Leg-Spin / Sharjah Choke", "projected_points": 88.0},
-        {"id": "AFG_GHAZANFAR", "name": "AM Ghazanfar", "team": "AFG", "role": "BOWL", "sel": 33.79, "credits": 7.0, "type": "RHB_SPIN", "tier": "DIFFERENTIAL", "style": "Mystery Spinner (Sharjah 6-Wicket Haul)", "projected_points": 58.5},
-        {"id": "AFG_SAMI", "name": "B Sami", "team": "AFG", "role": "BOWL", "sel": 11.92, "credits": 7.5, "type": "RHB_PACE", "tier": "CONTRARIAN", "style": "Speed Pacer Under Light / Daytime Sun", "projected_points": 41.0},
-        {"id": "AFG_FAROOQI", "name": "F Farooqi", "team": "AFG", "role": "BOWL", "sel": 2.99, "credits": 8.0, "type": "LAFM_PACE", "tier": "CONTRARIAN", "style": "Left-Arm Swing Powerplay Spearhead", "projected_points": 72.0},
-        {"id": "ZIM_BENNETT", "name": "B Bennett", "team": "ZIM", "role": "AR", "sel": 48.72, "credits": 7.5, "type": "RHB_SPIN", "tier": "MID_TIER", "style": "Opening Batter + Off-Spin Variations", "projected_points": 42.0},
-        {"id": "ZIM_MARUMANI", "name": "T Marumani", "team": "ZIM", "role": "WK", "sel": 0.62, "credits": 7.5, "type": "LHB_WK", "tier": "CONTRARIAN", "style": "Top-Order Wicketkeeper Batter", "projected_points": 28.0},
-        {"id": "ZIM_TSIGA", "name": "T Tsiga", "team": "ZIM", "role": "WK", "sel": 7.91, "credits": 6.5, "type": "LHB_WK", "tier": "CONTRARIAN", "style": "Budget Keeper / Middle Order", "projected_points": 30.0},
-        {"id": "ZIM_TAYLOR", "name": "B Taylor", "team": "ZIM", "role": "WK", "sel": 52.51, "credits": 8.0, "type": "RHB_WK", "tier": "MID_TIER", "style": "Experienced Wicketkeeper Anchor", "projected_points": 52.0},
-        {"id": "ZIM_RAZA", "name": "S Raza", "team": "ZIM", "role": "AR", "sel": 93.72, "credits": 9.0, "type": "RHB_SPIN", "tier": "CORE", "style": "10 Overs Off-Spin + #5 Power Anchor", "projected_points": 82.0},
-        {"id": "ZIM_MADHEVERE", "name": "W Madhevere", "team": "ZIM", "role": "AR", "sel": 8.80, "credits": 6.5, "type": "RHB_SPIN", "tier": "CONTRARIAN", "style": "Middle-Overs Utility Off-Spin", "projected_points": 32.0},
-        {"id": "ZIM_BURL", "name": "R Burl", "team": "ZIM", "role": "AR", "sel": 15.71, "credits": 7.5, "type": "LHB_SPIN", "tier": "CONTRARIAN", "style": "LHB Finisher + Leg-Spin Weapon", "projected_points": 44.0},
-        {"id": "ZIM_EVANS", "name": "B Evans", "team": "ZIM", "role": "AR", "sel": 89.72, "credits": 7.5, "type": "RHB_PACE", "tier": "CORE", "style": "Death Overs Pacer + Boundary Hitter", "projected_points": 65.0},
-        {"id": "ZIM_NYAMHURI", "name": "N Nyamhuri", "team": "ZIM", "role": "BOWL", "sel": 0.63, "credits": 8.0, "type": "LMF_PACE", "tier": "CONTRARIAN", "style": "Left-Arm Medium Pacer Value Pick", "projected_points": 35.0},
-        {"id": "ZIM_MASAKADZA", "name": "W Masakadza", "team": "ZIM", "role": "BOWL", "sel": 24.00, "credits": 7.5, "type": "LHB_SPIN", "tier": "DIFFERENTIAL", "style": "Slow Left-Arm Orthodox (Tight Lines)", "projected_points": 46.0},
-        {"id": "ZIM_MUZARABANI", "name": "B Muzarabani", "team": "ZIM", "role": "BOWL", "sel": 54.48, "credits": 8.5, "type": "RHB_PACE", "tier": "MID_TIER", "style": "6ft 8in Express Bounce Strike Bowler", "projected_points": 75.0}
-    ]
-    return {"status": "success", "match_id": match_id, "roster": players_data, "total_players": len(players_data)}
+    """Returns the player roster for the requested fixture. Dynamically resolves squads without fabricating players."""
+    clean_id = (match_id or "afg_vs_zim_sharjah_odi").replace("display_", "")
+    
+    # 1. Afghanistan vs Zimbabwe confirmed 22-player XI
+    if clean_id in ["afg_vs_zim_sharjah_odi", "afg_vs_zim", "sharjah_odi"]:
+        players_data = [
+            {"id": "AFG_GURBAZ", "name": "R Gurbaz", "team": "AFG", "role": "WK", "sel": 79.34, "credits": 8.5, "type": "RHB_WK", "tier": "CORE", "style": "Aggressive Opener / Wicketkeeper", "projected_points": 58.4},
+            {"id": "AFG_ZADRAN", "name": "I Zadran", "team": "AFG", "role": "BAT", "sel": 88.72, "credits": 7.0, "type": "RHB", "tier": "CORE", "style": "Orthodox ODI Anchor (Avg 48+)", "projected_points": 64.8},
+            {"id": "AFG_ATAL", "name": "S Atal", "team": "AFG", "role": "BAT", "sel": 82.41, "credits": 7.0, "type": "LHB", "tier": "CORE", "style": "Top-Order Powerplay Striker", "projected_points": 44.5},
+            {"id": "AFG_RSHAH", "name": "R Shah", "team": "AFG", "role": "AR", "sel": 31.61, "credits": 8.0, "type": "RHB_LB", "tier": "DIFFERENTIAL", "style": "Afghanistan Core #3 Accumulator", "projected_points": 56.2},
+            {"id": "AFG_SHAHIDI", "name": "H Shahidi", "team": "AFG", "role": "BAT", "sel": 13.50, "credits": 9.0, "type": "LHB", "tier": "CONTRARIAN", "style": "Captain / Spin & Seam Rescuer", "projected_points": 58.0},
+            {"id": "AFG_OMARZAI", "name": "A Omarzai", "team": "AFG", "role": "AR", "sel": 91.81, "credits": 8.5, "type": "RHB_PACE", "tier": "CORE", "style": "8-10 Overs Pace + Middle-Order Finisher", "projected_points": 76.5},
+            {"id": "AFG_NABI", "name": "M Nabi", "team": "AFG", "role": "AR", "sel": 54.25, "credits": 8.0, "type": "RHB_SPIN", "tier": "MID_TIER", "style": "Veteran Off-Spin vs Zimbabwe LHBs", "projected_points": 49.0},
+            {"id": "AFG_RASHID", "name": "Rashid Khan", "team": "AFG", "role": "BOWL", "sel": 93.58, "credits": 9.0, "type": "RHB_SPIN", "tier": "CORE", "style": "World-Class Leg-Spin", "projected_points": 88.0},
+            {"id": "AFG_GHAZANFAR", "name": "AM Ghazanfar", "team": "AFG", "role": "BOWL", "sel": 33.79, "credits": 7.0, "type": "RHB_SPIN", "tier": "DIFFERENTIAL", "style": "Mystery Spinner", "projected_points": 58.5},
+            {"id": "AFG_SAMI", "name": "B Sami", "team": "AFG", "role": "BOWL", "sel": 11.92, "credits": 7.5, "type": "RHB_PACE", "tier": "CONTRARIAN", "style": "Speed Pacer", "projected_points": 41.0},
+            {"id": "AFG_FAROOQI", "name": "F Farooqi", "team": "AFG", "role": "BOWL", "sel": 2.99, "credits": 8.0, "type": "LAFM_PACE", "tier": "CONTRARIAN", "style": "Left-Arm Swing Powerplay Spearhead", "projected_points": 72.0},
+            {"id": "ZIM_BENNETT", "name": "B Bennett", "team": "ZIM", "role": "AR", "sel": 48.72, "credits": 7.5, "type": "RHB_SPIN", "tier": "MID_TIER", "style": "Opening Batter + Off-Spin Variations", "projected_points": 42.0},
+            {"id": "ZIM_MARUMANI", "name": "T Marumani", "team": "ZIM", "role": "WK", "sel": 0.62, "credits": 7.5, "type": "LHB_WK", "tier": "CONTRARIAN", "style": "Top-Order Wicketkeeper Batter", "projected_points": 28.0},
+            {"id": "ZIM_TSIGA", "name": "T Tsiga", "team": "ZIM", "role": "WK", "sel": 7.91, "credits": 6.5, "type": "LHB_WK", "tier": "CONTRARIAN", "style": "Budget Keeper / Middle Order", "projected_points": 30.0},
+            {"id": "ZIM_TAYLOR", "name": "B Taylor", "team": "ZIM", "role": "WK", "sel": 52.51, "credits": 8.0, "type": "RHB_WK", "tier": "MID_TIER", "style": "Experienced Wicketkeeper Anchor", "projected_points": 52.0},
+            {"id": "ZIM_RAZA", "name": "S Raza", "team": "ZIM", "role": "AR", "sel": 93.72, "credits": 9.0, "type": "RHB_SPIN", "tier": "CORE", "style": "10 Overs Off-Spin + #5 Power Anchor", "projected_points": 82.0},
+            {"id": "ZIM_MADHEVERE", "name": "W Madhevere", "team": "ZIM", "role": "AR", "sel": 8.80, "credits": 6.5, "type": "RHB_SPIN", "tier": "CONTRARIAN", "style": "Middle-Overs Utility Off-Spin", "projected_points": 32.0},
+            {"id": "ZIM_BURL", "name": "R Burl", "team": "ZIM", "role": "AR", "sel": 15.71, "credits": 7.5, "type": "LHB_SPIN", "tier": "CONTRARIAN", "style": "LHB Finisher + Leg-Spin Weapon", "projected_points": 44.0},
+            {"id": "ZIM_EVANS", "name": "B Evans", "team": "ZIM", "role": "AR", "sel": 89.72, "credits": 7.5, "type": "RHB_PACE", "tier": "CORE", "style": "Death Overs Pacer + Boundary Hitter", "projected_points": 65.0},
+            {"id": "ZIM_NYAMHURI", "name": "N Nyamhuri", "team": "ZIM", "role": "BOWL", "sel": 0.63, "credits": 8.0, "type": "LMF_PACE", "tier": "CONTRARIAN", "style": "Left-Arm Medium Pacer Value Pick", "projected_points": 35.0},
+            {"id": "ZIM_MASAKADZA", "name": "W Masakadza", "team": "ZIM", "role": "BOWL", "sel": 24.00, "credits": 7.5, "type": "LHB_SPIN", "tier": "DIFFERENTIAL", "style": "Slow Left-Arm Orthodox", "projected_points": 46.0},
+            {"id": "ZIM_MUZARABANI", "name": "B Muzarabani", "team": "ZIM", "role": "BOWL", "sel": 54.48, "credits": 8.5, "type": "RHB_PACE", "tier": "MID_TIER", "style": "Express Bounce Strike Bowler", "projected_points": 75.0}
+        ]
+        return {"status": "success", "match_id": match_id, "roster": players_data, "total_players": len(players_data)}
+
+    # 2. Try dynamic resolution via resolve_match_players
+    try:
+        meta, players = resolve_match_players(clean_id)
+        roster = [
+            {
+                "id": p.id,
+                "name": p.name,
+                "team": p.team,
+                "role": p.role,
+                "sel": p.projected_ownership,
+                "credits": p.credits,
+                "type": f"{p.role}_{p.team}",
+                "tier": "CORE" if p.projected_ownership >= 60 else "DIFFERENTIAL" if p.projected_ownership >= 25 else "CONTRARIAN",
+                "style": p.archetype or f"{p.team} {p.role}",
+                "projected_points": p.projected_points
+            }
+            for p in players
+        ]
+        return {"status": "success", "match_id": match_id, "roster": roster, "total_players": len(roster)}
+    except Exception:
+        pass
+
+    # 3. Try MASTER_FIXTURES
+    from .portal_fixtures import MASTER_FIXTURES
+    mf = MASTER_FIXTURES.get(clean_id)
+    if not mf:
+        for item in MASTER_FIXTURES.values():
+            if clean_id in item.get("aliases", []):
+                mf = item
+                break
+    if mf:
+        extracted = extract_match_roster(mf)
+        if extracted:
+            return {"status": "success", "match_id": match_id, "roster": extracted, "total_players": len(extracted)}
+
+    raise HTTPException(status_code=404, detail=f"Confirmed player roster for match '{match_id}' is not available. STRIKE//OS never manufactures fake players.")
 
 @app.get("/api/portal/solve-lineup")
 @app.post("/api/portal/solve-lineup")
@@ -1137,7 +1184,7 @@ def solve_portal_lineup(
     target_unspent: float = 14.0,
     min_diffs: int = 2
 ):
-    """Executes Google OR-Tools CP-SAT Mixed Integer Linear Programming to dynamically solve a mathematically optimal Solo Rank 1 lineup."""
+    """Executes Google OR-Tools CP-SAT Mixed Integer Linear Programming to solve a constrained anti-chalk portfolio lineup."""
     import json
     from ortools.sat.python import cp_model
 
@@ -1170,12 +1217,19 @@ def solve_portal_lineup(
     model.Add(sum(x[i] for i in bowl) >= 2)
     model.Add(sum(x[i] for i in bowl) <= 6)
 
-    afg = [i for i, p in enumerate(players_data) if p["team"] == "AFG"]
-    zim = [i for i, p in enumerate(players_data) if p["team"] == "ZIM"]
-    model.Add(sum(x[i] for i in afg) >= 4)
-    model.Add(sum(x[i] for i in afg) <= 7)
-    model.Add(sum(x[i] for i in zim) >= 4)
-    model.Add(sum(x[i] for i in zim) <= 7)
+    teams = list(dict.fromkeys(p["team"] for p in players_data if p.get("team")))
+    if len(teams) == 2:
+        t_a = [i for i, p in enumerate(players_data) if p.get("team") == teams[0]]
+        t_b = [i for i, p in enumerate(players_data) if p.get("team") == teams[1]]
+        if len(t_a) >= 4 and len(t_b) >= 4:
+            model.Add(sum(x[i] for i in t_a) >= 4)
+            model.Add(sum(x[i] for i in t_a) <= 7)
+            model.Add(sum(x[i] for i in t_b) >= 4)
+            model.Add(sum(x[i] for i in t_b) <= 7)
+    elif len(teams) > 2:
+        for t in teams:
+            t_idx = [i for i, p in enumerate(players_data) if p.get("team") == t]
+            model.Add(sum(x[i] for i in t_idx) <= 7)
 
     diffs = [i for i, p in enumerate(players_data) if p["sel"] < 35.0]
     model.Add(sum(x[i] for i in diffs) >= int(min_diffs))
@@ -1187,22 +1241,17 @@ def solve_portal_lineup(
         model.Add(v[i] <= x[i])
         model.Add(c[i] + v[i] <= 1)
 
-    weights = [p["projected_points"] for p in players_data]
+    weights = [float(p.get("projected_points", 40.0)) for p in players_data]
+    id_map = {p.get("id"): i for i, p in enumerate(players_data) if p.get("id")}
     if scenario == "afg_seam_spin_strangle":
-        farooqi_idx = next(i for i, p in enumerate(players_data) if p["id"] == "AFG_FAROOQI")
-        omz_idx = next(i for i, p in enumerate(players_data) if p["id"] == "AFG_OMARZAI")
-        weights[farooqi_idx] = 95.0
-        weights[omz_idx] = 90.0
+        if "AFG_FAROOQI" in id_map: weights[id_map["AFG_FAROOQI"]] = 95.0
+        if "AFG_OMARZAI" in id_map: weights[id_map["AFG_OMARZAI"]] = 90.0
     elif scenario == "pacer_blitz":
-        muz_idx = next(i for i, p in enumerate(players_data) if p["id"] == "ZIM_MUZARABANI")
-        farooqi_idx = next(i for i, p in enumerate(players_data) if p["id"] == "AFG_FAROOQI")
-        weights[muz_idx] = 95.0
-        weights[farooqi_idx] = 90.0
-    else:  # zim_bat_1st / resistance
-        raza_idx = next(i for i, p in enumerate(players_data) if p["id"] == "ZIM_RAZA")
-        muz_idx = next(i for i, p in enumerate(players_data) if p["id"] == "ZIM_MUZARABANI")
-        weights[raza_idx] = 92.0
-        weights[muz_idx] = 88.0
+        if "ZIM_MUZARABANI" in id_map: weights[id_map["ZIM_MUZARABANI"]] = 95.0
+        if "AFG_FAROOQI" in id_map: weights[id_map["AFG_FAROOQI"]] = 90.0
+    elif scenario in ["zim_bat_1st", "resistance"]:
+        if "ZIM_RAZA" in id_map: weights[id_map["ZIM_RAZA"]] = 92.0
+        if "ZIM_MUZARABANI" in id_map: weights[id_map["ZIM_MUZARABANI"]] = 88.0
 
     obj = [int(weights[i]*100)*x[i] + int(weights[i]*130)*c[i] + int(weights[i]*70)*v[i] + int((100.0 - players_data[i]["sel"])*15)*x[i] for i in range(n)]
     model.Maximize(sum(obj))
@@ -1350,43 +1399,7 @@ def extract_match_roster(match_data: Dict[str, Any]) -> List[Dict[str, Any]]:
                     "order": 3
                 }
 
-    # 2. If fewer than 18 players, supplement with bilateral talent
-    if len(player_dict) < 18:
-        defaults_a = [
-            ("Top Batter 1", "BAT", 9.0, 52.0),
-            ("Star Opener", "WK", 8.5, 48.0),
-            ("Middle Anchor", "BAT", 8.0, 39.0),
-            ("Power Finisher", "BAT", 8.5, 44.0),
-            ("Lead All-Rounder", "AR", 9.0, 54.0),
-            ("Spin All-Rounder", "AR", 8.0, 42.0),
-            ("Strike Pacer", "BOWL", 8.5, 46.0),
-            ("Mystery Spinner", "BOWL", 8.0, 41.0),
-            ("Death Specialist", "BOWL", 8.5, 49.0),
-            ("Second Pacer", "BOWL", 7.5, 36.0),
-            ("Tailender", "BOWL", 6.5, 18.0)
-        ]
-        defaults_b = [
-            ("Opp Key Opener", "BAT", 9.0, 50.0),
-            ("Opp Dynamic WK", "WK", 8.5, 47.0),
-            ("Opp Anchor 3", "BAT", 8.5, 42.0),
-            ("Opp Explosive 4", "BAT", 8.0, 40.0),
-            ("Opp Dual AR", "AR", 9.0, 53.0),
-            ("Opp Seam AR", "AR", 8.0, 43.0),
-            ("Opp Express Pacer", "BOWL", 8.5, 47.0),
-            ("Opp Left Pacer", "BOWL", 8.0, 42.0),
-            ("Opp Off Spinner", "BOWL", 7.5, 37.0),
-            ("Opp Death Yorker", "BOWL", 8.0, 44.0),
-            ("Opp No 11", "BOWL", 6.5, 16.0)
-        ]
-        for name_sfx, role, cred, pts in defaults_a:
-            p_name = f"{team_a} {name_sfx}"
-            if p_name not in player_dict:
-                player_dict[p_name] = {"name": p_name, "team": team_a, "role": role, "credits": cred, "projected_points": pts, "ceiling_score": pts * 1.8, "floor_score": pts * 0.3, "order": 3}
-        for name_sfx, role, cred, pts in defaults_b:
-            p_name = f"{team_b} {name_sfx}"
-            if p_name not in player_dict:
-                player_dict[p_name] = {"name": p_name, "team": team_b, "role": role, "credits": cred, "projected_points": pts, "ceiling_score": pts * 1.8, "floor_score": pts * 0.3, "order": 3}
-
+    # Return only verified players present in match data; never synthesize dummy players
     roster = list(player_dict.values())
     return roster
 
@@ -1533,117 +1546,10 @@ def get_bounded_nudges(match_id: str = "161190"):
 
 
 def synthesize_bilateral_matchups(title: str, v_name: str):
-    """Dynamically synthesizes realistic bilateral matchups for any international or domestic fixture."""
-    # Attempt to extract team names from title e.g. "Ban Vs Afg", "Sl Vs Eng", "Lso Vs Moz"
-    parts = title.replace(",", " ").replace("-", " ").split()
-    team_a = "Team A"
-    team_b = "Team B"
-    for i, p in enumerate(parts):
-        if p.lower() == "vs" and i > 0 and i < len(parts) - 1:
-            team_a = parts[i-1].upper()
-            team_b = parts[i+1].upper()
-            break
-            
-    matchups = [
-        {
-            "batter": f"{team_a} Top Batter 1",
-            "batter_hand": "Left-Hand Bat (LHB)",
-            "bowler": f"{team_b} Strike Pacer",
-            "bowler_arm": "Right-Arm Fast (RAF)",
-            "speed": "144.2 km/h",
-            "runs": 36,
-            "balls": 22,
-            "dism": 1,
-            "sr": 163.6,
-            "dots": 31.8,
-            "fours": 4,
-            "sixes": 2,
-            "venue_factor": f"{v_name} short boundary targeted over deep square leg",
-            "adv": "Batter Dominant (+160 SR vs Express Pace)"
-        },
-        {
-            "batter": f"{team_b} Star Opener",
-            "batter_hand": "Right-Hand Bat (RHB)",
-            "bowler": f"{team_a} Left-Arm Pacer",
-            "bowler_arm": "Left-Arm Fast-Medium (LAP)",
-            "speed": "138.5 km/h",
-            "runs": 28,
-            "balls": 24,
-            "dism": 2,
-            "sr": 116.7,
-            "dots": 45.8,
-            "fours": 3,
-            "sixes": 1,
-            "venue_factor": f"Left-arm swing back into right-hander pads at {v_name}",
-            "adv": "Bowler Strike Hazard (2 Powerplay Dismissals)"
-        },
-        {
-            "batter": f"{team_a} Middle Order Anchor",
-            "batter_hand": "Right-Hand Bat (RHB)",
-            "bowler": f"{team_b} Mystery Spinner",
-            "bowler_arm": "Right-Arm Mystery Spin (OB/LB)",
-            "speed": "93.4 km/h",
-            "runs": 42,
-            "balls": 31,
-            "dism": 0,
-            "sr": 135.5,
-            "dots": 29.0,
-            "fours": 4,
-            "sixes": 1,
-            "venue_factor": f"Surface grip allows turn; batter plays off back foot",
-            "adv": "Batter Advantage (Zero Dismissals)"
-        },
-        {
-            "batter": f"{team_b} Power Finisher",
-            "batter_hand": "Right-Hand Bat (RHB)",
-            "bowler": f"{team_a} Death Specialist",
-            "bowler_arm": "Right-Arm Fast (RAF)",
-            "speed": "141.0 km/h",
-            "runs": 48,
-            "balls": 25,
-            "dism": 1,
-            "sr": 192.0,
-            "dots": 24.0,
-            "fours": 4,
-            "sixes": 3,
-            "venue_factor": f"Outfield speed at {v_name} maximizes death overs boundary yield",
-            "adv": "Batter Dominant (Death Overs Carnage 192 SR)"
-        }
-    ]
-    
-    handedness = [
-        {
-            "batter": f"{team_a} Top Batter",
-            "hand": "LHB",
-            "vs_rap": "Avg 38.5 | SR 152.0",
-            "vs_lap": "Avg 29.0 | SR 134.0",
-            "vs_ob": "Avg 44.0 | SR 168.0",
-            "vs_lb": "Avg 32.5 | SR 140.0",
-            "vs_sla": "Avg 48.0 | SR 175.0",
-            "weakness_speed": "Short bouncer > 142 km/h from LAP",
-            "venue_fit": "High Ceiling"
-        },
-        {
-            "batter": f"{team_b} Star Batter",
-            "hand": "RHB",
-            "vs_rap": "Avg 42.0 | SR 160.0",
-            "vs_lap": "Avg 35.0 | SR 145.0",
-            "vs_ob": "Avg 38.0 | SR 150.0",
-            "vs_lb": "Avg 40.0 | SR 148.0",
-            "vs_sla": "Avg 46.0 | SR 165.0",
-            "weakness_speed": "Inswinging yorker 136-138 km/h",
-            "venue_fit": "Anchor Pillar"
-        }
-    ]
-    
-    venue_records = [
-        {"player": f"{team_a} Captain", "team": team_a, "role": "BAT", "hand": "RHB", "matches": 6, "runs_wkts": "248 runs", "avg": "49.6", "sr_econ": "152.5 SR", "fantasy_avg": "72.0 pts", "badge": "Key Player"},
-        {"player": f"{team_b} Lead Pacer", "team": team_b, "role": "BOWL", "hand": "RAF (144 km/h)", "matches": 5, "runs_wkts": "11 wickets", "avg": "16.8", "sr_econ": "7.20 Econ", "fantasy_avg": "68.0 pts", "badge": "Strike Bowler"},
-        {"player": f"{team_a} All-Rounder", "team": team_a, "role": "AR", "hand": "LHB / SLA", "matches": 4, "runs_wkts": "112 runs, 5 wkts", "avg": "37.3", "sr_econ": "140.0 SR", "fantasy_avg": "64.0 pts", "badge": "Dual Equity"},
-        {"player": f"{team_b} Opener", "team": team_b, "role": "WK", "hand": "RHB", "matches": 5, "runs_wkts": "194 runs", "avg": "38.8", "sr_econ": "146.0 SR", "fantasy_avg": "61.0 pts", "badge": "Boundary Power"}
-    ]
-    
-    return matchups, handedness, venue_records
+    """Deprecated: STRIKE//OS never manufactures fake bilateral player matchups.
+    Returns empty records when ball-by-ball delivery history is unobserved.
+    """
+    return [], [], []
 
 
 @app.get("/api/portal/match-data")
@@ -1664,30 +1570,29 @@ def get_portal_match_data(match_id: str = "161190"):
         if match_id in item.get("aliases", []):
             return item
 
-    # 2. Fallback to VenuePitchIntelligence or Daily Sync
+        # 2. Fallback to VenuePitchIntelligence or Daily Sync
     telemetry = sync_eng.fetch_live_commentary_and_scorecard(match_id)
     title = telemetry.get("title") or ("Match " + match_id)
     v_spec = venue_eng.get_venue_specs(title) or venue_eng.catalog.get("raipur_svns_stadium")
-    syn_matchups, syn_handedness, syn_records = synthesize_bilateral_matchups(title, v_spec.venue_name if v_spec else "Ground")
     
-    # Generate tailored dynamic response
+    # Return unverified baseline estimate without fabricating matchups or fake live telemetry
     return {
         "id": match_id,
         "title": title,
-        "series": "Live Dynamic International Fixture",
+        "series": "Scheduled Fixture",
         "date": "Today, Oct 24, 2026",
-        "time": "Live Match Broadcast",
+        "time": "Scheduled Match Time",
         "venue": v_spec.venue_name if v_spec else "International Cricket Stadium",
-        "countdown": "Live Telemetry Synchronized",
+        "countdown": "Telemetry Pending",
         "format": "T20 / ODI",
-        "status": "LIVE & TRACKED",
+        "status": "SCHEDULED_UNTRACKED",
         "category": "INTERNATIONAL",
         "archetype": v_spec.archetype if v_spec else "HIGH_STAKES_PARITY",
         "par_score": v_spec.t20_par_score if v_spec else 175,
         "spin_pct": str(int(v_spec.spin_wicket_pct)) + "% Wkts (" + str(v_spec.expected_turn_deg) + "° Turn)" if v_spec else "45% Wkts (2.5° Turn)",
-        "toss_statement": "Match " + title + ": Live pitch conditions and telemetry synchronized via Cricbuzz feed.",
+        "toss_statement": f"Match {title}: Live provider commentary not synchronized. Pitch conditions are venue baseline estimates requiring field verification.",
         "unspent_shield": "13.5 - 18.0 Cr Unspent",
-        "narrative_shield": "100% Surface Aligned",
+        "narrative_shield": "Venue Baseline Model",
         "boundaries": {
             "straight": str(v_spec.boundary_dimensions.get("straight", 70)) + "m" if v_spec else "70m",
             "sqLeg": str(v_spec.boundary_dimensions.get("square_leg", 62)) + "m" if v_spec else "62m",
@@ -1700,33 +1605,11 @@ def get_portal_match_data(match_id: str = "161190"):
         "turnDeg": str(v_spec.expected_turn_deg) + "°" if v_spec else "2.5°",
         "pacePct": int(v_spec.pace_wicket_pct) if v_spec else 55,
         "spinPct": int(v_spec.spin_wicket_pct) if v_spec else 45,
-        "matchups": syn_matchups,
-        "handedness_matrix": syn_handedness,
-        "venue_player_records": syn_records,
-        "lineups": [
-            {
-                "name": "Team 1 • " + title + " Solo Equity Blitz",
-                "scenario_tag": "MATCH_DOMINANCE_SURGE",
-                "captain": "Star Batter / AR",
-                "vice_captain": "Strike Death Bowler",
-                "unspent_credits": 16.5,
-                "uniqueness": 99.9,
-                "strategy": "Auto-optimized for conditions under " + (v_spec.archetype if v_spec else "PARITY") + " archetype.",
-                "players": [
-                    {"name": "Opener 1", "role": "BAT", "credits": 8.5, "is_c": False, "is_vc": False},
-                    {"name": "Opener 2", "role": "WK", "credits": 8.5, "is_c": False, "is_vc": False},
-                    {"name": "Anchor 3", "role": "BAT", "credits": 8.0, "is_c": False, "is_vc": False},
-                    {"name": "Power Surge 4", "role": "BAT", "credits": 8.5, "is_c": True, "is_vc": False},
-                    {"name": "All-Rounder 5", "role": "AR", "credits": 9.0, "is_c": False, "is_vc": False},
-                    {"name": "All-Rounder 6", "role": "AR", "credits": 8.0, "is_c": False, "is_vc": False},
-                    {"name": "Lower AR 7", "role": "AR", "credits": 7.5, "is_c": False, "is_vc": False},
-                    {"name": "Strike Pacer 8", "role": "BOWL", "credits": 8.5, "is_c": False, "is_vc": True},
-                    {"name": "Mystery Spinner 9", "role": "BOWL", "credits": 7.5, "is_c": False, "is_vc": False},
-                    {"name": "Death Pacer 10", "role": "BOWL", "credits": 8.0, "is_c": False, "is_vc": False},
-                    {"name": "Differential 11", "role": "BOWL", "credits": 6.0, "is_c": False, "is_vc": False}
-                ]
-            }
-        ],
+        "matchups": [],
+        "handedness_matrix": [],
+        "venue_player_records": [],
+        "data_provenance": "FALLBACK_MODEL_DEFAULT",
+        "lineups": [],
         "battles": []
     }
 

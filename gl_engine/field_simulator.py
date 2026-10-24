@@ -146,10 +146,11 @@ class SyntheticFieldSimulator:
                 "win_rate_percentile_rank": f"Top {(median_rank / len(opponent_field) * 100):.1f}% Field Median",
                 "p_top_0_1_pct": round(p_top_01 * 100, 2),
                 "p_top_1_pct": round(p_top_1 * 100, 2),
-                "calibrated_gpp_verdict": (
+                "simulation_gpp_verdict": (
                     "SOLITARY PODIUM CANDIDATE (Low Duplication Risk)" if expected_duplicates == 0 and p_top_01 > 0.05
                     else ("STRONG CASH/GPP HYBRID" if p_top_1 > 0.25 else "DIFFERENTIAL LEVERAGE ROSTER")
-                )
+                ),
+                "calibration_status": "MODEL_ESTIMATE_UNCALIBRATED"
             })
 
         return evaluated_portfolios
