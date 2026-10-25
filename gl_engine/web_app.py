@@ -519,21 +519,48 @@ def get_ortools_lineups(
     risk: str = "HIGH_CEILING",
     scenario: Optional[str] = None,
     captain: str = "AUTO",
+    vice_captain: str = "AUTO",
     match_id: Optional[str] = None,
+    format: Optional[str] = None,
     overs: int = 20,
     locked: Optional[str] = None,
     excluded: Optional[str] = None,
     exposure: Optional[str] = None,
     confirmed_xi: Optional[str] = None
 ):
+    # Format-aware overs bounds: default T20 allows 5-20; ODI allows up to 50; Test up to 450.
+    max_allowed_overs = 20
+    if format:
+        fmt_lower = format.lower()
+        if "odi" in fmt_lower or "one day" in fmt_lower:
+            max_allowed_overs = 50
+        elif "test" in fmt_lower:
+            max_allowed_overs = 450
+        elif "t10" in fmt_lower:
+            max_allowed_overs = 10
+    elif match_id:
+        clean_id_check = match_id.removeprefix("display_")
+        try:
+            meta_check, _ = resolve_match_players(clean_id_check)
+            if meta_check:
+                m_format = (meta_check.get("format") or "").lower()
+                if "odi" in m_format or "one day" in m_format:
+                    max_allowed_overs = 50
+                elif "test" in m_format:
+                    max_allowed_overs = 450
+                elif "t10" in m_format:
+                    max_allowed_overs = 10
+        except Exception:
+            pass
+
     # Validate before loading profiles or invoking any solver/simulation.
-    if not 1 <= teams <= 20 or not 0 <= max_overlap <= 11 or not 5 <= overs <= 20:
-        raise HTTPException(422, "Teams must be 1-20, overlap 0-11, overs 5-20.")
+    if not 1 <= teams <= 20 or not 0 <= max_overlap <= 11 or not 5 <= overs <= max_allowed_overs:
+        raise HTTPException(422, f"Teams must be 1-20, overlap 0-11, overs 5-{max_allowed_overs}.")
     if not 1 <= spots <= 5000000:
         raise HTTPException(422, "Contest size must be 1-5,000,000.")
     if risk not in {"BALANCED", "HIGH_CEILING", "DIFFERENTIAL_HEAVY"}:
         raise HTTPException(422, "Unknown risk setting.")
-    if credit_strategy not in {"79-85", "87-89", "90-95"}:
+    if credit_strategy not in {"79-85", "87-89", "90-95", "custom"}:
         raise HTTPException(422, "Unknown credit band.")
     if (min_credits is None) != (max_credits is None):
         raise HTTPException(422, "Both custom credit bounds are required.")
@@ -592,14 +619,20 @@ def get_ortools_lineups(
         raise HTTPException(422, "Unknown scenario.")
     captain_names = {"TILAK": "Tilak", "MAYANK": "Mayank", "JOSEPH": "Shamar", "HOPE": "Hope", "ABHISHEK": "Abhishek", "RUTHERFORD": "Rutherford"}
     custom_scenarios = None
-    if scenario or captain != "AUTO":
-        template = {"name": scenario or "Custom captain", "tag": scenario or "CUSTOM", "rationale": "User-selected scenario weights; not verified match conditions.", **scenario_weights.get(scenario, {})}
+    if scenario or captain != "AUTO" or vice_captain != "AUTO":
+        template = {"name": scenario or "Custom lineup", "tag": scenario or "CUSTOM", "rationale": "User-selected scenario weights; not verified match conditions.", **scenario_weights.get(scenario, {})}
         if captain != "AUTO":
             name = captain_names.get(captain)
             selected = next((p for p in players if p.id == captain or (name and name.lower() in p.name.lower())), None)
             if selected is None:
+                selected = next((p for p in players if captain.lower() in p.id.lower() or captain.lower() in p.name.lower()), None)
+            if selected is None:
                 raise HTTPException(422, "Requested captain is not in the connected player pool.")
             template["preferred_c"] = selected.id
+        if vice_captain != "AUTO":
+            selected_vc = next((p for p in players if p.id == vice_captain or (vice_captain.lower() in p.id.lower() or vice_captain.lower() in p.name.lower())), None)
+            if selected_vc:
+                template["preferred_vc"] = selected_vc.id
         custom_scenarios = [template]
 
     opt = ORToolsCricketOptimizer(players)

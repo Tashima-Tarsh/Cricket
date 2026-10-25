@@ -38,6 +38,9 @@ class UniversalMatchEngine:
         self._matches: Dict[str, Dict[str, Any]] = {}
         self._cached_states: Dict[str, Dict[str, Any]] = {}
         self._init_default_fixtures()
+        if "ind_w_vs_zim_w_2026_02" in self._matches:
+            self._matches["icc_270973"] = self._matches["ind_w_vs_zim_w_2026_02"]
+            self._matches["270973"] = self._matches["ind_w_vs_zim_w_2026_02"]
         for fixture in self._matches.values():
             fixture["data_provenance"] = "UNVERIFIED_BUNDLED_FIXTURE"
             fixture["status"] = "BUNDLED FIXTURE | [VERIFY REQUIRED]"
@@ -48,38 +51,39 @@ class UniversalMatchEngine:
 
     def _init_default_fixtures(self):
         """Loads canonical baseline fixtures into the engine."""
-        # 1. India Women vs Zimbabwe Women 2nd T20I (Raipur - 18-10-2026)
+        # 1. India Women vs Zimbabwe Women 2nd ODI (Vadodara - 25-10-2026, ICC 270973)
         self._matches["ind_w_vs_zim_w_2026_02"] = {
             "id": "ind_w_vs_zim_w_2026_02",
-            "name": "India Women vs Zimbabwe Women, 2nd T20I (Raipur)",
-            "format": "Women's T20 International",
-            "status": "TOSS CONCLUDED | Zimbabwe Opt to Bat | Both Teams Unchanged",
+            "name": "India Women vs Zimbabwe Women, 2nd ODI (Vadodara)",
+            "format": "Women's One Day International",
+            "status": "PRE-TOSS PROVISIONAL | Toss Scheduled 13:30 IST | Match 14:00 IST",
+            "icc_id": "270973",
             "venue": {
-                "id": "raipur_svns_stadium",
-                "name": "Shaheed Veer Narayan Singh International Stadium, Raipur",
-                "city": "Raipur",
-                "soil_type": "Black soil surface (Pitch No. 4) with grass-bound cracks",
-                "avg_first_innings": 142.0,
-                "avg_second_innings": 136.0,
-                "chasing_win_pct": 60.0,
-                "pace_wicket_pct": 52.0,
-                "spin_wicket_pct": 48.0,
-                "dew_factor": 0.28,
-                "pitch_nature": "Black soil Pitch No. 4 rolled well with grass growing in cracks, nicely bound. WV Raman pitch report: Pace-off deliveries and back-of-the-hand cutters (Arundhati Reddy, Nandani Sharma) grip exceptionally well. Straight down the ground boundary routes for Mandhana & Deepti; back-foot punch for Niki Prasad.",
-                "boundaries": {"square_leg": 63, "midwicket": 67, "long_on": 73, "straight": 74, "long_off": 73, "cover": 66, "point": 61}
+                "id": "bca_stadium_vadodara",
+                "name": "BCA Stadium, Kotambi, Vadodara",
+                "city": "Vadodara",
+                "soil_type": "Abrasive Gujarat black soil with high clay content",
+                "avg_first_innings": 258.0,
+                "avg_second_innings": 178.0,
+                "chasing_win_pct": 50.0,
+                "pace_wicket_pct": 35.1,
+                "spin_wicket_pct": 64.9,
+                "dew_factor": 0.18,
+                "pitch_nature": "Spin-dominant surface (37/57 wickets by spin, 64.9%). Slow left-arm orthodox (S Charani) and off-spin (D Sharma, S Verma) extract 3.8 to 4.4 degrees of grip and turn.",
+                "boundaries": {"square_leg": 64, "midwicket": 68, "long_on": 74, "straight": 75, "long_off": 74, "cover": 68, "point": 62}
             },
             "teams": {
-                "home": {"name": "India Women", "code": "IND-W", "score": "Bowling First", "overs": "20.0"},
-                "away": {"name": "Zimbabwe Women", "code": "ZIM-W", "score": "Batting First", "overs": "20.0"}
+                "home": {"name": "India Women", "code": "IND-W", "score": "Yet to Bat", "overs": "50.0"},
+                "away": {"name": "Zimbabwe Women", "code": "ZIM-W", "score": "Yet to Bat", "overs": "50.0"}
             },
             "toss": {
-                "winner": "Zimbabwe Women",
-                "choice": "bat",
-                "statement": "Zimbabwe Women won the toss and opted to bat first. India Women bowl first. Both teams playing unchanged playing XIs."
+                "winner": "TBD",
+                "choice": "bowl",
+                "statement": "Toss scheduled at 13:30 IST at BCA Stadium, Kotambi, Vadodara. Official XI to follow."
             },
-            "current_crr": 6.85,
-            "projected_total": 135,
-            "chasing_win_prob": 76.0,
+            "current_crr": 0.0,
+            "projected_total": 258,
+            "chasing_win_prob": 50.0,
             "playing_xi_home": [
                 {"name": "Smriti Mandhana", "role": "BAT", "credits": 10.0, "order": 1, "bat_hand": "LHB", "bowl_style": "Right-arm medium", "is_c": True},
                 {"name": "Shafali Verma", "role": "BAT", "credits": 9.0, "order": 2, "bat_hand": "RHB", "bowl_style": "Right-arm offbreak"},

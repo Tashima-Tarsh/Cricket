@@ -10,35 +10,35 @@ import {
 } from "../types";
 const initialMatch: MatchInfo = {
   id: "ind_w_vs_zim_w_2026_02", 
-  name: "India Women vs Zimbabwe Women, 2nd T20I (Raipur)", 
-  format: "Women's T20 International", 
+  name: "India Women vs Zimbabwe Women, 2nd ODI (Vadodara)", 
+  format: "Women's One Day International", 
   status: "TOSS CONCLUDED | Zimbabwe Opt to Bat | Both Teams Unchanged",
   venue: { 
-    id: "raipur_svns_stadium", 
-    name: "Shaheed Veer Narayan Singh International Stadium, Raipur", 
-    city: "Raipur", 
-    soil_type: "Black soil surface (Pitch No. 4) with grass-bound cracks", 
-    avg_first_innings: 142.0, 
-    avg_second_innings: 136.0, 
-    chasing_win_pct: 60.0, 
-    pace_wicket_pct: 52.0, 
-    spin_wicket_pct: 48.0, 
-    dew_factor: 0.28, 
-    pitch_nature: "Black soil Pitch No. 4 rolled well with grass growing in cracks. Pace-off deliveries and back-of-the-hand cutters (Arundhati Reddy, Nandani Sharma) grip exceptionally well.", 
-    boundaries: { square_leg: 63, midwicket: 67, long_on: 73, straight: 74, long_off: 73, cover: 66, point: 61 } 
+    id: "bca_stadium_vadodara", 
+    name: "BCA Stadium, Kotambi, Vadodara", 
+    city: "Vadodara", 
+    soil_type: "Spin-friendly abrasive black soil track at BCA Kotambi", 
+    avg_first_innings: 258.0, 
+    avg_second_innings: 178.0, 
+    chasing_win_pct: 50.0, 
+    pace_wicket_pct: 35.1, 
+    spin_wicket_pct: 64.9, 
+    dew_factor: 0.20, 
+    pitch_nature: "Bowling surface favoring spinners (37 of 57 wickets = 64.9% taken by spinners). 1st innings avg 258, 2nd innings avg 178. Turn and grip for slow left-arm orthodox (S Charani) and off-spin (D Sharma, S Verma).", 
+    boundaries: { square_leg: 64, midwicket: 68, long_on: 74, straight: 75, long_off: 74, cover: 68, point: 62 } 
   },
   teams: { 
-    home: { name: "India Women", code: "IND-W", score: "Bowling First", overs: "20.0" }, 
-    away: { name: "Zimbabwe Women", code: "ZIM-W", score: "Batting First", overs: "20.0" } 
+    home: { name: "India Women", code: "IND-W", score: "Bowling First", overs: "50.0" }, 
+    away: { name: "Zimbabwe Women", code: "ZIM-W", score: "Batting First", overs: "50.0" } 
   },
   toss: { 
     winner: "Zimbabwe Women", 
     choice: "bat", 
-    statement: "Zimbabwe Women won the toss and opted to bat first. India Women bowl first. Both teams playing unchanged playing XIs." 
+    statement: "Zimbabwe Women won the toss and opted to bat first. India Women bowl first." 
   }, 
-  current_crr: 6.85, 
-  projected_total: 135, 
-  chasing_win_prob: 76.0
+  current_crr: 4.15, 
+  projected_total: 218, 
+  chasing_win_prob: 88.0
 };
 
 interface MatchContextType {

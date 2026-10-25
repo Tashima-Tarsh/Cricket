@@ -113,3 +113,4 @@
 |---|---|---|
 | **India Bowls First** (Zimbabwe Bats) | **Team 1 (Charani C, Verma VC)** | **Team 3 (Deepti C, Rawal VC)** or **Team 5 (Gaud C)** |
 | **India Bats First** (Zimbabwe Bowls) | **Team 2 (Rawal C, Verma VC)** | **Team 4 (Biza C, Charani VC)** |
+

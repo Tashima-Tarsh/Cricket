@@ -195,13 +195,15 @@ SERIES_FIXTURES = {
 SERIES_FIXTURES["ind_wi_2026_05"] = SERIES_FIXTURES["ind_vs_wi_5th_t20_2026"]
 SERIES_FIXTURES["indw_zimw"] = SERIES_FIXTURES["ind_w_vs_zim_w_2026_02"]
 SERIES_FIXTURES["ind_w_vs_zim_w"] = SERIES_FIXTURES["ind_w_vs_zim_w_2026_02"]
+SERIES_FIXTURES["icc_270973"] = SERIES_FIXTURES["ind_w_vs_zim_w_2026_02"]
+SERIES_FIXTURES["270973"] = SERIES_FIXTURES["ind_w_vs_zim_w_2026_02"]
 
 def get_match_data(match_id: Optional[str] = None) -> Dict[str, Any]:
     """Returns canonical match info and player pool for the requested fixture."""
     canonical_id = match_id or "ind_w_vs_zim_w_2026_02"
     
     # Check if IND-W vs ZIM-W requested
-    if canonical_id in ("ind_w_vs_zim_w_2026_02", "indw_zimw", "ind_w_vs_zim_w", "indw_zimw_2026_02"):
+    if canonical_id in ("ind_w_vs_zim_w_2026_02", "indw_zimw", "ind_w_vs_zim_w", "indw_zimw_2026_02", "icc_270973", "270973"):
         from .wt20_registry import get_wt20_registry
         reg = get_wt20_registry()
         return {
