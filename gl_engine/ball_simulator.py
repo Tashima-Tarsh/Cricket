@@ -18,10 +18,12 @@ OUTCOMES = ["0", "1", "2", "3", "4", "6", "WICKET", "WIDE", "NO_BALL"]
 PTS_RUN = 1
 PTS_FOUR = 1 # bonus
 PTS_SIX = 2  # bonus
-PTS_WICKET = 25
+PTS_WICKET = 30 # Official Dream11 T20
+PTS_DOT_BALL = 1 # Official Dream11 T20
 PTS_LBW_BOWLED = 8
 PTS_MAIDEN = 12
 PTS_DUCK = -2
+PTS_STARTING_XI = 4
 
 class BallByBallGenerativeSimulator:
     def __init__(self, seed: int = 42):
@@ -141,9 +143,9 @@ class BallByBallGenerativeSimulator:
 
         return player_stats
 
-    def compute_fantasy_points(self, stats: Dict[str, Any]) -> float:
+    def compute_fantasy_points(self, stats: Dict[str, Any], is_xi: bool = True) -> float:
         """Calculates official Dream11 fantasy points for a simulated scorecard line."""
-        pts = 0.0
+        pts = float(PTS_STARTING_XI) if is_xi else 0.0
         # Batting
         r = stats["runs"]
         b = stats["balls"]
@@ -159,9 +161,26 @@ class BallByBallGenerativeSimulator:
         if r == 0 and b > 0 and stats["out"]:
             pts += PTS_DUCK
 
+        # Strike Rate Bonus / Penalty (min 10 balls faced)
+        if b >= 10:
+            sr = 100.0 * r / b
+            if sr > 170.0:
+                pts += 6.0
+            elif sr > 150.0:
+                pts += 4.0
+            elif sr >= 130.0:
+                pts += 2.0
+            elif sr < 50.0:
+                pts -= 6.0
+            elif sr < 60.0:
+                pts -= 4.0
+            elif sr < 70.0:
+                pts -= 2.0
+
         # Bowling
         w = stats["wickets"]
         pts += w * PTS_WICKET
+        pts += stats.get("dots", 0) * PTS_DOT_BALL
         if w >= 5:
             pts += 16
         elif w >= 4:

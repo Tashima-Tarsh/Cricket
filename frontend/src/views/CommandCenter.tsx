@@ -40,7 +40,8 @@ export const CommandCenter: React.FC<{
   const fetchTossFeed = async () => {
     setIsRefreshingToss(true);
     try {
-      const res = await fetch("/api/live/toss-feed");
+      const matchParam = encodeURIComponent(match?.id || "");
+      const res = await fetch(`/api/live/toss-feed?match_id=${matchParam}`);
       if (res.ok) {
         const data = await res.json();
         setLiveTossFeed(data.feed);
@@ -138,14 +139,14 @@ export const CommandCenter: React.FC<{
             </div>
           </div>
 
-          {/* Card 2: Ground & SubAir Drainage */}
+          {/* Card 2: Ground & Drainage */}
           <div className="p-3.5 rounded-xl bg-slate-900/90 border border-white/5 space-y-1">
             <span className="text-slate-400 text-[11px] font-mono uppercase block font-semibold">VENUE GROUND STATUS:</span>
             <div className="font-semibold text-white text-xs">
-              {liveTossFeed?.ground_condition || "Match delayed by wet outfield. Pitch inspection in progress."}
+              {liveTossFeed?.ground_condition || `${match?.venue?.name || "Venue"} playing surface prepared. Outfield inspection complete.`}
             </div>
             <div className="text-[11px] text-slate-400 font-mono">
-              Bengaluru SubAir System active &bull; Cutoff: <strong className="text-amber-400">{liveTossFeed?.cutoff_time_ist || "9:41 PM IST (5-over shootout)"}</strong>
+              Outfield drainage active &bull; Cutoff: <strong className="text-amber-400">{liveTossFeed?.cutoff_time_ist || "Scheduled match window"}</strong>
             </div>
           </div>
 
@@ -153,7 +154,7 @@ export const CommandCenter: React.FC<{
           <div className="p-3.5 rounded-xl bg-slate-900/90 border border-white/5 space-y-1">
             <span className="text-slate-400 text-[11px] font-mono uppercase block font-semibold">GROUND COMMENTARY:</span>
             <p className="text-slate-300 text-xs line-clamp-3 leading-relaxed">
-              &ldquo;{liveTossFeed?.latest_commentary || "KSCA president Venkatesh Prasad inspecting pitch. Biscuit brown pitch visible; Super Soppers in action."}&rdquo;
+              &ldquo;{liveTossFeed?.latest_commentary || `Pitch curators and match officials reviewing track at ${match?.venue?.name || "the ground"}. Boundary telemetry and pitch conditions logged.`}&rdquo;
             </p>
           </div>
         </div>

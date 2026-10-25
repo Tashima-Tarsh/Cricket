@@ -160,6 +160,7 @@ export interface DataProviderTelemetry {
 
 export type WorkspaceTab = 
   | "command-center"
+  | "match-studio"
   | "player-intel"
   | "battle-arena"
   | "field-strategy"
@@ -210,6 +211,8 @@ export interface DeliveryRecord {
   speed_kmh?: number;
 }
 
+export type TacticalObjective = "Wicket Strike" | "Run Containment" | "Matchup Strangle" | "Death Yorker Lock";
+
 export interface OverPlan {
   overNumber: number; // 1 to 20
   phase: "Powerplay" | "Middle" | "Death";
@@ -218,7 +221,7 @@ export interface OverPlan {
   alternativeBowlerId?: string;
   alternativeBowlerName?: string;
   expectedBatters: string[];
-  objective: "Wicket Strike" | "Run Containment" | "Matchup Strangle" | "Death Yorker Lock";
+  objective: TacticalObjective;
   targetLineLength: string;
   fieldPresetId: string;
   matchupRationale: string;

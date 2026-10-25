@@ -11,12 +11,14 @@ class CricketTossAnalysis:
 
     def execute(self, selected_scenario_index: int = 0) -> Dict[str, Any]:
         scenario = self.toss_scenarios[selected_scenario_index] if self.toss_scenarios else TossScenario(
-            winner="IND", decision="BOWL_FIRST", dew_impact=1.15, bat_first_advantage=0.92
+            winner="Home", decision="BOWL_FIRST", dew_impact=1.15, bat_first_advantage=0.92
         )
         
-        # Analyze game scripts based on toss
-        chasing_team = scenario.winner if scenario.decision == "BOWL_FIRST" else ("WI" if scenario.winner == "IND" else "IND")
-        batting_first_team = "WI" if chasing_team == "IND" else "IND"
+        # Analyze game scripts dynamically based on toss
+        winner = scenario.winner or "Home"
+        other_team = getattr(scenario, "loser", None) or ("Away" if winner == "Home" else "Opponent")
+        chasing_team = winner if scenario.decision == "BOWL_FIRST" else other_team
+        batting_first_team = other_team if chasing_team == winner else winner
         
         tactical_implications = []
         if scenario.decision == "BOWL_FIRST":
@@ -28,6 +30,16 @@ class CricketTossAnalysis:
             )
             tactical_implications.append(
                 f"{batting_first_team} death bowlers will face wet ball conditions, increasing boundary conceded rate by 18%."
+            )
+        else:
+            tactical_implications.append(
+                f"{batting_first_team} electing to bat first aims to post an above-par total on dry surface."
+            )
+            tactical_implications.append(
+                f"{batting_first_team} top-order anchors benefit from maximum ball-striking conditions before surface degradation."
+            )
+            tactical_implications.append(
+                f"{chasing_team} will face scoreboard pressure in the chase against {batting_first_team} frontline spinners."
             )
         
         return {

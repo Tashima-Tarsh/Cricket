@@ -129,13 +129,74 @@ const MATCHUP_PRESETS: MatchupPreset[] = [
 ];
 
 export const PitchLab: React.FC = () => {
-  const { navigateToWorkspace } = useMatchContext();
+  const { currentMatch, currentPlayers, currentBattles, navigateToWorkspace } = useMatchContext();
   const [selectedVenue, setSelectedVenue] = useState<StadiumVenue>(VENUES[0]);
   const [selectedPhase, setSelectedPhase] = useState<"All" | "Powerplay" | "Middle" | "Death">("All");
   const [bowlerType, setBowlerType] = useState<"All" | "Pace" | "Spin">("All");
-  const [selectedDuelId, setSelectedDuelId] = useState<string>("hetmyer_mayank");
 
-  const activeDuel = MATCHUP_PRESETS.find((m) => m.id === selectedDuelId) || MATCHUP_PRESETS[0];
+  const dynamicMatchups: MatchupPreset[] = React.useMemo(() => {
+    if (currentBattles && currentBattles.length > 0) {
+      return currentBattles.map((b: any, idx: number) => ({
+        id: `battle_${b.batter_id || idx}_${b.bowler_id || idx}`,
+        batterName: b.batter || b.batter_name || "Batter",
+        batterRole: `${b.batter_hand || 'RHB'} • Top Order`,
+        bowlerName: b.bowler || b.bowler_name || "Bowler",
+        bowlerType: `${b.bowling_style || 'Fast-Medium'} (${b.speed_kmh || 135} km/h)`,
+        speedKmh: b.speed_kmh || 135.0,
+        pitchLineLength: b.target_length || "5.5m Good Length outside off",
+        bounceHeightM: b.bounce_m || 1.35,
+        falseShotPct: b.false_shot_pct || 28.5,
+        intendedShot: b.intended_shot || "Drive or punch through off-side",
+        dismissalRisk: b.dismissal_hazard || "Edge to keeper or slip cordon",
+        fieldingPreset: "Standard Ring Protection",
+        keyFielders: ["Deep Point", "Cover Ring", "1st Slip", "Mid-Off"],
+        fantasyDirective: b.fantasy_note || `Tactical edge in current pitch conditions. Expected fantasy leverage pick.`,
+        advantage: (b.advantage || "COMPETITIVE") as any
+      }));
+    }
+    
+    const teams = Array.from(new Set(currentPlayers.map(p => p.team).filter(Boolean)));
+    if (teams.length >= 2) {
+      const batSide = currentPlayers.filter(p => p.team === teams[0] && (p.role === "BAT" || p.role === "WK" || p.role === "AR"));
+      const bowlSide = currentPlayers.filter(p => p.team === teams[1] && (p.role === "BOWL" || p.role === "AR"));
+      const pairs: MatchupPreset[] = [];
+      for (let i = 0; i < Math.min(4, Math.max(batSide.length, bowlSide.length)); i++) {
+        const bat = batSide[i % batSide.length];
+        const bowl = bowlSide[i % bowlSide.length];
+        if (bat && bowl) {
+          pairs.push({
+            id: `pair_${bat.id}_${bowl.id}`,
+            batterName: bat.name,
+            batterRole: `${bat.batting_style || 'RHB'} • Batting Position #${bat.batting_order || (i + 1)}`,
+            bowlerName: bowl.name,
+            bowlerType: `${bowl.bowling_style || 'Fast-Medium'} Specialist`,
+            speedKmh: (bowl.bowling_style || "").toLowerCase().includes("spin") ? 88.5 : 138.0,
+            pitchLineLength: (bowl.bowling_style || "").toLowerCase().includes("spin") ? "4.5m Flighted Full Length" : "6.5m Hard Length into Ribs",
+            bounceHeightM: (bowl.bowling_style || "").toLowerCase().includes("spin") ? 1.15 : 1.55,
+            falseShotPct: 32.0 + (i * 3),
+            intendedShot: "Attacking stroke targeting boundary rope",
+            dismissalRisk: (bowl.bowling_style || "").toLowerCase().includes("spin") ? "Grip and turn inducing mistimed lofted catch" : "Steep bounce producing top edge or caught behind",
+            fieldingPreset: "Tactical Dismissal Trap",
+            keyFielders: ["Deep Mid-Wicket", "Long-On", "Deep Backward Square", "Cover"],
+            fantasyDirective: `Key fixture duel: ${bowl.name} expected to challenge ${bat.name}. High impact on captaincy rankings.`,
+            advantage: i % 2 === 0 ? "BOWLER_DOMINANT" : "BATTER_DOMINANT"
+          });
+        }
+      }
+      if (pairs.length > 0) return pairs;
+    }
+    return MATCHUP_PRESETS;
+  }, [currentBattles, currentPlayers]);
+
+  const [selectedDuelId, setSelectedDuelId] = useState<string>(dynamicMatchups[0]?.id || "hetmyer_mayank");
+
+  React.useEffect(() => {
+    if (dynamicMatchups.length > 0 && !dynamicMatchups.some(m => m.id === selectedDuelId)) {
+      setSelectedDuelId(dynamicMatchups[0].id);
+    }
+  }, [dynamicMatchups, selectedDuelId]);
+
+  const activeDuel = dynamicMatchups.find((m) => m.id === selectedDuelId) || dynamicMatchups[0] || MATCHUP_PRESETS[0];
 
   return (
     <div className="space-y-6 animate-fadeIn">
@@ -322,7 +383,7 @@ export const PitchLab: React.FC = () => {
               onChange={(e) => setSelectedDuelId(e.target.value)}
               className="bg-stone-100 border border-stone-300 rounded-xl px-3 py-1.5 text-xs font-sans text-stone-800 font-bold focus:outline-none focus:border-stone-300"
             >
-              {MATCHUP_PRESETS.map((m) => (
+              {dynamicMatchups.map((m) => (
                 <option key={m.id} value={m.id}>
                   {m.batterName} vs {m.bowlerName} ({m.speedKmh} km/h)
                 </option>

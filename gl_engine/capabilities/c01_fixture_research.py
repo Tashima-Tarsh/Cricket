@@ -9,16 +9,17 @@ class CricketFixtureResearch:
         
     def execute(self) -> Dict[str, Any]:
         venue = self.match_info.get("venue", {})
-        weather = self.match_info.get("weather", {})
+        v_name = venue.get("name", "Match Venue")
+        b_dims = venue.get("boundary_dimensions", "Standard boundary profile")
         
         return {
             "capability": "cricket-fixture-research",
-            "series": self.match_info.get("series", "T20I Bilateral Series 2026"),
-            "match": self.match_info.get("match", "India vs West Indies"),
-            "format": "T20 International (20 Overs per side)",
-            "venue_name": venue.get("name", "Eden Gardens, Kolkata"),
-            "city": venue.get("city", "Kolkata"),
-            "ground_dimensions": venue.get("boundary_dimensions", "Square 66m, Straight 72m"),
-            "status": "Scheduled / Active Match Day",
-            "research_notes": "Iconic high-scoring venue with true bounce and rapid outfield. Evening games feature heavy dew."
+            "series": self.match_info.get("series", "T20 International Series"),
+            "match": self.match_info.get("match", self.match_info.get("name", "Scheduled Fixture")),
+            "format": self.match_info.get("format", "T20 International (20 Overs per side)"),
+            "venue_name": v_name,
+            "city": venue.get("city", "Host City"),
+            "ground_dimensions": b_dims,
+            "status": self.match_info.get("status", "Scheduled / Active Match Day"),
+            "research_notes": self.match_info.get("research_notes", f"Verified match venue: {v_name}. Ground dimensions: {b_dims}. Curated pitch and boundary profile active.")
         }

@@ -6,6 +6,7 @@ import { MatchSetupModal } from "./components/MatchSetupModal";
 
 // 12 Views
 const CommandCenter = lazy(() => import("./views/CommandCenter").then(module => ({ default: module.CommandCenter })));
+const MatchStudio = lazy(() => import("./views/MatchStudio").then(module => ({ default: module.MatchStudio })));
 const BallByBallLab = lazy(() => import("./views/BallByBallLab").then(module => ({ default: module.BallByBallLab })));
 const MatchArchive = lazy(() => import("./views/MatchArchive").then(module => ({ default: module.MatchArchive })));
 const PitchLab = lazy(() => import("./views/PitchLab").then(module => ({ default: module.PitchLab })));
@@ -55,6 +56,11 @@ const MainAppContent: React.FC = () => {
           battles={currentBattles}
           onNavigate={(tab) => navigateToWorkspace(tab)}
         />
+      )}
+
+      {/* Match & Lineup Studio */}
+      {activeTab === "match-studio" && (
+        <MatchStudio />
       )}
 
       {/* 2. Ball-by-Ball Lab */}

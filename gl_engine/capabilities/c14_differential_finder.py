@@ -40,16 +40,17 @@ class CricketDifferentialFinder:
         }
 
     def _generate_path_to_ceiling(self, p: Player) -> str:
-        if p.name == "Mayank Yadav":
-            return "150kph+ express pace rattle top order and clean up tail (3-4 wickets in quick succession)."
-        elif p.name == "Tilak Varma":
-            return "Stabilizes after early wicket, scores a rapid 70+ and snags 1 wicket with off-spin against WI lefties."
-        elif p.name == "Matthew Forde":
-            return "New ball swing removes Indian openers early in powerplay (2 wickets + maiden over)."
-        elif p.name == "Sherfane Rutherford":
-            return "Promoted as left-handed disruptor during middle overs, scores explosive 50* with 5 sixes."
-        elif p.name == "Washington Sundar":
-            return "Powerplay squeeze bowling (2 wickets under 6.0 econ) + valuable 25 runs down the order."
-        elif p.name == "Shamar Joseph":
-            return "Unplayable yorkers and bouncers in death overs picking 3 wickets."
-        return f"Outperforms baseline by fulfilling key {p.role} duties."
+        role = (p.role or "BAT").upper()
+        if role == "BOWL":
+            style = p.bowling_style or "Pace"
+            return f"Frontline {style} burst capturing 3+ wickets across powerplay and death phases with high dot-ball volume."
+        elif role == "AR":
+            return "Dual-threat leverage: contributes 25+ vital runs with the bat plus 1-2 key wickets in middle/death overs."
+        elif role == "WK":
+            return "Top-order boundary surge (40+ runs) combined with 2+ dismissals (catches/stumpings) behind the stumps."
+        else:
+            order = getattr(p, "batting_order_projected", 4)
+            if order <= 3:
+                return "Top-order aggression exploiting fielding restrictions to compile an explosive half-century (50+ runs)."
+            else:
+                return "Middle-overs acceleration and death finishing flurry with multiple boundaries and high strike rate."

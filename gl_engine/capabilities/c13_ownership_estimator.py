@@ -34,11 +34,14 @@ class CricketOwnershipEstimator:
             else:
                 ownership_tiers["ultra_differential_under_20"].append(entry)
 
+        top_chalk = [p["name"] for p in ownership_tiers["chalk_mega_popular_over_70"][:3]]
+        chalk_desc = ", ".join(top_chalk) if top_chalk else "consensus marquee players"
+
         return {
             "capability": "cricket-ownership-estimator",
             "ownership_tiers": ownership_tiers,
             "gl_field_meta_insights": [
-                "Over 80% of fantasy lineups will blindly include Abhishek Sharma, Axar Patel, and Arshdeep Singh.",
+                f"Consensus field heavily concentrates ownership on {chalk_desc}.",
                 "Fading or under-weighting 1 of the top 3 chalk players unlocks massive leverage in 20-team Grand League portfolios.",
                 "Winning GL lineups historically contain 2 to 4 players with sub-35% ownership."
             ]

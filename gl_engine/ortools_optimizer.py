@@ -317,8 +317,12 @@ class ORToolsCricketOptimizer:
                 score *= scenario.get("batting_boost", 1.0)
             if p.projected_ownership < 35:
                 score *= scenario.get("ownership_boost", 1.0)
-            # Scenario team bias
-            if p.team == "IND":
+            # Scenario team bias (Dynamic for any fixture)
+            if scenario.get("team_biases"):
+                score *= scenario["team_biases"].get(p.team, 1.0)
+            elif p.team == scenario.get("favored_team"):
+                score *= scenario.get("team_bias", 1.15)
+            elif p.team == "IND":
                 score *= scenario.get("ind_bias", 1.0)
             elif p.team == "WI":
                 score *= scenario.get("wi_bias", 1.0)

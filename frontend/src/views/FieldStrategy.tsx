@@ -49,7 +49,7 @@ const STANDARD_PRESETS: FieldSettingPreset[] = [
       { id: "point_ring", name: "Backward Point", x: 20, y: 5, isInsideCircle: true, isCatching: false },
       { id: "mid_wicket_ring", name: "Short Mid-Wicket", x: -16, y: -6, isInsideCircle: true, isCatching: false },
       { id: "deep_point", name: "Deep Backward Point", x: 38, y: 12, isInsideCircle: false, isCatching: false },
-      { id: "deep_cover", name: "Deep Extra Cover", x: 34, y: -22, isInsideCircle: false, isCatching: false },
+      { id: "cover_sweeper", name: "Cover Sweeper Ring", x: 22, y: -14, isInsideCircle: true, isCatching: false },
       { id: "long_off", name: "Long-Off", x: 12, y: -38, isInsideCircle: false, isCatching: false },
       { id: "long_on", name: "Long-On", x: -12, y: -38, isInsideCircle: false, isCatching: false },
       { id: "deep_mid_wicket", name: "Deep Mid-Wicket", x: -36, y: -18, isInsideCircle: false, isCatching: false },
@@ -120,7 +120,20 @@ export const FieldStrategy: React.FC = () => {
 
   const handleApplyPreset = (preset: FieldSettingPreset) => {
     setActivePreset(preset);
-    setFielders(preset.fielders); setIsSaved(false); setSaveMessage("Unsaved preset.");
+    let appliedFielders = preset.fielders;
+    if (isWomens && preset.category !== "Powerplay") {
+      let outsideCount = 0;
+      appliedFielders = appliedFielders.map((f) => {
+        if (!f.isInsideCircle) {
+          outsideCount++;
+          if (outsideCount > 4) {
+            return { ...f, x: Math.round(f.x * 0.5), y: Math.round(f.y * 0.5), isInsideCircle: true };
+          }
+        }
+        return f;
+      });
+    }
+    setFielders(appliedFielders); setIsSaved(false); setSaveMessage("Unsaved preset.");
     if (preset.category === "Powerplay") setSelectedPhase("Powerplay");
     else if (preset.category === "Death") setSelectedPhase("Death");
     else setSelectedPhase("Middle");

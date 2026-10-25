@@ -478,9 +478,9 @@ def get_live_matches():
     }
 
 @app.get("/api/live/toss-feed")
-def get_live_toss_feed():
-    """Returns real-time ground truth for IND vs WI: toss status, pitch inspection, weather & commentary."""
-    feed = get_ind_wi_live_toss_feed()
+def get_live_toss_feed(match_id: Optional[str] = None):
+    """Returns real-time match state, toss status, pitch inspection, weather & commentary."""
+    feed = get_ind_wi_live_toss_feed(match_id=match_id)
     return {
         "status": "success",
         "feed": feed

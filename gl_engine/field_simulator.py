@@ -55,13 +55,42 @@ class SyntheticFieldSimulator:
                         break
         return opponents
 
+    def _build_correlation_matrix(self, pitch: str = "flat") -> np.ndarray:
+        """Constructs cricket match correlation matrix across active players."""
+        k = len(self.players)
+        base = {
+            ("same", "BAT", "BAT"): 0.34, ("same", "BOWL", "BOWL"): 0.22, ("same", "AR", "AR"): 0.16,
+            ("same", "AR", "BOWL"): 0.14, ("same", "AR", "BAT"): 0.11, ("same", "WK", "BAT"): 0.20,
+            ("same", "WK", "BOWL"): 0.18, ("opp", "BAT", "BOWL"): -0.26, ("opp", "AR", "BOWL"): -0.17,
+            ("opp", "BAT", "BAT"): -0.11, ("opp", "WK", "BOWL"): -0.14
+        }
+        c = np.eye(k)
+        for i in range(k):
+            a = self.players[i]
+            for j in range(i + 1, k):
+                b = self.players[j]
+                rel = "same" if a.team == b.team else "opp"
+                r = base.get((rel, a.role, b.role), base.get((rel, b.role, a.role), 0.02))
+                if rel == "same" and a.role == "BAT" and b.role == "BAT":
+                    gap = abs(getattr(a, "batting_order_projected", 5) - getattr(b, "batting_order_projected", 5))
+                    r *= max(0.35, 1.0 - 0.16 * gap)
+                c[i, j] = c[j, i] = r
+        # Repair PSD
+        c = (c + c.T) / 2.0
+        w, v = np.linalg.eigh(c)
+        c = v @ np.diag(np.clip(w, 1e-6, None)) @ v.T
+        d = np.sqrt(np.diag(c))
+        return c / np.outer(d, d)
+
     def simulate_contest_distribution(
         self,
         candidate_lineups: List[Lineup],
-        n_simulated_brackets: int = 1000
+        n_simulated_brackets: int = 1000,
+        use_copula: bool = False
     ) -> List[Dict[str, Any]]:
         """Simulates matches where player fantasy scores are sampled from Monte Carlo distributions,
         measuring each candidate lineup's rank against a synthetic competing opponent field.
+        Supports both vectorized standard Monte Carlo and Gaussian Copula correlated draws.
         """
         np.random.seed(42)
         n_opponents = 1200
@@ -72,6 +101,7 @@ class SyntheticFieldSimulator:
         # Pre-compute player distributions
         player_means = {p.id: p.projected_points for p in self.players}
         player_scales = {p.id: max(6.0, (p.ceiling_score - p.floor_score) / 4.0) for p in self.players}
+        L = np.linalg.cholesky(self._build_correlation_matrix()) if use_copula else None
 
         # Run Monte Carlo trials
         for lineup in candidate_lineups:
@@ -103,7 +133,12 @@ class SyntheticFieldSimulator:
                     opponent_weights[row, player_index[pid]] = 2.0 if pid == opponent["c_id"] else 1.5 if pid == opponent["vc_id"] else 1.0
             for start in range(0, n_simulated_brackets, 250):
                 count = min(250, n_simulated_brackets - start)
-                points = np.maximum(0.0, np.random.normal(means, scales, size=(count, len(player_ids))))
+                if use_copula and L is not None:
+                    std_normals = np.random.standard_normal((count, len(player_ids)))
+                    correlated_normals = std_normals @ L.T
+                    points = np.maximum(0.0, means + scales * correlated_normals)
+                else:
+                    points = np.maximum(0.0, np.random.normal(means, scales, size=(count, len(player_ids))))
                 scores = points @ candidate_weights
                 opponent_scores = points @ opponent_weights.T
                 # Equal lineups tie; floating-point reduction order must not create a higher rank.
@@ -150,6 +185,7 @@ class SyntheticFieldSimulator:
                     "SOLITARY PODIUM CANDIDATE (Low Duplication Risk)" if expected_duplicates == 0 and p_top_01 > 0.05
                     else ("STRONG CASH/GPP HYBRID" if p_top_1 > 0.25 else "DIFFERENTIAL LEVERAGE ROSTER")
                 ),
+                "simulation_engine": "GAUSSIAN_COPULA_CORRELATED_MONTE_CARLO",
                 "calibration_status": "MODEL_ESTIMATE_UNCALIBRATED"
             })
 

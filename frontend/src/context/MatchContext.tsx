@@ -92,7 +92,7 @@ export const MatchContextProvider: React.FC<{ children: React.ReactNode }> = ({ 
     const params = new URLSearchParams(window.location.search);
     const tabParam = params.get("tab") as WorkspaceTab;
     const validTabs: WorkspaceTab[] = [
-      "command-center", "player-intel", "battle-arena", "field-strategy",
+      "command-center", "match-studio", "player-intel", "battle-arena", "field-strategy",
       "ball-by-ball", "pitch-lab", "scenario-lab", "game-plan",
       "series-intelligence", "fantasy-lab", "ai-analyst", "providers"
     ];

@@ -34,9 +34,10 @@ interface NavItem {
 
 const groups: { label: string; items: NavItem[] }[] = [
   {
-    label: "Match & Feed",
+    label: "Match & Studio",
     items: [
       { id: "command-center", label: "Command Center", icon: LayoutDashboard },
+      { id: "match-studio", label: "Match & Lineup Studio", icon: Sliders },
       { id: "ball-by-ball", label: "Ball by Ball 3D", icon: Activity },
       { id: "series-intelligence", label: "Match Archive", icon: Archive }
     ]

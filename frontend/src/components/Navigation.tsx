@@ -122,10 +122,10 @@ export const Header: React.FC<HeaderProps> = ({
           <span className="w-2.5 h-2.5 rounded-full bg-rose-500 animate-pulse shadow-[0_0_8px_rgba(244,63,94,0.6)]" />
           <div className="flex flex-col text-left">
             <span className="text-xs font-bold text-white group-hover:text-cyan-300 transition-colors">
-              IND vs WI (5th T20I)
+              {match.name || `${match.teams.home.code} vs ${match.teams.away.code}`}
             </span>
             <span className="text-[10px] font-mono text-emerald-400">
-              Bengaluru • Today 7 PM
+              {match.venue.city || match.venue.name} &bull; {match.format || "T20"}
             </span>
           </div>
           <ChevronDown size={14} className="text-slate-400 group-hover:text-white transition-colors" />

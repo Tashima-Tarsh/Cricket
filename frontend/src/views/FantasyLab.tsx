@@ -62,7 +62,9 @@ export const FantasyLab: React.FC<FantasyLabProps> = ({ lineups: initialLineups,
   const [isSyndicateDeckOpen, setIsSyndicateDeckOpen] = useState<boolean>(false);
 
   // Interactive Scenario Builder states
-  const [selectedScenarioScript, setSelectedScenarioScript] = useState<string>("IND_BOWLS_FIRST");
+  const homeCode = currentMatch?.teams?.home?.code || currentMatch?.teams?.home?.name || "HOME";
+  const awayCode = currentMatch?.teams?.away?.code || currentMatch?.teams?.away?.name || "AWAY";
+  const [selectedScenarioScript, setSelectedScenarioScript] = useState<string>("CHASE_DEW");
   const [selectedCaptainOption, setSelectedCaptainOption] = useState<string>("AUTO");
   const [activeScenarioFeedback, setActiveScenarioFeedback] = useState<string | null>(null);
 
@@ -620,11 +622,12 @@ export const FantasyLab: React.FC<FantasyLabProps> = ({ lineups: initialLineups,
               onChange={(e) => setSelectedScenarioScript(e.target.value)}
               className="w-full bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-xs font-mono text-white focus:outline-none focus:border-cyan-500"
             >
-              <option value="IND_BOWLS_FIRST">India Bowls First (Chasing + Dew Advantage)</option>
-              <option value="WI_BOWLS_FIRST">West Indies Bowls First (Defending 185+)</option>
-              <option value="PACE_DOMINANCE">Pace Dominance (59.6% Wkts to Express Fast Bowlers)</option>
-              <option value="RAIN_SHORTENED_10OV">Rain-Shortened Match (10-12 Overs DLS Sprint)</option>
-              <option value="HIGH_SCORE_SHOOTOUT">220+ Boundary Shootout (Small 61m Boundaries)</option>
+              <option value="CHASE_DEW">{homeCode} Bowls First (Chasing + Dew Advantage)</option>
+              <option value="DEFEND_TOTAL">{awayCode} Bowls First (Defending Target)</option>
+              <option value="PACE_DOMINANCE">Pace Dominance (Express Pace & Death Overs Ceiling)</option>
+              <option value="SPIN_CHOKE">Spin Choke (Turning Deck Middle Overs Squeeze)</option>
+              <option value="RAIN_SHORTENED_10OV">Rain-Shortened Sprint (DLS Powerplay Blitz)</option>
+              <option value="HIGH_SCORE_SHOOTOUT">200+ Boundary Shootout (Small Boundary Deck)</option>
               <option value="ANTI_CHALK_79_85">Anti-Chalk Leverage (79-85 Cr Budget Band)</option>
             </select>
           </div>
@@ -650,12 +653,14 @@ export const FantasyLab: React.FC<FantasyLabProps> = ({ lineups: initialLineups,
               className="w-full bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-xs font-mono text-white focus:outline-none focus:border-cyan-500"
             >
               <option value="AUTO">⚡ Auto Highest Leverage Captain</option>
-              <option value="TILAK">Tilak Varma (1.23% C Leverage - 80% DT Rate)</option>
-              <option value="MAYANK">Mayank Yadav (0.36% C Express 152kph Pacer)</option>
-              <option value="JOSEPH">Shamar Joseph (0.17% C 148kph Fast Bowler)</option>
-              <option value="ABHISHEK">Abhishek Sharma (25.8% C Chalk Opener)</option>
-              <option value="HOPE">Shai Hope (24.1% C Anchor WK)</option>
-              <option value="RUTHERFORD">Sherfane Rutherford (11.4% C Finisher)</option>
+              {players
+                .slice()
+                .sort((a, b) => (b.ceiling_score || b.projected_points) - (a.ceiling_score || a.projected_points))
+                .map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.name} ({p.role} • {p.team} • {p.credits} Cr • {p.projected_ownership}% Own)
+                  </option>
+                ))}
             </select>
           </div>
         </div>
@@ -665,9 +670,10 @@ export const FantasyLab: React.FC<FantasyLabProps> = ({ lineups: initialLineups,
           <div className="text-xs font-sans text-slate-300 flex items-center gap-2">
             <ShieldCheck size={16} className="text-emerald-400 shrink-0" />
             <span className="truncate">
-              {selectedScenarioScript === "IND_BOWLS_FIRST" && "India death pacers (Arshdeep/Mayank) + WI middle-order anchors."}
-              {selectedScenarioScript === "WI_BOWLS_FIRST" && "WI top order (Hope/Hetmyer) + India chase anchors (Tilak/Samson)."}
-              {selectedScenarioScript === "PACE_DOMINANCE" && "Stacks 5 fast bowlers to exploit Chinnaswamy 59.6% pace wicket ratio."}
+              {selectedScenarioScript === "CHASE_DEW" && `${homeCode} frontline pacers + ${awayCode} middle-order anchors.`}
+              {selectedScenarioScript === "DEFEND_TOTAL" && `${awayCode} top order + ${homeCode} chase accelerators.`}
+              {selectedScenarioScript === "PACE_DOMINANCE" && "Stacks express pace bowlers to exploit true bounce and death wickets."}
+              {selectedScenarioScript === "SPIN_CHOKE" && "Fingerspinners & wristspinners choking run rate on gripping surface."}
               {selectedScenarioScript === "RAIN_SHORTENED_10OV" && "DLS Sprint: Excludes middle order; locks top-3 batters + death yorkers."}
               {selectedScenarioScript === "HIGH_SCORE_SHOOTOUT" && "Flat track: Pure boundary hitters, fading accumulators."}
               {selectedScenarioScript === "ANTI_CHALK_79_85" && "Leaves 15+ Cr unspent. Guarantees 0 duplicates and 100% of 1st prize."}

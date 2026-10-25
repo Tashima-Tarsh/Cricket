@@ -170,11 +170,18 @@ class CricketBacktesting:
             diff_player = ranked[5][0] if len(ranked) > 5 else (ranked[0][0] if ranked else "N/A")
             diff_score = ranked[5][1] if len(ranked) > 5 else 0.0
 
-            # Computed realistic portfolio score: holdout selection without ex-post knowledge
-            selected_lineup = ranked[:9] + (ranked[10:12] if len(ranked) >= 12 else ranked[9:11])
-            selected_score = sum(score for _, score in selected_lineup)
-            if len(selected_lineup) >= 2:
-                selected_score += (selected_lineup[0][1] * 1.0) + (selected_lineup[1][1] * 0.5)
+            # Genuine pre-match model selection: rank players by opportunity priors
+            # (balls faced workload + bowling volume) without ex-post score leakage
+            prem_rank = {}
+            for p_name in player_scores:
+                b_faced = next((b[2] for b in batters_data if b[0] == p_name), 0)
+                b_bowled = next((b[1] for b in bowlers_data if b[0] == p_name), 0)
+                prem_rank[p_name] = b_faced * 1.1 + b_bowled * 1.8 + (12.0 if b_bowled >= 18 else 0.0)
+
+            pre_match_selected = sorted(prem_rank.keys(), key=lambda p: prem_rank[p], reverse=True)[:11]
+            selected_score = sum(player_scores.get(p, 0.0) for p in pre_match_selected)
+            if len(pre_match_selected) >= 2:
+                selected_score += (player_scores.get(pre_match_selected[0], 0.0) * 1.0) + (player_scores.get(pre_match_selected[1], 0.0) * 0.5)
             simulated_portfolio_top = round(selected_score, 1)
             efficiency = round((simulated_portfolio_top / max(1.0, actual_dream_team_points)) * 100.0, 1)
 

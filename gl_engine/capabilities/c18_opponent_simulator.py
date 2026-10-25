@@ -48,6 +48,7 @@ class CricketOpponentSimulator:
                 "expected_duplicates_in_1M_field": expected_duplicates,
                 "duplication_risk_level": duplication_risk,
                 "grand_league_leverage_score": leverage_score,
+                "calibration_status": "HEURISTIC_COMBINATORIC_ESTIMATE",
                 "uniqueness_rating": "⭐️⭐️⭐️⭐️⭐️" if expected_duplicates == 0 else (
                     "⭐️⭐️⭐️⭐️" if expected_duplicates < 10 else "⭐️⭐️"
                 )

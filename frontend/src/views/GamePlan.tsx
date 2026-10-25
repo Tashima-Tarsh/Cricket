@@ -13,7 +13,7 @@ import {
   ArrowRight
 } from "lucide-react";
 import { useMatchContext } from "../context/MatchContext";
-import { OverPlan, Player } from "../types";
+import { OverPlan, Player, TacticalObjective } from "../types";
 
 const INITIAL_IND_GAMEPLAN: OverPlan[] = [
   // Powerplay (Overs 1-6)
@@ -281,11 +281,94 @@ const INITIAL_IND_GAMEPLAN: OverPlan[] = [
   }
 ];
 
+function generateMatchGamePlan(players: Player[], bowlingTeam: string, battingTeam: string): OverPlan[] {
+  const bowlers = players.filter(p => p.team === bowlingTeam && (p.role === "BOWL" || p.role === "AR"));
+  const batters = players.filter(p => p.team === battingTeam).sort((a, b) => (a.batting_order || 5) - (b.batting_order || 5));
+  
+  if (bowlers.length === 0) {
+    return INITIAL_IND_GAMEPLAN;
+  }
+
+  const pacers = bowlers.filter(b => (b.bowling_style || "").toLowerCase().includes("fast") || (b.bowling_style || "").toLowerCase().includes("pace") || (b.bowling_style || "").toLowerCase().includes("medium"));
+  const spinners = bowlers.filter(b => (b.bowling_style || "").toLowerCase().includes("spin") || (b.bowling_style || "").toLowerCase().includes("break") || (b.bowling_style || "").toLowerCase().includes("orthodox") || (b.bowling_style || "").toLowerCase().includes("slow"));
+  const sortedBowlers = [...pacers, ...spinners, ...bowlers];
+  const uniqueBowlers = Array.from(new Set(sortedBowlers));
+
+  const plan: OverPlan[] = [];
+  const counts: Record<string, number> = {};
+  let lastBowlerId: string | null = null;
+
+  for (let over = 1; over <= 20; over++) {
+    const phase: "Powerplay" | "Middle" | "Death" = over <= 6 ? "Powerplay" : over <= 15 ? "Middle" : "Death";
+    
+    let pool = uniqueBowlers;
+    if (phase === "Powerplay" && pacers.length >= 2) {
+      pool = pacers;
+    } else if (phase === "Middle" && spinners.length >= 2) {
+      pool = [...spinners, ...bowlers];
+    } else if (phase === "Death" && pacers.length >= 2) {
+      pool = pacers;
+    }
+
+    let eligible = pool.filter(b => b.id !== lastBowlerId && (counts[b.id] || 0) < 4);
+    if (eligible.length === 0) {
+      eligible = uniqueBowlers.filter(b => b.id !== lastBowlerId && (counts[b.id] || 0) < 4);
+    }
+    if (eligible.length === 0) {
+      eligible = uniqueBowlers.filter(b => (counts[b.id] || 0) < 4);
+    }
+    const chosen = eligible[0] || uniqueBowlers[over % uniqueBowlers.length];
+    counts[chosen.id] = (counts[chosen.id] || 0) + 1;
+    lastBowlerId = chosen.id;
+
+    const expBatters = phase === "Powerplay" 
+      ? batters.slice(0, 2).map(b => b.name)
+      : phase === "Middle"
+      ? batters.slice(1, 5).map(b => b.name)
+      : batters.slice(4, 8).map(b => b.name);
+
+    const tacticalObjective: TacticalObjective = phase === "Powerplay" 
+      ? "Wicket Strike" 
+      : phase === "Death" 
+      ? "Death Yorker Lock" 
+      : "Run Containment";
+
+    plan.push({
+      overNumber: over,
+      phase,
+      assignedBowlerId: chosen.id,
+      assignedBowlerName: chosen.name,
+      expectedBatters: expBatters.length > 0 ? expBatters : ["Top Order Batter"],
+      objective: tacticalObjective,
+      targetLineLength: phase === "Death" ? "Full wide yorkers & hard length bouncers" : phase === "Powerplay" ? "Good length top of off-stump with swing" : "Stump-to-stump tight line with flight variations",
+      fieldPresetId: phase === "Powerplay" ? "powerplay_ring" : phase === "Death" ? "death_lock" : "middle_squeeze",
+      matchupRationale: `${chosen.name} (${chosen.bowling_style || 'Bowler'}) targeting opposition ${phase.toLowerCase()} phase. Opponent dismissal probability high.`,
+      riskRating: phase === "Death" ? "Moderate" : "Low",
+      confidencePct: 80 + (over % 15)
+    });
+  }
+  return plan;
+}
+
 export const GamePlan: React.FC = () => {
-  const { currentPlayers, navigateToWorkspace } = useMatchContext();
-  const [bowlingTeam, setBowlingTeam] = useState<"IND" | "WI">("IND");
+  const { currentPlayers, currentMatch, navigateToWorkspace } = useMatchContext();
+  const teams = Array.from(new Set(currentPlayers.map(p => p.team).filter(Boolean)));
+  const defaultBowlingTeam = teams[0] || currentMatch?.teams?.home?.code || currentMatch?.teams?.home?.name || "IND";
+  const [bowlingTeam, setBowlingTeam] = useState<string>(defaultBowlingTeam);
   const [gamePlan, setGamePlan] = useState<OverPlan[]>(INITIAL_IND_GAMEPLAN);
   const [selectedOver, setSelectedOver] = useState<number>(1);
+
+  React.useEffect(() => {
+    if (teams.length > 0 && !teams.includes(bowlingTeam)) {
+      setBowlingTeam(teams[0]);
+    }
+  }, [teams, bowlingTeam]);
+
+  React.useEffect(() => {
+    const oppTeam = teams.find(t => t !== bowlingTeam) || teams[1] || "OPP";
+    const dynamicPlan = generateMatchGamePlan(currentPlayers, bowlingTeam, oppTeam);
+    setGamePlan(dynamicPlan);
+  }, [bowlingTeam, currentPlayers, currentMatch?.id]);
 
   // Available bowlers for selected bowling team
   const availableBowlers = currentPlayers.filter(
@@ -352,26 +435,40 @@ export const GamePlan: React.FC = () => {
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-1 bg-stone-100 p-1.5 rounded-xl border border-stone-300">
             <span className="text-xs font-sans text-stone-800 uppercase px-2">Bowling Side:</span>
-            <button
-              onClick={() => setBowlingTeam("IND")}
-              className={`px-3 py-1.5 rounded-lg text-xs font-sans font-bold transition-all ${
-                bowlingTeam === "IND"
-                  ? "bg-stone-100 text-stone-800 "
-                  : "text-stone-800 text-stone-800"
-              }`}
-            >
-              INDIA BOWLING
-            </button>
-            <button
-              onClick={() => setBowlingTeam("WI")}
-              className={`px-3 py-1.5 rounded-lg text-xs font-sans font-bold transition-all ${
-                bowlingTeam === "WI"
-                  ? "bg-stone-100 text-stone-800 "
-                  : "text-stone-800 text-stone-800"
-              }`}
-            >
-              WI BOWLING
-            </button>
+            {teams.length > 0 ? (
+              teams.map((t) => (
+                <button
+                  key={t}
+                  onClick={() => setBowlingTeam(t)}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-sans font-bold transition-all ${
+                    bowlingTeam === t
+                      ? "bg-white text-stone-900 border border-stone-300 shadow-sm"
+                      : "text-stone-600 hover:text-stone-900"
+                  }`}
+                >
+                  {t} BOWLING
+                </button>
+              ))
+            ) : (
+              <>
+                <button
+                  onClick={() => setBowlingTeam("IND")}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-sans font-bold transition-all ${
+                    bowlingTeam === "IND" ? "bg-white text-stone-900" : "text-stone-600"
+                  }`}
+                >
+                  INDIA BOWLING
+                </button>
+                <button
+                  onClick={() => setBowlingTeam("WI")}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-sans font-bold transition-all ${
+                    bowlingTeam === "WI" ? "bg-white text-stone-900" : "text-stone-600"
+                  }`}
+                >
+                  WI BOWLING
+                </button>
+              </>
+            )}
           </div>
         </div>
       </div>
