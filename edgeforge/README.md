@@ -16,35 +16,52 @@ Clean, zero-hardcode, simulation-first Grand League engine for cricket fantasy.
 edgeforge/
 ├── models/          # Pydantic schemas (Player, Fixture, Lineup, Provenance)
 ├── score/           # Dream11Scorer (T20 + ODI, includes dots)
-├── ingest/          # RosterResolver (never fabricates)
-├── model/           # Copula, correlation, distributions, simulator
-├── optimize/        # OR-Tools rank-aware portfolio (next)
-├── provenance/      # helpers
-└── api/             # FastAPI routes (next)
+├── ingest/          # RosterResolver + in-memory stores (never fabricates)
+├── model/           # Copula + MatchSimulator + FieldSampler
+├── optimize/        # RankOptimizer (OR-Tools, rank-percentile objective)
+├── api/             # Clean FastAPI routes under /edge/*
+└── app.py           # Standalone FastAPI entrypoint
 ```
 
-## Quick Start (Phase 0/1)
+## Quick Start
 
-```python
-from edgeforge.score import Dream11Scorer
-from edgeforge.models import Player, DataProvenance, Role
-from datetime import datetime
+```bash
+pip install -e .
+pip install ortools fastapi uvicorn
 
-scorer = Dream11Scorer()
-result = scorer.calculate(
-    runs=67, balls_faced=42, fours=6, sixes=3,
-    wickets=0, is_playing=True, match_format="T20"
-)
-print(result.to_dict())
+uvicorn edgeforge.app:app --reload --port 8001
 ```
 
-## Next Phases
+### Core API
 
-- Phase 2: Full Game-Script Copula simulator + field sampling
-- Phase 3: Rank-percentile OR-Tools optimizer with ownership constraints
-- Phase 4: Live confirmed-XI + toss watcher
-- Phase 5: Backtest harness & public calibration report
+| Method | Path | Purpose |
+|--------|------|---------|
+| GET | `/edge/health` | Health + loaded fixture count |
+| POST | `/edge/fixtures` | Load a verified fixture + players |
+| GET | `/edge/fixtures` | List loaded fixture IDs |
+| GET | `/edge/roster/{fixture_id}` | Verified roster only (404 if missing) |
+| POST | `/edge/score` | Official Dream11 points (includes dots) |
+| POST | `/edge/optimize` | Rank-aware portfolio (OR-Tools + simulation) |
 
-## Migration from old gl_engine
+## Components
 
-Keep old code running. New endpoints and CLI will live under `/edge` or `edgeforge` namespace until cut-over.
+### Phase 0+1
+- Strict schemas with mandatory provenance
+- Complete Dream11 scorer (T20/ODI + dots)
+- RosterResolver that refuses synthetic players
+
+### Phase 2 – Simulator + Field
+- MatchSimulator: game-script correlation + Gaussian copula
+- FieldSampler: ownership-weighted opponent field
+- Rank percentile helpers
+
+### Phase 3 – Rank Optimizer
+- OR-Tools CP-SAT
+- Dynamic team balance (no hard-coded team names)
+- Unspent credit band, differentials, role constraints
+- Portfolio diversity + post-solve rank percentiles
+
+### Clean API
+- All routes under `/edge/*`
+- Explicit 404 on missing data
+- No fallback to hardcoded players
