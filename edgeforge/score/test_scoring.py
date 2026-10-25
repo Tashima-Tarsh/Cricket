@@ -1,30 +1,38 @@
-"""Basic tests for the clean Dream11 scorer."""
+"""Golden tests against official Dream11 T20 table (dream11.com)."""
 from edgeforge.score.dream11 import Dream11Scorer
 
 
-def test_basic_t20_batter():
-    scorer = Dream11Scorer()
-    res = scorer.calculate(
-        runs=52, balls_faced=35, fours=5, sixes=2,
-        is_playing=True, match_format="T20"
+def test_boundary_and_six_bonuses():
+    s = Dream11Scorer()
+    r = s.calculate(runs=40, balls_faced=30, fours=4, sixes=2, is_playing=True)
+    assert r.total == 78.0, r.total
+
+
+def test_wicket_and_dot():
+    s = Dream11Scorer()
+    r = s.calculate(
+        wickets=2, bowled_lbw=1, dots=8, overs_bowled=4.0, runs_conceded=24,
+        is_playing=True,
     )
-    assert res.total > 70
-    assert "batting" in res.breakdown
+    assert r.total == 82.0, r.total
 
 
-def test_dot_balls_count():
-    scorer = Dream11Scorer()
-    res = scorer.calculate(
-        overs_bowled=4.0, runs_conceded=28, wickets=1, dots=12,
-        is_playing=True, match_format="T20"
-    )
-    assert res.breakdown["dot_balls"] == 12.0
-    assert res.total > 40
+def test_milestone_highest_only():
+    s = Dream11Scorer()
+    r = s.calculate(runs=100, balls_faced=55, fours=8, sixes=4, is_playing=True)
+    assert r.breakdown["batting"] == 100 + 32 + 24 + 16 + 6
+    assert r.total == 100 + 32 + 24 + 16 + 6 + 4
 
 
-def test_duck_penalty():
-    scorer = Dream11Scorer()
-    res = scorer.calculate(
-        runs=0, balls_faced=4, is_playing=True, match_format="T20"
-    )
-    assert res.breakdown["batting"] == -2.0
+def test_sr_no_penalty_at_100():
+    s = Dream11Scorer()
+    r = s.calculate(runs=20, balls_faced=20, is_playing=False)
+    assert r.total == 20.0
+
+
+if __name__ == "__main__":
+    test_boundary_and_six_bonuses()
+    test_wicket_and_dot()
+    test_milestone_highest_only()
+    test_sr_no_penalty_at_100()
+    print("all golden scoring tests passed")
