@@ -19,7 +19,8 @@ import {
   Radio,
   RefreshCw,
   Sparkles,
-  CloudRain
+  CloudRain,
+  Flame
 } from "lucide-react";
 import { useMatchContext } from "../context/MatchContext";
 import { WorkspaceTab } from "../types";
@@ -56,6 +57,7 @@ const groups: { label: string; items: NavItem[] }[] = [
   {
     label: "Optimization & AI",
     items: [
+      { id: "unique-engine", label: "🔥 Unique GL Engine", icon: Flame },
       { id: "fantasy-lab", label: "GL Lineup Solver", icon: Trophy },
       { id: "ai-analyst", label: "AI Analyst Query", icon: Bot },
       { id: "providers", label: "Data Providers Hub", icon: Database }

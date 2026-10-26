@@ -159,6 +159,7 @@ export interface DataProviderTelemetry {
 }
 
 export type WorkspaceTab = 
+  | "unique-engine"
   | "command-center"
   | "match-studio"
   | "player-intel"

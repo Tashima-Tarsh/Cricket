@@ -48,5 +48,7 @@ desktop.ini
 *.sw?
 
 *.egg-info/
+data/raw/
 *.egg-info/
+data/raw/
 

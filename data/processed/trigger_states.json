@@ -1,0 +1,47 @@
+{
+  "ind_w_vs_zim_w_2026_02": {
+    "match_id": "ind_w_vs_zim_w_2026_02",
+    "state": "LINEUP_LOCKED",
+    "t_minus_minutes": 25,
+    "toss_winner": "India",
+    "toss_decision": "bat",
+    "lineup_confirmed": true,
+    "confirmed_player_count": 22,
+    "last_poll_utc": "2026-10-26T19:45:17.040356+00:00",
+    "teams_generated_count": 7,
+    "alert": null,
+    "history": [
+      {
+        "state": "SCHEDULED",
+        "timestamp_utc": "2026-10-26T19:43:10.424134+00:00"
+      },
+      {
+        "state": "TOSS_DONE",
+        "timestamp_utc": "2026-10-26T19:43:12.574345+00:00",
+        "details": {
+          "toss_winner": "India",
+          "toss_decision": "bat",
+          "toss_detected_at_utc": "2026-10-26T19:43:12.574345+00:00",
+          "t_minus_minutes": 28
+        }
+      },
+      {
+        "state": "LINEUP_LOCKED",
+        "timestamp_utc": "2026-10-26T19:43:19.198569+00:00",
+        "details": {
+          "lineup_confirmed": true,
+          "confirmed_player_count": 22,
+          "teams_generated_count": 7,
+          "teams_artifact": "D:\\Downloads\\Cricket-main\\Cricket-main\\data\\processed\\teams_ind_w_vs_zim_w_2026_02.json",
+          "locked_pool_artifact": "D:\\Downloads\\Cricket-main\\Cricket-main\\data\\processed\\player_pool_ind_w_vs_zim_w_2026_02_locked.parquet",
+          "lineup_locked_at_utc": "2026-10-26T19:43:19.198569+00:00",
+          "t_minus_minutes": 25
+        }
+      }
+    ],
+    "toss_detected_at_utc": "2026-10-26T19:43:12.574345+00:00",
+    "teams_artifact": "D:\\Downloads\\Cricket-main\\Cricket-main\\data\\processed\\teams_ind_w_vs_zim_w_2026_02.json",
+    "locked_pool_artifact": "D:\\Downloads\\Cricket-main\\Cricket-main\\data\\processed\\player_pool_ind_w_vs_zim_w_2026_02_locked.parquet",
+    "lineup_locked_at_utc": "2026-10-26T19:43:19.198569+00:00"
+  }
+}

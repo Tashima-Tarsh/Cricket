@@ -16,6 +16,7 @@ const GamePlan = lazy(() => import("./views/GamePlan").then(module => ({ default
 const PlayerIntel = lazy(() => import("./views/PlayerIntel").then(module => ({ default: module.PlayerIntel })));
 const ScenarioLab = lazy(() => import("./views/ScenarioLab").then(module => ({ default: module.ScenarioLab })));
 const FantasyLab = lazy(() => import("./views/FantasyLab").then(module => ({ default: module.FantasyLab })));
+const UniqueEngineView = lazy(() => import("./views/UniqueEngineView").then(module => ({ default: module.UniqueEngineView })));
 const AIAnalyst = lazy(() => import("./views/AIAnalyst").then(module => ({ default: module.AIAnalyst })));
 const SettingsProviders = lazy(() => import("./views/SettingsProviders").then(module => ({ default: module.SettingsProviders })));
 
@@ -104,6 +105,11 @@ const MainAppContent: React.FC = () => {
       {/* 9. Scenario & DLS Lab */}
       {activeTab === "scenario-lab" && (
         <ScenarioLab />
+      )}
+
+      {/* Grand League Unique Team Engine */}
+      {activeTab === "unique-engine" && (
+        <UniqueEngineView />
       )}
 
       {/* 10. Fantasy Optimizer */}
