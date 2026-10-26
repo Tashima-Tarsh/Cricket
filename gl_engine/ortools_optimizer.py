@@ -134,12 +134,10 @@ class ORToolsCricketOptimizer:
         for i in range(n):
             model.Add(c[i] + v[i] <= x[i])
 
-        # Credits (scaled x10 for integer)
         credits = [int(round(p.credits * 10)) for p in self.players]
         model.Add(sum(x[i] * credits[i] for i in range(n)) >= int(min_credits * 10))
         model.Add(sum(x[i] * credits[i] for i in range(n)) <= int(max_credits * 10))
 
-        # Roles
         roles = {"WK": [], "BAT": [], "AR": [], "BOWL": []}
         for i, p in enumerate(self.players):
             roles.setdefault(p.role, []).append(i)
@@ -151,7 +149,6 @@ class ORToolsCricketOptimizer:
             model.Add(sum(x[i] for i in idxs) >= lo)
             model.Add(sum(x[i] for i in idxs) <= hi)
 
-        # Team balance (dynamic teams)
         teams_map: Dict[str, List[int]] = {}
         for i, p in enumerate(self.players):
             teams_map.setdefault(p.team, []).append(i)
@@ -200,14 +197,13 @@ class ORToolsCricketOptimizer:
                 if order > 3 and exp_ov < 3.0 and p.role != "BOWL":
                     model.Add(c[i] == 0)
 
-        # Objective: maximize projected points with C/VC multipliers
         scale = 10
         obj_terms = []
         for i, p in enumerate(self.players):
             pts = int(round((p.projected_points or 0) * scale))
             obj_terms.append(x[i] * pts)
-            obj_terms.append(c[i] * pts)  # extra 1x for captain -> 2x total
-            obj_terms.append(v[i] * int(round(pts * 0.5)))  # +0.5x for VC -> 1.5x
+            obj_terms.append(c[i] * pts)
+            obj_terms.append(v[i] * int(round(pts * 0.5)))
         model.Maximize(sum(obj_terms))
 
         solver = cp_model.CpSolver()
@@ -236,6 +232,8 @@ class ORToolsCricketOptimizer:
             team_balance[p.team] = team_balance.get(p.team, 0) + 1
 
         lineup = Lineup(
+            team_name=f"Team: {scenario.get('name', 'Custom Scenario')}",
+            scenario_tag=scenario.get("tag", "CUSTOM"),
             players=squad,
             captain=captain,
             vice_captain=vice_captain,
