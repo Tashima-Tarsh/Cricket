@@ -11,6 +11,8 @@ app = FastAPI(
     version="0.1.0",
 )
 
+from gl_engine.provenance import install_provenance
+install_provenance(app)
 app.include_router(router)
 
 

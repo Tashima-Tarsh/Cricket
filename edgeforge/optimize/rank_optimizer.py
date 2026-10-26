@@ -208,10 +208,12 @@ class RankOptimizer:
         csp = sum((p.projected_ownership or 0) for p in selected)
 
         return {
+            "provenance": DataProvenance(source="estimated", verification_status="SIMULATION").model_dump(mode="json"),
             "portfolio_index": port_idx,
             "player_ids": player_ids,
             "players": [
                 {
+                    "provenance": p.provenance.model_dump(mode="json"),
                     "id": p.id,
                     "name": p.name,
                     "team": p.team,

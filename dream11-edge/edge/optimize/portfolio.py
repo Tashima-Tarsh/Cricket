@@ -1,6 +1,7 @@
 """Rank-optimized unique portfolio. Objective is P(top alpha%), not E[score]."""
 from __future__ import annotations
 import numpy as np
+from gl_engine.provenance import DataProvenance
 from ..config import settings
 from .constraints import is_legal
 from .solver import solve_core
@@ -55,7 +56,10 @@ def build(ctx, sims, idx, fsc, n, rng, risk=0.0, locked=(), banned=()):
                     break
             if not found:
                 continue
-        pool.append(dict(squad=squad, cap=cap, vic=vic))
+        pool.append(dict(squad=squad, cap=cap, vic=vic, provenance=DataProvenance(
+            source="estimated", verification_status="SIMULATION",
+            notes="Uncalibrated simulated field; not an observed contest rank."
+        ).model_dump(mode="json")))
         seen.append(squad)
         cvc.add((cap, vic))
 

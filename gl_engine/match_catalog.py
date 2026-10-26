@@ -221,38 +221,15 @@ def get_match_data(match_id: Optional[str] = None) -> Dict[str, Any]:
     if canonical_id not in SERIES_FIXTURES:
         raise UnknownMatchError(f"Unknown or disconnected match: {canonical_id}")
 
-    # Load base players from bundled 5th match file
-    base_players = []
-    if MATCH_FILE_5TH.exists():
-        with open(MATCH_FILE_5TH, "r", encoding="utf-8") as f:
-            full_json = json.load(f)
-            base_players = full_json.get("players", [])
-
-    # If canonical fixture is in catalog, use its specific venue and match metadata
-    fixture_meta = dict(SERIES_FIXTURES[canonical_id], data_provenance="UNVERIFIED_BUNDLED_FIXTURE", status="BUNDLED FIXTURE | [VERIFY REQUIRED]")
-
-    
-    # Custom adjustments per fixture (ownership / stats tailored to match context)
-    players_copy = []
-    for p in base_players:
-        p_copy = dict(p)
-        # Adapt ownership & recent form if earlier match
-        if canonical_id == "ind_wi_2026_01":
-            # 1st match: Abhishek Sharma had higher novelty ownership, Arshdeep prime chalk
-            if p_copy["id"] == "ind_abhishek":
-                p_copy["projected_ownership"] = 82.5
-            elif p_copy["id"] == "ind_mayank":
-                p_copy["projected_ownership"] = 18.0  # Debut fixture
-        elif canonical_id == "ind_wi_2026_04":
-            # 4th match: Spinners Motie & Hosein were heavily owned on slow track
-            if p_copy["id"] == "wi_motie":
-                p_copy["projected_ownership"] = 52.0
-            elif p_copy["id"] == "wi_rutherford":
-                p_copy["projected_ownership"] = 48.0
-        players_copy.append(p_copy)
-
+    # A bundled roster belongs only to the fixture recorded in that file.
+    if not MATCH_FILE_5TH.exists():
+        from fastapi import HTTPException
+        raise HTTPException(503, f"No connected roster for fixture: {canonical_id}")
+    with open(MATCH_FILE_5TH, encoding="utf-8") as stream:
+        full_json = json.load(stream)
+    if canonical_id != full_json.get("match_info", {}).get("id"):
+        raise UnknownMatchError(f"No fixture-specific roster for: {canonical_id}")
     return {
-        "match_info": fixture_meta,
-        "players": players_copy
+        "match_info": dict(SERIES_FIXTURES[canonical_id], data_provenance="UNVERIFIED_BUNDLED_FIXTURE", status="BUNDLED FIXTURE | [VERIFY REQUIRED]"),
+        "players": full_json.get("players", []),
     }
-

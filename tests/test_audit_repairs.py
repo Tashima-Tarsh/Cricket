@@ -65,7 +65,7 @@ class AuditRepairTests(unittest.TestCase):
     def test_analyst_rain_query_is_an_explicit_illustration(self):
         result = self.client.get('/api/analyst/query?q=rain&match_id=ind_vs_wi_5th_t20_2026')
         self.assertEqual(result.status_code, 200)
-        self.assertEqual(result.json()['provenance'], 'RULE_BASED_RETRIEVAL')
+        self.assertEqual(result.json()['provenance']['source'], 'RULE_BASED_RETRIEVAL')
         self.assertIn('illustrative', result.json()['reply'].lower())
 
     def test_universal_infeasible_returns_no_invalid_roster(self):

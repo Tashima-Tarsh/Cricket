@@ -80,3 +80,13 @@ are unverified input assumptions. Legacy/reference modules outside the repaired
 React flow retain separate data contracts and are not certified by these checks.
 
 These are verified local repairs, not a production-readiness certificate.
+
+## Phase 0 follow-up — 2026-10-26
+
+Audited baseline `d9689d13144509424a26aab6545468fad5ea01c9`; repaired code `1937adc3a32616fc333818d659d1a468c67d03ba` on `repair/phase-0-evidence-safety`.
+
+Added shared provenance, API transport enforcement and direct lineup metadata; removed embedded portal roster and placeholder fixture cards; prevented cross-fixture roster reuse; added fail-closed roster validation and regression tests. Core regression checks: 75 passed across tests/ and dream11-edge/tests. Frontend build/lint succeed with warnings.
+
+This supersedes earlier completion claims: full pytest collection has six errors, EdgeForge has three scoring failures, legacy PuLP solver compatibility is broken, and c19 backtesting still leaks target-match workload. See AUDIT_CURRENT_HEAD.md and HARDCODE_INVENTORY.md for exact findings and remaining phases.
+
+Research application — projections and Rank claims require independent validation.

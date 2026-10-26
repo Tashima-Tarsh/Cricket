@@ -34,16 +34,11 @@ class TestEvidenceAuditRepairs(unittest.TestCase):
         self.assertEqual(data["status"], "success")
         self.assertIn("Cricket Tactical Intelligence Dispatch", data["reply"])
 
-    def test_portal_roster_afg_zim(self):
-        """Verify /api/portal/roster returns confirmed XI for Afghanistan vs Zimbabwe."""
+    def test_portal_roster_without_connected_source_fails_closed(self):
+        """The old embedded AFG-ZIM list is not a connected roster source."""
         resp = self.client.get("/api/portal/roster?match_id=afg_vs_zim_sharjah_odi")
-        self.assertEqual(resp.status_code, 200)
-        data = resp.json()
-        self.assertEqual(data["status"], "success")
-        self.assertEqual(data["total_players"], 22)
-        names = [p["name"] for p in data["roster"]]
-        self.assertIn("R Gurbaz", names)
-        self.assertIn("S Raza", names)
+        self.assertEqual(resp.status_code, 409)
+        self.assertNotIn("roster", resp.json())
 
     def test_portal_roster_does_not_return_afg_zim_for_other_matches(self):
         """Verify /api/portal/roster does not return AFG-ZIM players when another match is requested."""
@@ -54,10 +49,10 @@ class TestEvidenceAuditRepairs(unittest.TestCase):
             self.assertNotIn("R Gurbaz", names)
             self.assertNotIn("Fazalhaq Farooqi", names)
 
-    def test_portal_roster_unknown_match_returns_404(self):
-        """Verify /api/portal/roster returns 404 for an unknown match rather than fabricating dummy players."""
+    def test_portal_roster_unknown_match_returns_409(self):
+        """Verify /api/portal/roster returns 409 for an unknown match rather than fabricating dummy players."""
         resp = self.client.get("/api/portal/roster?match_id=completely_unknown_fixture_9999")
-        self.assertEqual(resp.status_code, 404)
+        self.assertEqual(resp.status_code, 409)
 
     def test_extract_match_roster_never_fakes_dummy_players(self):
         """Verify extract_match_roster returns only real players and never manufactures 'Top Batter 1'."""
@@ -83,13 +78,24 @@ class TestEvidenceAuditRepairs(unittest.TestCase):
             self.assertNotIn("Opp Key Opener", n)
 
     def test_solve_portal_lineup_dynamic_team_balance(self):
-        """Verify solve_portal_lineup solves under CP-SAT constraints without hardcoding AFG/ZIM."""
-        resp = self.client.get("/api/portal/solve-lineup?match_id=afg_vs_zim_sharjah_odi&target_unspent=14.0")
+        """Relabel teams in a test-only real-player roster; solver must use those teams."""
+        import json
+        from pathlib import Path
+        from unittest.mock import patch
+        from collections import Counter
+        rows = json.loads((Path(__file__).parents[1] / "gl_engine/data/ind_wi_match.json").read_text())["players"]
+        players = [Player(**{**row, "team": "SIDE_A" if row["team"] == "IND" else "SIDE_B"}) for row in rows]
+        with patch("gl_engine.web_app.resolve_match_players", return_value=({"id":"test_fixture"}, players)) as resolve:
+            resp = self.client.get("/api/portal/solve-lineup?match_id=test_fixture&target_unspent=14.0")
+        resolve.assert_called_once_with("test_fixture")
         self.assertEqual(resp.status_code, 200)
         data = resp.json()
         self.assertEqual(data["status"], "success")
-        self.assertIn("actual_unspent", data)
         self.assertGreaterEqual(data["actual_unspent"], 11.5)
+        self.assertEqual(len(data["players"]), 11)
+        counts = Counter(p["team"] for p in data["players"])
+        self.assertEqual(set(counts), {"SIDE_A", "SIDE_B"})
+        self.assertTrue(all(4 <= count <= 7 for count in counts.values()))
 
     def test_captain_engine_dynamic_generation(self):
         """Verify CricketCaptainEngine constructs GL pairs from input players, not hardcoded IND-WI names."""

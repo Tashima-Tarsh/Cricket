@@ -372,7 +372,7 @@ if __name__ == "__main__":
         print(f"Tactical Blueprint: {s['gl_rank1_blueprint']}")
         bats = v_data["verified_leaderboard"].get("top_batters", [])
         if bats:
-            print("Verified Top Batters from DuckDB:", [f"{b['name']} ({b['runs']} runs, SR {b['sr']})" for b in bats[:3]])
+            print("Verified Leading batters from DuckDB:", [f"{b['name']} ({b['runs']} runs, SR {b['sr']})" for b in bats[:3]])
         bowls = v_data["verified_leaderboard"].get("top_bowlers", [])
         if bowls:
             print("Verified Top Bowlers from DuckDB:", [f"{bw['name']} ({bw['wickets']} wkts, Econ {bw['economy']})" for bw in bowls[:3]])
