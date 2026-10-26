@@ -772,7 +772,7 @@ def simulate_rain_overs(
         "overs": overs,
         "constraints": constraints,
         "top_picks": top_picks,
-        "rain_scenarios": RainReducedOversEngine.get_rain_scenarios(overs, players=players)
+        "rain_scenarios": RainReducedOversEngine.get_rain_scenarios(overs)
     }
 
 @app.get("/api/analyst/query")
@@ -1606,8 +1606,6 @@ def get_backtesting_replays():
     bt = CricketBacktesting()
     return bt.execute()
 
-
-# ==============================================================================
 # MASTER DREAM11 GRAND LEAGUE UNIQUE TEAM ENGINE ENDPOINTS (PART 7)
 # ==============================================================================
 
@@ -2001,6 +1999,7 @@ def get_h2h_matchup_detail(batter_id: str, bowler_id: str):
         }
         
     return {"status": "success", "matchup": row.iloc[0].to_dict()}
+
 
 if FRONTEND_DIST.exists():
     app.mount("/assets", StaticFiles(directory=str(FRONTEND_DIST / "assets")), name="assets")

@@ -1,5 +1,4 @@
 """Data models for cricket players, fixtures, conditions, and fantasy lineups."""
-from datetime import datetime, timezone
 from pydantic import BaseModel, Field
 from typing import List, Dict, Optional, Literal
 
@@ -8,18 +7,6 @@ from .provenance import DataProvenance, unverified_provenance
 RoleType = Literal["WK", "BAT", "AR", "BOWL"]
 BattingStyle = Literal["RHB", "LHB"]
 BowlingStyle = str
-
-
-class DataProvenance(BaseModel):
-    """Mandatory provenance metadata ensuring full auditability of source, verification, and limits."""
-    source: str = "MODEL_ESTIMATE"
-    timestamp: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
-    verification_status: str = "UNVERIFIED"  # "VERIFIED", "UNVERIFIED", "PRIOR_ONLY", "MODEL_ESTIMATE", "SIMULATION"
-    sample_size: int = 0
-    confidence_label: Optional[str] = "PRIOR_ONLY"  # "PRIOR_ONLY", "SHRUNK", "MODERATE", "HIGH"
-    official_dls: bool = False
-    notes: Optional[str] = None
-
 
 class PlayerStats(BaseModel):
     matches: int = 0
@@ -55,7 +42,6 @@ class Player(BaseModel):
     captain_percentage: float = 0.0
     dream_team_percentage: float = 0.0
     differential_tag: Optional[str] = None  # e.g., "High-Ceiling Pacer", "Death-Overs Finisher"
-    provenance: DataProvenance = Field(default_factory=DataProvenance)
 
 class MatchupDetail(BaseModel):
     batter_name: str
@@ -65,12 +51,9 @@ class MatchupDetail(BaseModel):
     dismissals: int
     strike_rate: float
     dismissal_rate: float  # dismissals / balls
-    sample_size: int = 0
-    shrinkage_weight: float = 0.0
-    confidence_label: str = "PRIOR_ONLY"
-    provenance: DataProvenance = Field(default_factory=DataProvenance)
 
 class VenueConditions(BaseModel):
+    provenance: DataProvenance = Field(default_factory=lambda: DataProvenance(source="VENUE_CATALOG", verification_status="EXPERT_ESTIMATE_UNVERIFIED"))
     name: str
     city: str
     avg_first_innings_score: int = 175
@@ -80,7 +63,6 @@ class VenueConditions(BaseModel):
     pitch_nature: str = "True bounce, excellent for strokeplay, pacers get early carry"
     boundary_dimensions: str = "Square 65m, Straight 72m"
     chasing_win_pct: float = 56.0
-    provenance: DataProvenance = Field(default_factory=lambda: DataProvenance(source="VENUE_CATALOG", verification_status="EXPERT_ESTIMATE_UNVERIFIED"))
 
 class WeatherReport(BaseModel):
     temperature_c: float = 28.0
@@ -114,4 +96,3 @@ class Lineup(BaseModel):
     csp: Optional[float] = None  # Cumulative Selection Percentage (Target: 500% to 650%)
     mnc_summary: Optional[str] = None  # e.g., "Core: 6 | Rotation: 3 | Contrarian: 2"
     cvc_combo_type: Optional[str] = None  # "Combo A (Safe)", "Combo B (Sweet Spot)", "Combo C (GL Killer)"
-    provenance: DataProvenance = Field(default_factory=lambda: DataProvenance(source="CP_SAT_OPTIMIZER", verification_status="SIMULATION"))

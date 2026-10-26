@@ -14,7 +14,7 @@ class Phase0SafetyTests(unittest.TestCase):
             for path in (ROOT / directory).rglob('*'):
                 if path.suffix not in ('.py', '.ts', '.tsx', '.html', '.json') or path.name.startswith('test_'):
                     continue
-                for line, value in enumerate(path.read_text().splitlines(), 1):
+                for line, value in enumerate(path.read_text(encoding='utf-8', errors='ignore').splitlines(), 1):
                     if any(word in value for word in forbidden):
                         hits.append(f'{path.relative_to(ROOT)}:{line}')
         self.assertEqual(hits, [])
