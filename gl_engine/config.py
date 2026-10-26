@@ -17,6 +17,13 @@ class FantasyScoringConfig(BaseModel):
     runs_30_bonus: float = 4.0
     runs_50_bonus: float = 8.0
     runs_100_bonus: float = 16.0
+    # T10 Milestones
+    t10_30_bonus: float = 8.0
+    t10_50_bonus: float = 16.0
+    # ODI Milestones
+    odi_50_bonus: float = 4.0
+    odi_100_bonus: float = 8.0
+    odi_150_bonus: float = 16.0
     
     # Strike Rate Bonus/Penalty (min 10 balls faced)
     strike_rate_bonuses: Dict[str, float] = Field(default_factory=lambda: {

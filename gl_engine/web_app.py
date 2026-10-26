@@ -771,7 +771,7 @@ def simulate_rain_overs(
         "overs": overs,
         "constraints": constraints,
         "top_picks": top_picks,
-        "rain_scenarios": RainReducedOversEngine.get_rain_scenarios(overs)
+        "rain_scenarios": RainReducedOversEngine.get_rain_scenarios(overs, players=players)
     }
 
 @app.get("/api/analyst/query")

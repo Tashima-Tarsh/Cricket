@@ -56,7 +56,7 @@ class ORToolsCricketOptimizer:
         if overs < 20:
             self.players = RainReducedOversEngine.adjust_player_projections(self.players, overs, venue_conditions)
             self.player_map = {p.id: p for p in self.players}
-            rain_scenarios = RainReducedOversEngine.get_rain_scenarios(overs)
+            rain_scenarios = RainReducedOversEngine.get_rain_scenarios(overs, players=self.players)
             base_scenarios = custom_scenarios or rain_scenarios or self._get_default_scenarios()
         else:
             base_scenarios = custom_scenarios or self._get_default_scenarios()
@@ -242,6 +242,23 @@ class ORToolsCricketOptimizer:
             model.Add(sum(x[i] for i in contrarian_indices) >= min_contra)
             model.Add(sum(x[i] for i in contrarian_indices) <= max_contra)
 
+        # 11. Scenario preferred Captain / Vice-Captain soft or hard locks
+        c_idx = None
+        vc_idx = None
+        pref_c = scenario.get("preferred_c")
+        pref_vc = scenario.get("preferred_vc")
+        if pref_c and pref_c not in excluded_player_ids:
+            c_idx = next((i for i, p in enumerate(self.players) if p.id == pref_c), None)
+            if c_idx is not None:
+                model.Add(c[c_idx] == 1)
+        if pref_vc and pref_vc not in excluded_player_ids:
+            vc_idx = next((i for i, p in enumerate(self.players) if p.id == pref_vc), None)
+            if vc_idx is not None:
+                if c_idx is not None and vc_idx == c_idx:
+                    pass  # Cannot assign same player to both C and VC
+                else:
+                    model.Add(v[vc_idx] == 1)
+
         # 8. C/VC Combinatorics Matrix Rule:
         # Never pair #1 popular Captain with #2 popular Vice-Captain (avoids Combo A safe template in GL)
         allow_chalk_cvc = scenario.get("allow_chalk_cvc", False)
@@ -251,6 +268,8 @@ class ORToolsCricketOptimizer:
             for hc in high_c_indices:
                 for hvc in high_vc_indices:
                     if hc != hvc:
+                        if c_idx is not None and vc_idx is not None and hc == c_idx and hvc == vc_idx:
+                            continue
                         model.Add(c[hc] + v[hvc] <= 1)
 
         # 9. Differential requirement: sub-35% ownership picks
@@ -273,23 +292,6 @@ class ORToolsCricketOptimizer:
                 if p.id in excluded_player_ids:
                     model.Add(x[i] == 0)
 
-        # 11. Scenario preferred Captain / Vice-Captain soft or hard locks
-        c_idx = None
-        vc_idx = None
-        pref_c = scenario.get("preferred_c")
-        pref_vc = scenario.get("preferred_vc")
-        if pref_c:
-            c_idx = next((i for i, p in enumerate(self.players) if p.id == pref_c), None)
-            if c_idx is not None:
-                model.Add(c[c_idx] == 1)
-        if pref_vc:
-            vc_idx = next((i for i, p in enumerate(self.players) if p.id == pref_vc), None)
-            if vc_idx is not None:
-                if c_idx is not None and vc_idx == c_idx:
-                    pass  # Cannot assign same player to both C and VC
-                else:
-                    model.Add(v[vc_idx] == 1)
-
         # Shortened Match Captaincy Rule:
         # In matches <= 14 overs, Captain MUST be either in batting top 3 (order <= 3)
         # OR a frontline strike bowler (expected_overs >= 3.0 or role == "BOWL").
@@ -302,8 +304,12 @@ class ORToolsCricketOptimizer:
                     model.Add(c[i] == 0)
 
         # 9. Objective Function: Venue & Pitch Matchup Intelligence + Low-Credit Gem Efficiency
-        venue = venue_conditions or {}
-        pace_pct = venue.get("pace_wickets_pct", 64.0)
+        if isinstance(venue_conditions, dict):
+            pace_pct = venue_conditions.get("pace_wickets_pct", 64.0)
+        elif hasattr(venue_conditions, "pace_wickets_pct"):
+            pace_pct = getattr(venue_conditions, "pace_wickets_pct", 64.0)
+        else:
+            pace_pct = 64.0
 
         objective_terms = []
         for i, p in enumerate(self.players):
@@ -462,166 +468,129 @@ class ORToolsCricketOptimizer:
         )
 
     def _get_default_scenarios(self) -> List[Dict[str, Any]]:
-        return [
+        """Generates dynamic Grand League tactical game scripts from the active player roster.
+        Extracts teams, tactical archetypes, and candidate captain pairings without hardcoding.
+        Never guarantees tournament outcomes or claims uncalibrated Rank 1 placement.
+        """
+        teams = list(dict.fromkeys(p.team for p in self.players if p.team))
+        team_a = teams[0] if len(teams) > 0 else "Team A"
+        team_b = teams[1] if len(teams) > 1 else team_a
+
+        team_a_batters = [p for p in self.players if p.team == team_a and p.role in ("BAT", "WK")]
+        team_a_batters.sort(key=lambda x: x.projected_points, reverse=True)
+
+        team_b_batters = [p for p in self.players if p.team == team_b and p.role in ("BAT", "WK")]
+        team_b_batters.sort(key=lambda x: x.projected_points, reverse=True)
+
+        team_a_bowlers = [p for p in self.players if p.team == team_a and p.role in ("BOWL", "AR")]
+        team_a_bowlers.sort(key=lambda x: x.projected_points, reverse=True)
+
+        team_b_bowlers = [p for p in self.players if p.team == team_b and p.role in ("BOWL", "AR")]
+        team_b_bowlers.sort(key=lambda x: x.projected_points, reverse=True)
+
+        all_rounders = [p for p in self.players if p.role == "AR"]
+        all_rounders.sort(key=lambda x: x.projected_points, reverse=True)
+
+        differentials = [p for p in self.players if p.projected_ownership < 35.0]
+        differentials.sort(key=lambda x: x.ceiling_score, reverse=True)
+
+        def pick_id(plist, idx=0):
+            return plist[idx].id if len(plist) > idx else (self.players[idx].id if len(self.players) > idx else None)
+
+        def pick_name(plist, idx=0, default="Key Player"):
+            return plist[idx].name if len(plist) > idx else default
+
+        scenarios = [
             {
                 "tag": "EXPRESS_PACE_CARNIVAL",
                 "name": "Express Pace & Seam Carnage",
-                "ind_bias": 1.05, "wi_bias": 1.05,
-                "preferred_c": "ind_mayank", "preferred_vc": "ind_tilak",
-                "gl_potential": "Rank #1 Leverage",
-                "rationale": "Overcast damp red-soil amplifies 150kph bounce and swing. Mayank Yadav tears through top order; Tilak Varma anchors."
+                "team_biases": {team_a: 1.05, team_b: 1.05} if team_a != team_b else {},
+                "preferred_c": pick_id(team_a_bowlers, 0),
+                "preferred_vc": pick_id(team_a_batters, 0),
+                "gl_potential": "Simulation Percentile Leverage",
+                "rationale": f"Pace and seam conditions favor strike bowling. {pick_name(team_a_bowlers, 0, 'Lead Bowler')} attacks top order while {pick_name(team_a_batters, 0, 'Top Anchor')} stabilizes scoring."
             },
             {
-                "tag": "WI_POWER_UPSET",
-                "name": "West Indies Decider Counter-Punch",
-                "ind_bias": 0.8, "wi_bias": 1.4,
-                "preferred_c": "wi_shepherd", "preferred_vc": "wi_hope",
-                "gl_potential": "High Volatility",
-                "rationale": "Romario Shepherd's 250+ death SR and cutters exploit damp surface while Shai Hope anchors."
+                "tag": "OPPOSITION_COUNTER_PUNCH",
+                "name": f"{team_b} Decider Counter-Punch",
+                "team_biases": {team_a: 0.85, team_b: 1.30} if team_a != team_b else {},
+                "preferred_c": pick_id(team_b_batters, 0),
+                "preferred_vc": pick_id(team_b_bowlers, 0),
+                "gl_potential": "High Volatility Upset",
+                "rationale": f"Contrarian scenario favoring {team_b} dominance. {pick_name(team_b_batters, 0, 'Top Batter')} leads scoring volume backed by {pick_name(team_b_bowlers, 0, 'Frontline Bowler')}."
             },
             {
                 "tag": "MIDDLE_ORDER_REBUILD",
                 "name": "Middle-Overs Recovery Masterclass",
-                "ind_bias": 1.20, "wi_bias": 0.90,
-                "preferred_c": "ind_tilak", "preferred_vc": "ind_axar",
+                "team_biases": {team_a: 1.15, team_b: 0.95} if team_a != team_b else {},
+                "preferred_c": pick_id(team_a_batters, 1 if len(team_a_batters) > 1 else 0),
+                "preferred_vc": pick_id(all_rounders, 0),
                 "gl_potential": "Elite Floor + Ceiling",
-                "rationale": "Early swing takes down aggressive openers; Tilak Varma (80% DT rate) and Axar Patel anchor the recovery and take wickets."
+                "rationale": f"Early wickets trigger middle-order recovery. {pick_name(team_a_batters, 1, 'Middle Anchor')} anchors alongside dual-threat all-rounder {pick_name(all_rounders, 0, 'All-Rounder')}."
             },
             {
                 "tag": "DEATH_OVERS_BLITZ",
                 "name": "Death Overs Boundary Explosion",
-                "ind_bias": 0.95, "wi_bias": 1.25,
-                "preferred_c": "wi_rutherford", "preferred_vc": "ind_arshdeep",
+                "team_biases": {team_a: 0.95, team_b: 1.20} if team_a != team_b else {},
+                "preferred_c": pick_id(team_b_bowlers, 0),
+                "preferred_vc": pick_id(team_a_bowlers, 0),
                 "gl_potential": "Contrarian Multiplier",
-                "rationale": "Sherfane Rutherford (204.8 death SR) unleashes at death; Arshdeep Singh mops up lower order wickets with pinpoint yorkers."
-            },
-            {
-                "tag": "RAIN_SHORTENED_SPRINT",
-                "name": "Rain-Reduced Powerplay Sprint",
-                "ind_bias": 1.25, "wi_bias": 0.85,
-                "preferred_c": "ind_abhishek", "preferred_vc": "wi_joseph",
-                "gl_potential": "High Ceiling Slugfest",
-                "rationale": "Overcast skies trigger a shortened game scenario; Abhishek Sharma attacks from ball one while Alzarri Joseph strikes early."
+                "rationale": f"Death overs produce heavy wicket clustering and late boundaries. Strike bowlers {pick_name(team_b_bowlers, 0, 'Death Specialist')} and {pick_name(team_a_bowlers, 0, 'Seam Spearhead')} dominate."
             },
             {
                 "tag": "CHASE_DEW_MASTERCLASS",
-                "name": "Dew-Assisted Chasing Heavy",
-                "ind_bias": 1.3, "wi_bias": 0.85,
-                "preferred_c": "ind_ishan", "preferred_vc": "ind_shreyas",
+                "name": "Chasing Anchor Heavy",
+                "team_biases": {team_a: 1.25, team_b: 0.85} if team_a != team_b else {},
+                "preferred_c": pick_id(team_a_batters, 0),
+                "preferred_vc": pick_id(team_a_batters, 1 if len(team_a_batters) > 1 else 0),
                 "gl_potential": "Anchor Balanced",
-                "rationale": "Dew makes 2nd innings batting effortless for top 4 batters to finish the chase."
+                "rationale": f"Chasing conditions reward top-order anchors to complete the target with minimal wicket loss."
             },
             {
                 "tag": "ALL_ROUNDER_MAXIMIZER",
                 "name": "All-Rounder Multi-Category Floor",
-                "ind_bias": 1.1, "wi_bias": 1.1,
-                "preferred_c": "ind_axar", "preferred_vc": "wi_shepherd",
+                "team_biases": {team_a: 1.10, team_b: 1.10} if team_a != team_b else {},
+                "preferred_c": pick_id(all_rounders, 0),
+                "preferred_vc": pick_id(all_rounders, 1 if len(all_rounders) > 1 else 0),
                 "gl_potential": "Floor + Ceiling Hybrid",
-                "rationale": "Maximizes points from dual-threat players contributing top-7 batting runs and 4 bowling overs."
-            },
-            {
-                "tag": "WI_DEATH_SURGE",
-                "name": "West Indies Death Overs Blitz",
-                "ind_bias": 0.9, "wi_bias": 1.3,
-                "preferred_c": "wi_powell", "preferred_vc": "wi_motie",
-                "gl_potential": "High Volatility",
-                "rationale": "Rovman Powell unleashes fireworks in overs 16-20 while Motie constricts scoring."
+                "rationale": f"Maximizes multi-discipline volume across batting and bowling phases."
             },
             {
                 "tag": "POWERPLAY_CHAOS_COLLAPSE",
                 "name": "Both Sides Powerplay Collapse",
-                "ind_bias": 1.0, "wi_bias": 1.0,
-                "preferred_c": "wi_forde", "preferred_vc": "ind_arshdeep",
-                "gl_potential": "Rank #1 Punt",
-                "rationale": "New ball swing decimates top orders, making middle-order anchors and death bowlers king."
+                "team_biases": {team_a: 1.0, team_b: 1.0} if team_a != team_b else {},
+                "preferred_c": pick_id(differentials, 0),
+                "preferred_vc": pick_id(team_a_bowlers, 0),
+                "gl_potential": "Contrarian Leverage",
+                "rationale": f"Early swing decimates top orders, making middle-order anchors and differential bowler {pick_name(differentials, 0, 'Punt Pick')} optimal."
             },
             {
-                "tag": "SAMSON_VOLATILITY_BURST",
-                "name": "Sanju Samson High-Variance Burst",
-                "ind_bias": 1.25, "wi_bias": 0.85,
-                "preferred_c": "ind_samson", "preferred_vc": "ind_mayank",
-                "gl_potential": "Ultra Ceiling",
-                "rationale": "Samson strikes a thunderous 80+ at 180 SR while Mayank Yadav mops up lower order."
-            },
-            {
-                "tag": "SPIN_CHOKE_MIDDLE",
-                "name": "Spin Strangle & Boundary Starvation",
-                "ind_bias": 1.15, "wi_bias": 0.95,
-                "preferred_c": "ind_axar", "preferred_vc": "wi_hosein",
-                "gl_potential": "Dot Ball Accumulator",
-                "rationale": "Axar Patel and Akeal Hosein build extreme dot pressure across overs 7-15, forcing mistimed slogs."
-            },
-            {
-                "tag": "OPENER_SHOOTOUT_200",
-                "name": "Top-Order 200+ Boundary Shootout",
-                "ind_bias": 1.10, "wi_bias": 1.10,
-                "preferred_c": "ind_abhishek", "preferred_vc": "wi_hope",
+                "tag": "TOP_ORDER_SHOOTOUT",
+                "name": "Top-Order Boundary Shootout",
+                "team_biases": {team_a: 1.10, team_b: 1.10} if team_a != team_b else {},
+                "preferred_c": pick_id(team_a_batters, 0),
+                "preferred_vc": pick_id(team_b_batters, 0),
                 "gl_potential": "High Aggregate Score",
-                "rationale": "Pure batting paradise: both opening pairs survive powerplay and produce 100+ opening stands."
+                "rationale": f"Batting-friendly conditions allow opening pairs ({pick_name(team_a_batters, 0, 'Opener A')} and {pick_name(team_b_batters, 0, 'Opener B')}) to dominate powerplays."
             },
             {
-                "tag": "WI_TOP_ORDER_PUNT",
-                "name": "West Indies Top-Order Dominance",
-                "ind_bias": 0.85, "wi_bias": 1.35,
-                "preferred_c": "wi_hope", "preferred_vc": "wi_rutherford",
-                "gl_potential": "Contrarian Solo",
-                "rationale": "West Indies post 195+ with Hope and Rutherford dominating Indian spinners."
-            },
-            {
-                "tag": "DEATH_SEAM_DUO",
+                "tag": "DUAL_STRIKE_BOWLER_PINCER",
                 "name": "Death Over Wicket Cluster (Bowlers C/VC)",
-                "ind_bias": 1.05, "wi_bias": 1.05,
-                "preferred_c": "ind_arshdeep", "preferred_vc": "wi_joseph",
+                "team_biases": {team_a: 1.05, team_b: 1.05} if team_a != team_b else {},
+                "preferred_c": pick_id(team_a_bowlers, 0),
+                "preferred_vc": pick_id(team_b_bowlers, 0),
                 "gl_potential": "Wicket Multiplier",
-                "rationale": "Arshdeep Singh and Alzarri Joseph deliver 8 wickets between overs 16-20 as batters swing wildly."
+                "rationale": f"Frontline bowlers {pick_name(team_a_bowlers, 0, 'Bowler A')} and {pick_name(team_b_bowlers, 0, 'Bowler B')} capitalize on reckless boundary attempts in closing overs."
             },
             {
-                "tag": "LOW_SCORING_GRIND",
-                "name": "Low-Scoring 145 Pitch Dogfight",
-                "ind_bias": 1.0, "wi_bias": 1.0,
-                "preferred_c": "ind_tilak", "preferred_vc": "wi_shepherd",
-                "gl_potential": "Attrition Specialist",
-                "rationale": "Dry abrasive soil slows down the ball; anchors and seam cutters decide a tight low-scoring thriller."
-            },
-            {
-                "tag": "HIGH_ALTITUDE_CARNAGE",
-                "name": "Chinnaswamy 220+ Six Carnival",
-                "ind_bias": 1.20, "wi_bias": 1.10,
-                "preferred_c": "ind_ishan", "preferred_vc": "wi_hetmyer",
-                "gl_potential": "Max Strike Rate",
-                "rationale": "Short boundaries produce 24+ sixes; Ishan Kishan and Shimron Hetmyer feast on pace."
-            },
-            {
-                "tag": "LEFT_ARM_ANGLE_PRESSURE",
-                "name": "Left-Arm Seam & Spin Geometry",
-                "ind_bias": 1.15, "wi_bias": 1.05,
-                "preferred_c": "ind_arshdeep", "preferred_vc": "ind_axar",
-                "gl_potential": "Angle Leverage",
-                "rationale": "Arshdeep and Axar dismantle right-handed West Indies middle order with cramping angles."
-            },
-            {
-                "tag": "FINISHER_LEVERAGE_RUN",
-                "name": "Finisher Leverage Over-Indices",
-                "ind_bias": 0.95, "wi_bias": 1.25,
-                "preferred_c": "wi_rutherford", "preferred_vc": "wi_shepherd",
-                "gl_potential": "Syndicate Edge",
-                "rationale": "Fades popular openers; banks entirely on Rutherford and Shepherd stealing the show."
-            },
-            {
-                "tag": "EXPRESS_PACE_STRANGLE",
-                "name": "150kph Mayank + Joseph Dual Wreckage",
-                "ind_bias": 1.10, "wi_bias": 1.10,
-                "preferred_c": "ind_mayank", "preferred_vc": "wi_joseph",
-                "gl_potential": "Raw Velocity",
-                "rationale": "Mayank Yadav and Shamar Joseph bowl express toe-crushers, cleaning up stumps under lights."
-            },
-            {
-                "tag": "MEGA_ANTI_CHALK_SOLO",
-                "name": "Mega Contest Anti-Chalk Solo #1",
-                "ind_bias": 1.05, "wi_bias": 1.15,
-                "preferred_c": "ind_tilak", "preferred_vc": "wi_motie",
-                "gl_potential": "Zero Collision Solo",
-                "rationale": "Maximum anti-chalk composition (CSP 510%) engineered to guarantee solo 1st rank without splitting."
+                "tag": "CONTRARIAN_DIFFERENTIAL_SURGE",
+                "name": "Tournament Anti-Chalk Leverage",
+                "team_biases": {team_a: 1.05, team_b: 1.10} if team_a != team_b else {},
+                "preferred_c": pick_id(differentials, 0),
+                "preferred_vc": pick_id(team_a_batters, 0),
+                "gl_potential": "Estimated Uniqueness",
+                "rationale": f"Controlled ownership diversification pairing differential pick {pick_name(differentials, 0, 'Differential')} with reliable anchor volume."
             }
         ]
+        return scenarios
 

@@ -12,6 +12,7 @@ from enum import Enum
 class Format(str, Enum):
     T20 = "T20"
     ODI = "ODI"
+    T10 = "T10"
 
 
 @dataclass(frozen=True)
@@ -26,6 +27,9 @@ class ScoringConfig:
     t20_30_bonus: float = 4.0
     t20_50_bonus: float = 8.0
     t20_100_bonus: float = 16.0
+    # T10 milestones
+    t10_30_bonus: float = 8.0
+    t10_50_bonus: float = 16.0
     # ODI milestones
     odi_50_bonus: float = 4.0
     odi_100_bonus: float = 8.0
@@ -96,7 +100,10 @@ class Dream11Scorer:
         run_outs_direct: int = 0,
         run_outs_indirect: int = 0,
         is_playing: bool = True,
-        match_format: Literal["T20", "ODI"] = "T20",
+        match_format: Literal["T20", "ODI", "T10"] = "T20",
+        is_womens: bool = False,
+        is_captain: bool = False,
+        is_vice_captain: bool = False,
     ) -> ScoringResult:
         cfg = self.config
         fmt = match_format.upper()
@@ -121,6 +128,11 @@ class Dream11Scorer:
                 bat += cfg.odi_100_bonus
             elif runs >= 50:
                 bat += cfg.odi_50_bonus
+        elif fmt == "T10":
+            if runs >= 50:
+                bat += getattr(cfg, "t10_50_bonus", 16.0)
+            elif runs >= 30:
+                bat += getattr(cfg, "t10_30_bonus", 8.0)
         else:
             if runs >= 100:
                 bat += cfg.t20_100_bonus
@@ -132,7 +144,13 @@ class Dream11Scorer:
         if runs == 0 and balls_faced > 0:
             bat += cfg.duck
 
-        min_balls = 20 if fmt == "ODI" else 10
+        if fmt == "ODI":
+            min_balls = 20
+        elif fmt == "T10":
+            min_balls = 5
+        else:
+            min_balls = 10
+
         if balls_faced >= min_balls:
             sr = (runs / balls_faced) * 100.0
             if fmt == "ODI":
@@ -147,6 +165,19 @@ class Dream11Scorer:
                 elif sr < 40:
                     bat -= 4.0
                 elif sr < 50:
+                    bat -= 2.0
+            elif fmt == "T10":
+                if sr > 250.0:
+                    bat += 6.0
+                elif sr >= 200.0:
+                    bat += 4.0
+                elif sr >= 150.0:
+                    bat += 2.0
+                elif sr < 70.0:
+                    bat -= 6.0
+                elif sr < 80.0:
+                    bat -= 4.0
+                elif sr < 90.0:
                     bat -= 2.0
             else:
                 if sr > 170:
@@ -183,7 +214,13 @@ class Dream11Scorer:
         elif wickets >= 3:
             bowl += cfg.three_wickets
 
-        min_overs = 5.0 if fmt == "ODI" else 2.0
+        if fmt == "ODI":
+            min_overs = 5.0
+        elif fmt == "T10":
+            min_overs = 1.0
+        else:
+            min_overs = 2.0
+
         if overs_bowled >= min_overs:
             econ = runs_conceded / overs_bowled
             if fmt == "ODI":
@@ -198,6 +235,19 @@ class Dream11Scorer:
                 elif econ >= 8.0:
                     bowl -= 4.0
                 elif econ >= 7.0:
+                    bowl -= 2.0
+            elif fmt == "T10":
+                if econ < 6.0:
+                    bowl += 6.0
+                elif econ <= 7.0:
+                    bowl += 4.0
+                elif econ <= 8.0:
+                    bowl += 2.0
+                elif econ > 13.0:
+                    bowl -= 6.0
+                elif econ >= 12.0:
+                    bowl -= 4.0
+                elif econ >= 11.0:
                     bowl -= 2.0
             else:
                 if econ < 5.0:
@@ -230,4 +280,13 @@ class Dream11Scorer:
         total += field
         bd["fielding"] = field
 
-        return ScoringResult(total=round(total, 1), breakdown=bd, format=fmt)
+        base_total = max(round(total, 1), -6.0)
+        multiplier = 1.0
+        if is_captain:
+            multiplier = 2.0
+        elif is_vice_captain:
+            multiplier = 1.5
+
+        final_total = round(base_total * multiplier, 1)
+
+        return ScoringResult(total=final_total, breakdown=bd, format=fmt)

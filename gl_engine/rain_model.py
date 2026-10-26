@@ -216,56 +216,139 @@ class RainReducedOversEngine:
         return adjusted_players
 
     @staticmethod
-    def get_rain_scenarios(overs: int) -> List[Dict[str, Any]]:
-        """Returns specialized Grand League game scripts optimized for shortened matches (5 to 19 overs)."""
+    def get_rain_scenarios(overs: int, players: Optional[List[Any]] = None) -> List[Dict[str, Any]]:
+        """Returns specialized Grand League game scripts optimized for shortened matches (5 to 19 overs).
+        Generates preferred captains dynamically from the current players list using roles,
+        projected points, and ownership — never hardcodes specific player names.
+        """
         if overs >= 20:
             return []
+
+        team_a = "Team A"
+        team_b = "Team B"
+        preferred_c1, preferred_vc1 = None, None
+        preferred_c2, preferred_vc2 = None, None
+        preferred_c3, preferred_vc3 = None, None
+        preferred_c4, preferred_vc4 = None, None
+        preferred_c5, preferred_vc5 = None, None
+        p_c1_name, p_vc1_name = "Aggressive Opener", "Primary Strike Bowler"
+        p_c2_name, p_vc2_name = "Top-Order Anchor", "Death All-Rounder"
+        p_c3_name, p_vc3_name = "Death Seamer", "Top-Order Finisher"
+        p_c4_name, p_vc4_name = "Top-3 Batter", "Opponent Finisher"
+        p_c5_name, p_vc5_name = "Express Strike Bowler A", "Express Strike Bowler B"
+
+        if players:
+            p_list = [p if isinstance(p, dict) else p.model_dump() for p in players]
+            teams = list(dict.fromkeys(p.get("team") for p in p_list if p.get("team")))
+            if teams:
+                team_a = teams[0]
+                team_b = teams[1] if len(teams) > 1 else teams[0]
+
+            openers = [p for p in p_list if p.get("role") in ("BAT", "WK") and p.get("batting_order_projected", 4) <= 3]
+            openers.sort(key=lambda x: x.get("projected_points", 0), reverse=True)
+
+            bowlers = [p for p in p_list if p.get("role") in ("BOWL", "AR")]
+            bowlers.sort(key=lambda x: x.get("projected_points", 0), reverse=True)
+
+            all_rounders = [p for p in p_list if p.get("role") == "AR"]
+            all_rounders.sort(key=lambda x: x.get("projected_points", 0), reverse=True)
+
+            if openers:
+                preferred_c1 = openers[0].get("id")
+                p_c1_name = openers[0].get("name", p_c1_name)
+            if bowlers:
+                same_team_bowler = next((b for b in bowlers if b.get("team") == (openers[0].get("team") if openers else None)), bowlers[0])
+                preferred_vc1 = same_team_bowler.get("id")
+                p_vc1_name = same_team_bowler.get("name", p_vc1_name)
+
+            opp_openers = [p for p in openers if p.get("team") == team_b] or openers
+            opp_bowlers = [p for p in bowlers if p.get("team") == team_b] or bowlers
+            if opp_openers:
+                preferred_c2 = opp_openers[0].get("id")
+                p_c2_name = opp_openers[0].get("name", p_c2_name)
+            if all_rounders:
+                preferred_vc2 = all_rounders[0].get("id")
+                p_vc2_name = all_rounders[0].get("name", p_vc2_name)
+            elif opp_bowlers:
+                preferred_vc2 = opp_bowlers[0].get("id")
+                p_vc2_name = opp_bowlers[0].get("name", p_vc2_name)
+
+            if bowlers:
+                preferred_c3 = bowlers[0].get("id")
+                p_c3_name = bowlers[0].get("name", p_c3_name)
+            if len(openers) > 1:
+                preferred_vc3 = openers[1].get("id")
+                p_vc3_name = openers[1].get("name", p_vc3_name)
+            elif openers:
+                preferred_vc3 = openers[0].get("id")
+                p_vc3_name = openers[0].get("name", p_vc3_name)
+
+            if len(openers) > 2:
+                preferred_c4 = openers[2].get("id")
+                p_c4_name = openers[2].get("name", p_c4_name)
+            elif openers:
+                preferred_c4 = openers[0].get("id")
+                p_c4_name = openers[0].get("name", p_c4_name)
+            if len(all_rounders) > 1:
+                preferred_vc4 = all_rounders[1].get("id")
+                p_vc4_name = all_rounders[1].get("name", p_vc4_name)
+
+            if len(bowlers) > 1:
+                preferred_c5 = bowlers[0].get("id")
+                preferred_vc5 = bowlers[1].get("id")
+                p_c5_name = bowlers[0].get("name", p_c5_name)
+                p_vc5_name = bowlers[1].get("name", p_vc5_name)
 
         return [
             {
                 "tag": f"RAIN_SPRINT_{overs}OV_POWERPLAY_BLITZ",
                 "name": f"{overs}-Over Powerplay Sprint",
                 "short_match": True,
-                "ind_bias": 1.25, "wi_bias": 0.90,
-                "preferred_c": "ind_abhishek", "preferred_vc": "ind_mayank",
+                "team_biases": {team_a: 1.25, team_b: 0.90} if team_a != team_b else {},
+                "preferred_c": preferred_c1,
+                "preferred_vc": preferred_vc1,
                 "gl_potential": "Short-Format Ceiling",
-                "rationale": f"{overs}-over match eliminates middle-order anchor value. Abhishek attacks from ball one; Mayank Yadav bowls 2 high-pace death/powerplay overs."
+                "rationale": f"{overs}-over curtailed match eliminates middle-order anchor value. {p_c1_name} attacks inside compressed powerplay; {p_vc1_name} maximizes wicket-taking quota."
             },
             {
                 "tag": f"RAIN_SPRINT_{overs}OV_DLS_CHASE",
-                "name": f"{overs}-Over DLS Chasing Masterclass",
+                "name": f"{overs}-Over Chasing Target Formula",
                 "short_match": True,
-                "ind_bias": 1.10, "wi_bias": 1.15,
-                "preferred_c": "wi_hope", "preferred_vc": "wi_shepherd",
-                "gl_potential": "DLS Chasing Leverage",
-                "rationale": f"Wet ball impairs spin control. Chasing team uses known DLS equation; Hope anchors top-3 while Shepherd bowls crucial death overs."
+                "team_biases": {team_a: 1.05, team_b: 1.15} if team_a != team_b else {},
+                "preferred_c": preferred_c2,
+                "preferred_vc": preferred_vc2,
+                "gl_potential": "Chasing Leverage",
+                "rationale": f"Wet ball impairs spin control in {overs}-over shootout. Chasing side benefits from known revised equation; {p_c2_name} anchors top-3 while {p_vc2_name} secures death over points."
             },
             {
                 "tag": f"RAIN_SPRINT_{overs}OV_DEATH_YORKER_CARNAGE",
                 "name": f"{overs}-Over Death Seam Carnage",
                 "short_match": True,
-                "ind_bias": 1.15, "wi_bias": 1.05,
-                "preferred_c": "ind_arshdeep", "preferred_vc": "ind_tilak",
+                "team_biases": {team_a: 1.15, team_b: 1.05} if team_a != team_b else {},
+                "preferred_c": preferred_c3,
+                "preferred_vc": preferred_vc3,
                 "gl_potential": "Wicket Multiplier",
-                "rationale": f"Batsmen slogging indiscriminately in {overs}-over shootout. Arshdeep Singh's yorkers produce 3+ cheap wickets."
+                "rationale": f"Indiscriminate slogging in shortened {overs}-over game creates extreme wicket clustering. {p_c3_name} attacks stumps while {p_vc3_name} accumulates top-order boundaries."
             },
             {
                 "tag": f"RAIN_SPRINT_{overs}OV_TOP_ORDER_SHOOTOUT",
                 "name": f"{overs}-Over Top-3 Heavy Shootout",
                 "short_match": True,
-                "ind_bias": 1.15, "wi_bias": 1.15,
-                "preferred_c": "ind_tilak", "preferred_vc": "wi_rutherford",
-                "gl_potential": "Rank #1 Solo",
-                "rationale": f"Fade lower-middle order completely. Tilak Varma and Sherfane Rutherford maximize boundary balls in compressed overs."
+                "team_biases": {team_a: 1.15, team_b: 1.15} if team_a != team_b else {},
+                "preferred_c": preferred_c4,
+                "preferred_vc": preferred_vc4,
+                "gl_potential": "Contrarian Solo",
+                "rationale": f"Fade lower-middle order completely. {p_c4_name} and {p_vc4_name} maximize boundary balls in compressed overs."
             },
             {
                 "tag": f"RAIN_SPRINT_{overs}OV_EXPRESS_PACE_STRANGLE",
-                "name": f"{overs}-Over 150kph Express Pace Strangle",
+                "name": f"{overs}-Over Express Pace Strangle",
                 "short_match": True,
-                "ind_bias": 1.10, "wi_bias": 1.10,
-                "preferred_c": "ind_mayank", "preferred_vc": "wi_joseph",
+                "team_biases": {team_a: 1.10, team_b: 1.10} if team_a != team_b else {},
+                "preferred_c": preferred_c5,
+                "preferred_vc": preferred_vc5,
                 "gl_potential": "Differential Pace Punt",
-                "rationale": f"Mayank Yadav & Alzarri Joseph deliver 4 express overs combined on damp red clay, taking out top orders early."
+                "rationale": f"{p_c5_name} & {p_vc5_name} deliver frontline overs, taking out top orders early."
             }
         ]
 

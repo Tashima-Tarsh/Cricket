@@ -45,6 +45,7 @@ class VenuePitchSpecs:
     archetype: str
     tactical_summary: str
     gl_rank1_blueprint: str
+    provenance: str = "EXPERT_ESTIMATE_UNVERIFIED"
 
 
 class VenuePitchIntelligenceEngine:

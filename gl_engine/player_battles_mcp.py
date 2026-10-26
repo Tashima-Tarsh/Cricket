@@ -34,6 +34,11 @@ class BatterBowlerH2H:
     dismissal_rate_per_ball: float = 0.05
     dot_ball_pct: float = 35.0
     tactical_advantage: str = 'Neutral'
+    sample_size: int = 0
+    shrinkage_weight: float = 1.0
+    confidence_label: str = "PRIOR_ONLY"
+    shrunk_strike_rate: float = 130.0
+    shrunk_dismissal_rate: float = 0.045
 
     def model_dump(self) -> Dict[str, Any]:
         return asdict(self)
@@ -310,6 +315,12 @@ class PlayerBattlesMCPEngine:
                 else:
                     advantage = "Competitive Balance"
 
+                from .bayesian_shrinkage import HierarchicalPlayerModel
+                d_shrunk = HierarchicalPlayerModel.apply_shrinkage(
+                    observed_events=dism, observed_balls=balls, prior_rate=0.045, prior_strength=40.0
+                )
+                conf_label = "HIGH" if balls >= 120 else ("MODERATE" if balls >= 40 else ("SHRUNK" if balls > 0 else "PRIOR_ONLY"))
+
                 return BatterBowlerH2H(
                     batter_name=m["batter"],
                     bowler_name=m["bowler"],
@@ -323,7 +334,12 @@ class PlayerBattlesMCPEngine:
                     strike_rate=sr,
                     dismissal_rate_per_ball=d_rate,
                     dot_ball_pct=dot_pct,
-                    tactical_advantage=advantage
+                    tactical_advantage=advantage,
+                    sample_size=balls,
+                    shrinkage_weight=d_shrunk["shrinkage_weight"],
+                    confidence_label=conf_label,
+                    shrunk_strike_rate=round(130.0 * d_shrunk["shrinkage_weight"] + sr * (1.0 - d_shrunk["shrinkage_weight"]), 1),
+                    shrunk_dismissal_rate=d_shrunk["posterior_rate"]
                 )
 
         # On-the-fly SQL lookup against DuckDB for any non-cached pair
@@ -355,6 +371,13 @@ class PlayerBattlesMCPEngine:
                     d_rate = round(dism / max(1, balls), 3)
                     dot_pct = round((dots / max(1, balls)) * 100.0, 1)
                     advantage = "Bowler Dominant" if dism >= 2 else ("Batter Dominant" if sr > 150 else "Competitive Balance")
+
+                    from .bayesian_shrinkage import HierarchicalPlayerModel
+                    d_shrunk = HierarchicalPlayerModel.apply_shrinkage(
+                        observed_events=dism, observed_balls=balls, prior_rate=0.045, prior_strength=40.0
+                    )
+                    conf_label = "HIGH" if balls >= 120 else ("MODERATE" if balls >= 40 else ("SHRUNK" if balls > 0 else "PRIOR_ONLY"))
+
                     return BatterBowlerH2H(
                         batter_name=batter,
                         bowler_name=bowler,
@@ -368,7 +391,12 @@ class PlayerBattlesMCPEngine:
                         strike_rate=sr,
                         dismissal_rate_per_ball=d_rate,
                         dot_ball_pct=dot_pct,
-                        tactical_advantage=advantage
+                        tactical_advantage=advantage,
+                        sample_size=balls,
+                        shrinkage_weight=d_shrunk["shrinkage_weight"],
+                        confidence_label=conf_label,
+                        shrunk_strike_rate=round(130.0 * d_shrunk["shrinkage_weight"] + sr * (1.0 - d_shrunk["shrinkage_weight"]), 1),
+                        shrunk_dismissal_rate=d_shrunk["posterior_rate"]
                     )
             except Exception:
                 pass
@@ -410,8 +438,8 @@ class PlayerBattlesMCPEngine:
 
         return {
             "official_dls": False,
-            "data_provenance": "ILLUSTRATIVE_HEURISTIC",
-            "verification": "[VERIFY REQUIRED] Not for match adjudication",
+            "data_provenance": "FANTASY_REDUCED_OVERS_ADAPTATION",
+            "verification": "Fantasy adaptation only — not for match adjudication",
             "first_innings_total": first_innings_runs,
             "first_innings_overs": first_innings_overs,
             "revised_second_innings_overs": second_innings_overs,
