@@ -37,6 +37,8 @@ class CricketBatterMatchups:
                     "dismissals": m.dismissals,
                     "strike_rate": m.strike_rate,
                     "advantage": h2h.tactical_advantage if h2h else "Bowler Dominant",
+                    "sample_size": m.balls,
+                    "confidence_label": ("HIGH" if m.balls >= 40 else ("MODERATE" if m.balls >= 20 else "SHRUNK_TOWARD_PRIOR")),
                     "tactical_note": f"{m.bowler_name} has dismissed {m.batter_name} {m.dismissals} times in {m.balls} balls at SR {m.strike_rate}."
                 })
             elif m.strike_rate >= 155.0 and m.dismissals <= 1:
@@ -48,10 +50,11 @@ class CricketBatterMatchups:
                     "dismissals": m.dismissals,
                     "strike_rate": m.strike_rate,
                     "advantage": h2h.tactical_advantage if h2h else "Batter Dominant",
+                    "sample_size": m.balls,
+                    "confidence_label": ("HIGH" if m.balls >= 40 else ("MODERATE" if m.balls >= 20 else "SHRUNK_TOWARD_PRIOR")),
                     "tactical_note": f"{m.batter_name} dominates {m.bowler_name} striking at {m.strike_rate}."
                 })
 
-        # Dynamically generate tactical style insights from actual matchups and squad composition
         style_insights = []
         for danger in key_danger_zones[:2]:
             style_insights.append(danger["tactical_note"])

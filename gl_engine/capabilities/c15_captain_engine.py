@@ -44,7 +44,7 @@ class CricketCaptainEngine:
             team_a_players = [p for p in candidates if p.team == team_a]
             team_b_players = [p for p in candidates if p.team == team_b]
 
-            # 1. Team A Dominance (Top-Order Anchor/AR + Primary Bowler/AR)
+            # 1. Team A Dominance (Leading batter/AR + Primary Bowler/AR)
             t_a_bat = next((p for p in team_a_players if p.role in ["BAT", "WK", "AR"]), None)
             t_a_bowl = next((p for p in team_a_players if p.role in ["BOWL", "AR"] and p != t_a_bat), None)
             if t_a_bat and t_a_bowl:
@@ -67,7 +67,7 @@ class CricketCaptainEngine:
                         "type": "Leverage Surge"
                     })
 
-            # 3. Team B Counter-Attack (Top-Order Anchor/AR from Team B + Team B Bowler)
+            # 3. Team B Counter-Attack (Leading batter/AR from Team B + Team B Bowler)
             if team_b != team_a and team_b_players:
                 t_b_bat = next((p for p in team_b_players if p.role in ["BAT", "WK", "AR"]), None)
                 t_b_bowl = next((p for p in team_b_players if p.role in ["BOWL", "AR"] and p != t_b_bat), None)

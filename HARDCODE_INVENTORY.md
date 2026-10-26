@@ -1,36 +1,32 @@
-# HARDCODE_INVENTORY.md — Source Constants & Fake Data Disposition Inventory
+# Hardcode inventory — current Phase 0 baseline
 
-**Repository**: `https://github.com/Tashima-Tarsh/Cricket`  
-**Current HEAD**: `d9689d13144509424a26aab6545468fad5ea01c9`  
-**Branch**: `main`  
-**Last Updated**: October 26, 2026  
+Baseline HEAD: `d9689d13144509424a26aab6545468fad5ea01c9`.
+Audited implementation HEAD: `1937adc3a32616fc333818d659d1a468c67d03ba`.
+Branch: `repair/phase-0-evidence-safety`. Date: 2026-10-26.
 
----
+The previous inventory described an older commit and overstated repair completion. This inventory distinguishes confirmed removals from residual findings. Symbol names are the stable references; line numbers change during repair.
 
-## 1. Inventory Catalog
+| Location / symbol | Evidence and disposition | State / next phase |
+| --- | --- | --- |
+| `gl_engine/web_app.py:get_portal_match_roster` | Embedded 22-player AFG-ZIM roster and catch-all fallback removed; active/requested resolver only | Repaired, Phase 0 |
+| `gl_engine/match_catalog.py:get_match_data` | Fifth-match JSON formerly used for earlier fixtures, with hand-adjusted ownership | Repaired: exact fixture ID binding, Phase 0 |
+| `gl_engine/portal_fixtures.py` | Six placeholder matchup lists, six handedness lists, six invented venue-player lists | Removed; unavailable arrays empty, Phase 0 |
+| `gl_engine/rain_model.py:get_rain_scenarios` | Five fixed preferred_c/preferred_vc pairs such as ind_abhishek and wi_hope | CONFIRMED residual, Phase 1 |
+| `gl_engine/web_app.py:solve_portal_lineup` | AFG_FAROOQI, AFG_OMARZAI, ZIM_RAZA, ZIM_MUZARABANI weight overrides; fixture-specific default scenario | CONFIRMED residual, Phases 1/5 |
+| `gl_engine/web_app.py:query_ai_analyst` | Pooran/Samson/Kuldeep/Bumrah fallback selection in query branches | CONFIRMED residual, Phase 1 |
+| `gl_engine/web_app.py:solve_portal_lineup` | Fixed uniqueness_percentile=99.98 and collision_probability<0.01% | CONFIRMED unsupported metrics, Phase 5 |
+| `gl_engine/universal_engine.py:_profile_match_players` | Fixed recent_scores/recent_wickets, numerical priors and one fixture-specific registry path | CONFIRMED residual; explicit unverified response labeling only, Phases 1/4 |
+| `gl_engine/venue_pitch_intelligence.py` | Static venue estimates without individual source verification | CONFIRMED residual, Phase 3 |
+| `gl_engine/portal_fixtures.py`, `gl_engine/data/*.json`, registry/catalog modules | Bundled names and numerical claims lack independent source verification | NOT certified; audit and replace fixture-by-fixture, Phases 1/3/4 |
+| `gl_engine/capabilities/c19_backtesting.py:replay_match_from_duckdb` | No 0.946 multiplier, but prem_rank uses target-match batters_data/bowlers_data workload | CONFIRMED leakage; chronological selection required, Phase 5 |
+| `gl_engine/capabilities/c15_captain_engine.py`, `c07_batter_matchups.py` | Existing regression tests exercise supplied non-IND/WI players | Dynamic tested paths; not evidence all narrative capabilities are clean |
+| `gl_engine/models.py:Player` and engine ownership consumers | Legacy 50%/30% ownership defaults remain | Must become unavailable or explicit priors, Phase 5 |
+| `gl_engine/web_app.py:__main__` | Backend default still 8000 while frontend proxy defaults to 8001 | CONFIRMED residual, Phase 6 |
+| `gl_engine/data/xgboost_fantasy_model.provenance.json` | R² 0.017, independent validation required; metadata incomplete | Skill not established, Phase 6 |
+| `dream11-edge/edge/optimize/solver.py` | PuLP API incompatibility with installed 4.0.1 | CONFIRMED runtime failure, Phase 6 |
 
-| Path | Line(s) | Symbol / Construct | Problem Description | Severity | Consumer | Data Source | Status / Planned Disposition |
-| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| `gl_engine/portal_fixtures.py` | 2413–2460, 2617–2664, 3145–3192, 3340–3387, 3535–3582, 3730–3777 | `"Key Batter 1"`, `"Strike Pacer"`, `"Lead Spinner"`, `"Top Batter"`, `"Star Performer"` | Synthetic placeholder matchups and handedness records copied across fixtures | CRITICAL | Match details & H2H analytics | Algorithmic mock data | Empty lists (`[]`) when real delivery data is absent |
-| `gl_engine/web_app.py` | 1149–1172 | `players_data` in `get_portal_match_roster` | Hardcoded `AFG_GURBAZ`, `AFG_ZADRAN`, etc. returned from in-memory list | HIGH | Portal roster resolver | Hardcoded dict list | Dynamically query `PORTAL_FIXTURES` or `resolve_match_players` |
-| `gl_engine/rain_model.py` | 230 | `"preferred_c": "ind_abhishek", "preferred_vc": "ind_mayank"` | Residual match-specific player IDs hardcoded into rain scenario generator | CRITICAL | Rain simulation engine | Hardcoded IDs | Compute dynamic preferred C/VC from active roster roles and projections |
-| `gl_engine/rain_model.py` | 96 | `"Captain MUST be an aggressive Opener or Strike Pacer."` | Unverified generic narrative string naming synthetic concept | MEDIUM | Rain scenario description | Static string | Replace with dynamic tactical role summary ("aggressive top-order anchor or designated death bowler") |
-| `gl_engine/ortools_optimizer.py` | 502, 558 | `"preferred_c": "ind_abhishek"`, `"preferred_vc": "wi_joseph" / "wi_hope"` | Hardcoded captain pairings inside optimizer scenario definitions | CRITICAL | CP-SAT scenario portfolio | Hardcoded IDs | Generate dynamic preferred C/VC based on active match roster |
-| `gl_engine/match_catalog.py` | 242–250 | `if p_copy["id"] == "ind_abhishek":` | Fixture-specific adjustments tied to specific player IDs | MEDIUM | Match data loader | Hardcoded overrides | Use fixture context object or DuckDB historical distributions |
-| `gl_engine/player_battles_mcp.py` | 175–189, 250 | Hardcoded IND-WI cross-team matchup list & DLS calculation | Fixed bilateral players dossier; DLS labeled without explicit fantasy adaptation warning | HIGH | Battles & MCP tool | Hardcoded dict | Require DuckDB deliveries; add `"official_dls": false` and clear disclaimer |
-| `gl_engine/venue_pitch_intelligence.py` | 18–180 | Static venue catalog | Static catalog without provenance labels or live DuckDB derivation | MEDIUM | Venue condition resolution | Static dict | Attach `DataProvenance(source="EXPERT_ESTIMATE_UNVERIFIED")` |
-| `gl_engine/models.py` | 22–93 | `Player`, `Lineup`, `VenueConditions` | Missing mandatory `DataProvenance` schema | HIGH | Global domain models | Architecture omission | Embed `DataProvenance` on all core models |
-| `edgeforge/score/dream11.py` & `edgeforge/score/test_scoring.py` | 33–50 | Scoring discrepancies | Missing LBW bonus and outdated wicket weights in edgeforge config | HIGH | Scoring engine | Scoring constants | Harmonized with official Dream11 rules (+30 wicket, +8 LBW, +1 dot) |
+## Guard scope
 
----
+`tests/test_phase0_safety.py` scans Python, TypeScript, TSX, HTML and JSON under the three engines and frontend/src for the requested prohibited literals. Source comments and role narratives are included, so harmless role text was rephrased. Behavioral tests separately check fixture isolation and solver team extraction; a text scan cannot establish these semantics.
 
-## 2. Invariant Rules Applied
-
-1. **Zero Dummy Players**: No function may invent players with names like `"Top Batter 1"`, `"Star Opener"`, `"Tailender"`, `"Strike Pacer"`, `"Lead Spinner"`, or `"Star Performer"`.
-2. **Zero Match-Specific Hardcodes**: Never inject match-specific player IDs (`"ind_abhishek"`, `"wi_hope"`, `"AFG_GURBAZ"`) into generic simulation, rain, captaincy, or matchup functions.
-3. **Global Data Provenance**: Every `Player`, `Fixture`, `Lineup`, `Projection`, and API response carries a `DataProvenance` object.
-4. **Deterministic & Auditable Scoring**: Fantasy points match official Dream11 rules (including dot balls +1, wickets +30, boundaries +1/+2, milestones +4/+8/+16).
-5. **No Uncalibrated Claims**: Never claim "Rank 1", "calibrated", "LIVE & TRACKED", or "guaranteed". Use `MODEL_ESTIMATE`, `UNVERIFIED`, `PRIOR_ONLY`, `SIMULATION`.
-6. **No Official DLS Claims**: Clearly label rain adjustments: `"official_dls": false`, `"verification": "Fantasy adaptation only — not for match adjudication"`.
-7. **Environment Port Parity**: Backend and frontend agree on port 8001 by default, never assuming port 8000.
-
+No claim is made that all hardcodes have been purged. Provenance added in Phase 0 records UNVERIFIED / MODEL_ESTIMATE / SIMULATION as appropriate; it does not transform bundled data into verified observations.

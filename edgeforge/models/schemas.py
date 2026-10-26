@@ -23,22 +23,7 @@ class Archetype(str, Enum):
     PARITY = "PARITY"
 
 
-class DataProvenance(BaseModel):
-    """Mandatory on every data object. Makes silent invention impossible."""
-    source: Literal["cricsheet", "provider", "admin_fixture", "estimated", "unavailable"]
-    provider_name: Optional[str] = None
-    confidence: float = Field(ge=0.0, le=1.0, default=0.0)
-    sample_size: int = Field(ge=0, default=0)
-    last_updated: datetime = Field(default_factory=datetime.utcnow)
-    notes: Optional[str] = None
-
-    @model_validator(mode="after")
-    def reject_fake_high_confidence(self) -> "DataProvenance":
-        if self.source == "estimated" and self.confidence > 0.6:
-            raise ValueError("Estimated data cannot claim confidence > 0.6")
-        if self.source == "unavailable" and self.confidence > 0.0:
-            raise ValueError("Unavailable data must have confidence 0.0")
-        return self
+from gl_engine.provenance import DataProvenance
 
 
 class Player(BaseModel):

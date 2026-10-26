@@ -21,6 +21,8 @@ from datetime import datetime, timezone
 import duckdb
 import numpy as np
 from .match_catalog import UnknownMatchError
+from .roster_safety import validate_roster
+from .provenance import annotate_payload, DataProvenance
 try:
     from ortools.sat.python import cp_model
     HAS_ORTOOLS = True
@@ -371,6 +373,7 @@ class UniversalMatchEngine:
         
         # 1. Profile Players from DuckDB & Bayesian Models
         players = self._profile_match_players(match_meta)
+        validate_roster(players)
 
         # 2. Build Head-to-Head Battle Matrix
         battles = self._build_battle_matrix(players, match_meta)
@@ -403,6 +406,7 @@ class UniversalMatchEngine:
             "providers": telemetry
         }
 
+        unified_snapshot = annotate_payload(unified_snapshot, "universal_engine:unverified")
         self._cached_states[m_id] = unified_snapshot
         return unified_snapshot
 
@@ -904,6 +908,7 @@ class UniversalMatchEngine:
         diff_count = len([p for p in selected if p.get("projected_ownership", 50.0) < 35.0])
 
         return {
+            "provenance": DataProvenance(source="estimated", verification_status="MODEL_ESTIMATE").model_dump(mode="json"),
             "id": scenario["id"],
             "name": scenario["name"],
             "team_name": scenario["name"],

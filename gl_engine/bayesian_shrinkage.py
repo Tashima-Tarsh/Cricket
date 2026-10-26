@@ -11,7 +11,7 @@ import math
 import numpy as np
 
 class HierarchicalPlayerModel:
-    """Computes calibrated, shrunk player metrics to eliminate small-sample noise."""
+    """Computes Bayesian-shrunk player metrics to eliminate small-sample noise."""
 
     LEAGUE_STRENGTH_MULTIPLIER = {
         "IPL": 1.00,
@@ -57,7 +57,6 @@ class HierarchicalPlayerModel:
 
         shrunk_rate = (prior_strength * prior_rate + observed_events) / (prior_strength + observed_balls)
         
-        # Approximate Beta variance
         alpha_post = prior_strength * prior_rate + observed_events
         beta_post = prior_strength * (1.0 - prior_rate) + (observed_balls - observed_events)
         var = (alpha_post * beta_post) / ((alpha_post + beta_post) ** 2 * (alpha_post + beta_post + 1.0))
@@ -144,7 +143,7 @@ class HierarchicalPlayerModel:
             "player_name": player_name,
             "role": role,
             "weighted_balls_sample": round(weighted_balls, 1),
-            "boundary_rate_calibrated": boundary_shrunk["posterior_rate"],
+            "boundary_rate_posterior": boundary_shrunk["posterior_rate"],
             "credible_interval_90": [boundary_shrunk["lower_ci_90"], boundary_shrunk["upper_ci_90"]],
             "confidence": boundary_shrunk["confidence_label"],
             "shrinkage_impact": f"{round(boundary_shrunk['shrinkage_weight'] * 100, 1)}% regressed to {role_key} prior"
