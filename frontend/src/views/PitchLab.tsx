@@ -470,7 +470,7 @@ export const PitchLab: React.FC = () => {
           </div>
         </div>
 
-        {/* Rank 1 Fantasy Recommendation Banner & Quick Actions */}
+        {/* Optimal Fantasy Recommendation Banner & Quick Actions */}
         <div className="p-4 rounded-xl     border border-stone-300 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <div className="p-2 rounded-lg bg-stone-100 text-stone-800 shrink-0">
@@ -478,7 +478,7 @@ export const PitchLab: React.FC = () => {
             </div>
             <div className="space-y-0.5">
               <div className="text-xs font-sans text-stone-800 font-bold uppercase">
-                FANTASY RANK-1 TACTICAL DIRECTIVE
+                OPTIMAL FANTASY TACTICAL DIRECTIVE
               </div>
               <div className="text-xs text-stone-800 font-sans font-bold leading-relaxed">
                 {activeDuel.fantasyDirective}
@@ -505,7 +505,7 @@ export const PitchLab: React.FC = () => {
 
         {/* Provenance Footnote */}
         <div className="flex flex-wrap items-center justify-between text-[10px] font-mono text-stone-500 px-3 py-1 bg-stone-100/60 rounded border border-stone-200">
-          <span>PROVENANCE: Calibrated Kinematic Spatial Model (Simulated from Cricinfo release telemetry & Law 28 geometry)</span>
+          <span>PROVENANCE: Kinematic Spatial Model (Simulated from Cricinfo release telemetry & Law 28 geometry)</span>
           <span>Pitch Restitution Coefficient: e = 0.58 (Chinnaswamy Red Clay Sand-Base)</span>
         </div>
       </div>

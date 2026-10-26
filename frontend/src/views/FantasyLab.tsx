@@ -609,7 +609,7 @@ export const FantasyLab: React.FC<FantasyLabProps> = ({ lineups: initialLineups,
             </div>
           </div>
           <span className="text-xs font-mono text-cyan-300 bg-cyan-500/10 border border-cyan-500/20 px-3 py-1 rounded-xl">
-            100,000 Trial MC Calibrated
+            100,000 Trial MC Simulation
           </span>
         </div>
 

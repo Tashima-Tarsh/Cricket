@@ -350,16 +350,50 @@ Cricket/
 
 ---
 
+## 🧭 Pro Coach & Quantitative Analyst Usage Guide
+
+> [!IMPORTANT]
+> **Research Application Statement**: Projections and tactical rank claims are constrained mathematical estimations under stated assumptions. They require independent empirical validation before real-capital deployment. No model guarantees solo 1st rank or deterministic outcomes in stochastic sports tournaments.
+
+### Core Analytical Invariants
+1. **Priors + Scenarios, Not Guarantees**:
+   - Model scores represent expected values ($E[pts]$) and simulation percentiles, not guaranteed floors or ceilings.
+   - Use the 10 game script scenarios as tactical lenses (e.g., pace collapse, dew chase, top-order shootout) rather than fixed predictions.
+2. **Bayesian Shrinkage on Head-to-Head (H2H)**:
+   - When reviewing batter-bowler duels in `BattleArena` or `player_battles_mcp`, always inspect `sample_size` (balls faced), `shrinkage_weight`, and `confidence_label`:
+     - `PRIOR_ONLY`: $< 6$ balls — duel is dominated by league-wide role priors.
+     - `SHRUNK`: $6-17$ balls — partially pooled estimate with heavy shrinkage toward prior.
+     - `MODERATE`: $18-35$ balls — meaningful sample; mixed prior and observed metrics.
+     - `HIGH`: $\ge 36$ balls — established individual head-to-head empirical record.
+3. **Official Fantasy Scoring Parity**:
+   - Scoring strictly complies with standard Dream11 multi-format rules:
+     - Starting XI: $+4$ pts.
+     - Dot balls: $+1$ pt.
+     - Wickets: $+30$ pts (T20/T10), $+25$ pts (ODI); Bowled/LBW bonus $+8$ pts.
+     - Milestones: T20 ($30/50/100$), T10 ($30/50$), ODI ($50/100/150$).
+     - Strike rate & economy bands with format-accurate minimum thresholds.
+4. **Rain & Shortened Matches**:
+   - The reduced-overs module is a **fantasy adaptation only** (`official_dls: false`), modeling bowler quota compression and powerplay decay. It is not ICC match adjudication software.
+5. **Fail-Closed Roster Protocol**:
+   - The engine never invents synthetic players or falls back to unintended fixtures. Missing lineups fail closed ($404/409$). Always confirm Playing XI via toss telemetry before locking syndicates.
+
+---
+
 ## 🧪 Testing
 
-Run backend tests using Python:
+Run full backend regression and parity suites:
 ```bash
-python -m pytest tests/
+python -m pytest
 ```
 Or run component verification:
 ```bash
-python test_app.py
 python test_all_components.py
+```
+Run frontend linting and production build:
+```bash
+cd frontend
+npm run lint
+npm run build
 ```
 
 ---

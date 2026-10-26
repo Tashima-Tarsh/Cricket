@@ -584,7 +584,7 @@ export const OPTIMIZED_LINEUPS: Lineup[] = [
     total_ownership_sum: 512.0,
     differential_count: 2,
     tactical_rationale: "155kph express pace rewards true bounce at Hyderabad. Mayank Yadav and Alzarri Joseph share 6+ wickets.",
-    gl_rank_potential: "Rank #1 Leverage",
+    gl_rank_potential: "Simulation Percentile Leverage",
     uniqueness_score: 96
   },
   {
@@ -603,7 +603,7 @@ export const OPTIMIZED_LINEUPS: Lineup[] = [
     uniqueness_score: 91
   },
   {
-    team_name: "Team 5: Sub-40% Differential Rank #1 Punt",
+    team_name: "Team 5: Sub-40% Differential Leverage Punt",
     scenario_tag: "ULTRA_DIFFERENTIAL_LEVERAGE",
     players: [PLAYERS_DB[0], PLAYERS_DB[1], PLAYERS_DB[2], PLAYERS_DB[3], PLAYERS_DB[5], PLAYERS_DB[6], PLAYERS_DB[7], PLAYERS_DB[9], PLAYERS_DB[10], PLAYERS_DB[11], PLAYERS_DB[12]],
     captain: PLAYERS_DB[3], // Tilak

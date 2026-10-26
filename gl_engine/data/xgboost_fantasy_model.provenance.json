@@ -1,10 +1,19 @@
 {
   "status": "PRIOR_DATE_FEATURES_HOLDOUT",
   "feature_contract": "prior-date-v1",
+  "training_date": "2026-02-15",
   "independent_validation": "[VERIFY REQUIRED]",
   "leakage_audit": "Historical features exclude the target date; independent audit pending.",
   "validation_methodology": "Whole-date chronological holdout",
+  "features": [
+    "is_wk", "is_bat", "is_ar", "is_bowl",
+    "batting_order", "expected_overs",
+    "avg_fantasy_pts", "strike_rate", "batting_avg",
+    "economy", "death_overs_rate", "powerplay_overs_rate",
+    "venue_par_score", "pace_pct", "dew_factor"
+  ],
   "rmse": 31.03,
   "r2": 0.017,
-  "samples": 17526
+  "samples": 17526,
+  "skill_assessment": "Skill not yet established (holdout R² ≈ 0.017 near zero; model output is an uncalibrated prior estimate)"
 }
