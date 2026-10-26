@@ -31,9 +31,9 @@ class ScoringConfig:
     odi_100_bonus: float = 8.0
     odi_150_bonus: float = 16.0
     # Bowling
-    wicket: float = 25.0
+    wicket: float = 30.0
     odi_wicket: float = 25.0
-    bowled_lbw_bonus: float = 0.0
+    bowled_lbw_bonus: float = 8.0
     maiden_t20: float = 12.0
     maiden_odi: float = 4.0
     dot_ball: float = 1.0

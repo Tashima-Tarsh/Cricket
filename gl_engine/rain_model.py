@@ -93,7 +93,7 @@ class RainReducedOversEngine:
             fantasy_adjustment = f"Heavily favor Top-3 batters & frontline strike bowlers. Lower order (No. 6-8) face only ~{lower_order_balls} balls combined."
         elif valid_overs >= 8:
             tactical_key = f"{valid_overs}-over sprint: {pp_overs_str} powerplay. {quota_breakdown}. Zero settling time. Target ~{projected_par} ({rrr} RPO)."
-            fantasy_adjustment = "Strictly fade pure non-bowling middle-order batters. Captain MUST be an aggressive Opener or Strike Pacer."
+            fantasy_adjustment = "Strictly fade pure non-bowling middle-order batters. Captain MUST be an aggressive opener or frontline strike bowler."
         else:
             tactical_key = f"{valid_overs}-over shootout: {pp_overs_str} powerplay. {quota_breakdown}. Frontline bowlers permitted up to 2 overs (e.g. 2+2+1 allocation). Total balls: {total_balls}."
             fantasy_adjustment = "Max out top 3 batters. Lock in primary strike bowler capable of bowling 2 overs (doubling expected opportunity)."

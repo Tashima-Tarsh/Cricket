@@ -41,6 +41,30 @@ MASTER_FIXTURES = {
             "thirdMan": "56m",
             "cover": "60m"
         },
+        "players": [
+            {"id": "afg_gurbaz", "name": "R Gurbaz", "team": "AFG", "role": "WK", "sel": 79.34, "credits": 8.5, "type": "RHB_WK", "tier": "CORE", "style": "Aggressive Opener / Wicketkeeper", "projected_points": 58.4},
+            {"id": "afg_zadran", "name": "I Zadran", "team": "AFG", "role": "BAT", "sel": 88.72, "credits": 7.0, "type": "RHB", "tier": "CORE", "style": "Orthodox ODI Anchor (Avg 48+)", "projected_points": 64.8},
+            {"id": "afg_atal", "name": "S Atal", "team": "AFG", "role": "BAT", "sel": 82.41, "credits": 7.0, "type": "LHB", "tier": "CORE", "style": "Top-Order Powerplay Striker", "projected_points": 44.5},
+            {"id": "afg_rshah", "name": "R Shah", "team": "AFG", "role": "AR", "sel": 31.61, "credits": 8.0, "type": "RHB_LB", "tier": "DIFFERENTIAL", "style": "Afghanistan Core #3 Accumulator", "projected_points": 56.2},
+            {"id": "afg_shahidi", "name": "H Shahidi", "team": "AFG", "role": "BAT", "sel": 13.50, "credits": 9.0, "type": "LHB", "tier": "CONTRARIAN", "style": "Captain / Spin & Seam Rescuer", "projected_points": 58.0},
+            {"id": "afg_omarzai", "name": "A Omarzai", "team": "AFG", "role": "AR", "sel": 91.81, "credits": 8.5, "type": "RHB_PACE", "tier": "CORE", "style": "8-10 Overs Pace + Middle-Order Finisher", "projected_points": 76.5},
+            {"id": "afg_nabi", "name": "M Nabi", "team": "AFG", "role": "AR", "sel": 54.25, "credits": 8.0, "type": "RHB_SPIN", "tier": "MID_TIER", "style": "Veteran Off-Spin vs Zimbabwe LHBs", "projected_points": 49.0},
+            {"id": "afg_rashid", "name": "Rashid Khan", "team": "AFG", "role": "BOWL", "sel": 93.58, "credits": 9.0, "type": "RHB_SPIN", "tier": "CORE", "style": "World-Class Leg-Spin", "projected_points": 88.0},
+            {"id": "afg_ghazanfar", "name": "AM Ghazanfar", "team": "AFG", "role": "BOWL", "sel": 33.79, "credits": 7.0, "type": "RHB_SPIN", "tier": "DIFFERENTIAL", "style": "Mystery Spinner", "projected_points": 58.5},
+            {"id": "afg_sami", "name": "B Sami", "team": "AFG", "role": "BOWL", "sel": 11.92, "credits": 7.5, "type": "RHB_PACE", "tier": "CONTRARIAN", "style": "Speed Pacer", "projected_points": 41.0},
+            {"id": "afg_farooqi", "name": "F Farooqi", "team": "AFG", "role": "BOWL", "sel": 2.99, "credits": 8.0, "type": "LAFM_PACE", "tier": "CONTRARIAN", "style": "Left-Arm Swing Powerplay Spearhead", "projected_points": 72.0},
+            {"id": "zim_bennett", "name": "B Bennett", "team": "ZIM", "role": "AR", "sel": 48.72, "credits": 7.5, "type": "RHB_SPIN", "tier": "MID_TIER", "style": "Opening Batter + Off-Spin Variations", "projected_points": 42.0},
+            {"id": "zim_marumani", "name": "T Marumani", "team": "ZIM", "role": "WK", "sel": 0.62, "credits": 7.5, "type": "LHB_WK", "tier": "CONTRARIAN", "style": "Top-Order Wicketkeeper Batter", "projected_points": 28.0},
+            {"id": "zim_tsiga", "name": "T Tsiga", "team": "ZIM", "role": "WK", "sel": 7.91, "credits": 6.5, "type": "LHB_WK", "tier": "CONTRARIAN", "style": "Budget Keeper / Middle Order", "projected_points": 30.0},
+            {"id": "zim_taylor", "name": "B Taylor", "team": "ZIM", "role": "WK", "sel": 52.51, "credits": 8.0, "type": "RHB_WK", "tier": "MID_TIER", "style": "Experienced Wicketkeeper Anchor", "projected_points": 52.0},
+            {"id": "zim_raza", "name": "S Raza", "team": "ZIM", "role": "AR", "sel": 93.72, "credits": 9.0, "type": "RHB_SPIN", "tier": "CORE", "style": "10 Overs Off-Spin + #5 Power Anchor", "projected_points": 82.0},
+            {"id": "zim_madhevere", "name": "W Madhevere", "team": "ZIM", "role": "AR", "sel": 8.80, "credits": 6.5, "type": "RHB_SPIN", "tier": "CONTRARIAN", "style": "Middle-Overs Utility Off-Spin", "projected_points": 32.0},
+            {"id": "zim_burl", "name": "R Burl", "team": "ZIM", "role": "AR", "sel": 15.71, "credits": 7.5, "type": "LHB_SPIN", "tier": "CONTRARIAN", "style": "LHB Finisher + Leg-Spin Weapon", "projected_points": 44.0},
+            {"id": "zim_evans", "name": "B Evans", "team": "ZIM", "role": "AR", "sel": 89.72, "credits": 7.5, "type": "RHB_PACE", "tier": "CORE", "style": "Death Overs Pacer + Boundary Hitter", "projected_points": 65.0},
+            {"id": "zim_nyamhuri", "name": "N Nyamhuri", "team": "ZIM", "role": "BOWL", "sel": 0.63, "credits": 8.0, "type": "LMF_PACE", "tier": "CONTRARIAN", "style": "Left-Arm Medium Pacer Value Pick", "projected_points": 35.0},
+            {"id": "zim_masakadza", "name": "W Masakadza", "team": "ZIM", "role": "BOWL", "sel": 24.00, "credits": 7.5, "type": "LHB_SPIN", "tier": "DIFFERENTIAL", "style": "Slow Left-Arm Orthodox", "projected_points": 46.0},
+            {"id": "zim_muzarabani", "name": "B Muzarabani", "team": "ZIM", "role": "BOWL", "sel": 54.48, "credits": 8.5, "type": "RHB_PACE", "tier": "MID_TIER", "style": "Express Bounce Strike Bowler", "projected_points": 75.0}
+        ],
         "lineups": [
             {
                 "name": "Team 1 • Afghan Seam & Spin Strangle (ZIM <185)",
@@ -2408,67 +2432,9 @@ MASTER_FIXTURES = {
                 "adv": "Batter Dominant"
             }
         ],
-        "matchups": [
-            {
-                "batter": "Key Batter 1",
-                "batter_hand": "Right-Hand Bat (RHB)",
-                "bowler": "Strike Pacer",
-                "bowler_arm": "Right-Arm Fast (RAF)",
-                "speed": "142.5 km/h",
-                "runs": 32,
-                "balls": 24,
-                "dism": 1,
-                "sr": 133.3,
-                "dots": 38.0,
-                "fours": 3,
-                "sixes": 1,
-                "venue_factor": "Surface characteristics tested",
-                "adv": "Competitive Duel"
-            },
-            {
-                "batter": "Key Batter 2",
-                "batter_hand": "Left-Hand Bat (LHB)",
-                "bowler": "Lead Spinner",
-                "bowler_arm": "Slow Left-Arm Orthodox (SLA)",
-                "speed": "91.0 km/h",
-                "runs": 28,
-                "balls": 19,
-                "dism": 0,
-                "sr": 147.4,
-                "dots": 25.0,
-                "fours": 3,
-                "sixes": 1,
-                "venue_factor": "Turning trajectory into batting arc",
-                "adv": "Batter Edge"
-            }
-        ],
-        "handedness_matrix": [
-            {
-                "batter": "Top Batter",
-                "hand": "RHB",
-                "vs_rap": "Avg 38.0 | SR 145.0",
-                "vs_lap": "Avg 31.0 | SR 130.0",
-                "vs_ob": "Avg 40.0 | SR 148.0",
-                "vs_lb": "Avg 29.5 | SR 125.0",
-                "vs_sla": "Avg 36.0 | SR 138.0",
-                "weakness_speed": "Seam deviation > 138 km/h",
-                "venue_fit": "Favorable Ground"
-            }
-        ],
-        "venue_player_records": [
-            {
-                "player": "Star Performer",
-                "team": "DOM",
-                "role": "AR",
-                "hand": "RHB / RAF",
-                "matches": 5,
-                "runs_wkts": "142 runs, 6 wkts",
-                "avg": "35.5",
-                "sr_econ": "142.0 SR",
-                "fantasy_avg": "66.0 pts",
-                "badge": "Key Factor"
-            }
-        ]
+        "matchups": [],
+        "handedness_matrix": [],
+        "venue_player_records": []
     },
     "163671": {
         "id": "163671",
@@ -2612,67 +2578,9 @@ MASTER_FIXTURES = {
                 "adv": "Batter Wall"
             }
         ],
-        "matchups": [
-            {
-                "batter": "Key Batter 1",
-                "batter_hand": "Right-Hand Bat (RHB)",
-                "bowler": "Strike Pacer",
-                "bowler_arm": "Right-Arm Fast (RAF)",
-                "speed": "142.5 km/h",
-                "runs": 32,
-                "balls": 24,
-                "dism": 1,
-                "sr": 133.3,
-                "dots": 38.0,
-                "fours": 3,
-                "sixes": 1,
-                "venue_factor": "Surface characteristics tested",
-                "adv": "Competitive Duel"
-            },
-            {
-                "batter": "Key Batter 2",
-                "batter_hand": "Left-Hand Bat (LHB)",
-                "bowler": "Lead Spinner",
-                "bowler_arm": "Slow Left-Arm Orthodox (SLA)",
-                "speed": "91.0 km/h",
-                "runs": 28,
-                "balls": 19,
-                "dism": 0,
-                "sr": 147.4,
-                "dots": 25.0,
-                "fours": 3,
-                "sixes": 1,
-                "venue_factor": "Turning trajectory into batting arc",
-                "adv": "Batter Edge"
-            }
-        ],
-        "handedness_matrix": [
-            {
-                "batter": "Top Batter",
-                "hand": "RHB",
-                "vs_rap": "Avg 38.0 | SR 145.0",
-                "vs_lap": "Avg 31.0 | SR 130.0",
-                "vs_ob": "Avg 40.0 | SR 148.0",
-                "vs_lb": "Avg 29.5 | SR 125.0",
-                "vs_sla": "Avg 36.0 | SR 138.0",
-                "weakness_speed": "Seam deviation > 138 km/h",
-                "venue_fit": "Favorable Ground"
-            }
-        ],
-        "venue_player_records": [
-            {
-                "player": "Star Performer",
-                "team": "DOM",
-                "role": "AR",
-                "hand": "RHB / RAF",
-                "matches": 5,
-                "runs_wkts": "142 runs, 6 wkts",
-                "avg": "35.5",
-                "sr_econ": "142.0 SR",
-                "fantasy_avg": "66.0 pts",
-                "badge": "Key Factor"
-            }
-        ]
+        "matchups": [],
+        "handedness_matrix": [],
+        "venue_player_records": []
     },
     "170723": {
         "id": "170723",
@@ -3140,67 +3048,9 @@ MASTER_FIXTURES = {
                 "adv": "Competitive"
             }
         ],
-        "matchups": [
-            {
-                "batter": "Key Batter 1",
-                "batter_hand": "Right-Hand Bat (RHB)",
-                "bowler": "Strike Pacer",
-                "bowler_arm": "Right-Arm Fast (RAF)",
-                "speed": "142.5 km/h",
-                "runs": 32,
-                "balls": 24,
-                "dism": 1,
-                "sr": 133.3,
-                "dots": 38.0,
-                "fours": 3,
-                "sixes": 1,
-                "venue_factor": "Surface characteristics tested",
-                "adv": "Competitive Duel"
-            },
-            {
-                "batter": "Key Batter 2",
-                "batter_hand": "Left-Hand Bat (LHB)",
-                "bowler": "Lead Spinner",
-                "bowler_arm": "Slow Left-Arm Orthodox (SLA)",
-                "speed": "91.0 km/h",
-                "runs": 28,
-                "balls": 19,
-                "dism": 0,
-                "sr": 147.4,
-                "dots": 25.0,
-                "fours": 3,
-                "sixes": 1,
-                "venue_factor": "Turning trajectory into batting arc",
-                "adv": "Batter Edge"
-            }
-        ],
-        "handedness_matrix": [
-            {
-                "batter": "Top Batter",
-                "hand": "RHB",
-                "vs_rap": "Avg 38.0 | SR 145.0",
-                "vs_lap": "Avg 31.0 | SR 130.0",
-                "vs_ob": "Avg 40.0 | SR 148.0",
-                "vs_lb": "Avg 29.5 | SR 125.0",
-                "vs_sla": "Avg 36.0 | SR 138.0",
-                "weakness_speed": "Seam deviation > 138 km/h",
-                "venue_fit": "Favorable Ground"
-            }
-        ],
-        "venue_player_records": [
-            {
-                "player": "Star Performer",
-                "team": "DOM",
-                "role": "AR",
-                "hand": "RHB / RAF",
-                "matches": 5,
-                "runs_wkts": "142 runs, 6 wkts",
-                "avg": "35.5",
-                "sr_econ": "142.0 SR",
-                "fantasy_avg": "66.0 pts",
-                "badge": "Key Factor"
-            }
-        ]
+        "matchups": [],
+        "handedness_matrix": [],
+        "venue_player_records": []
     },
     "173941": {
         "id": "173941",
@@ -3335,67 +3185,9 @@ MASTER_FIXTURES = {
                 "adv": "Bowler Dominant"
             }
         ],
-        "matchups": [
-            {
-                "batter": "Key Batter 1",
-                "batter_hand": "Right-Hand Bat (RHB)",
-                "bowler": "Strike Pacer",
-                "bowler_arm": "Right-Arm Fast (RAF)",
-                "speed": "142.5 km/h",
-                "runs": 32,
-                "balls": 24,
-                "dism": 1,
-                "sr": 133.3,
-                "dots": 38.0,
-                "fours": 3,
-                "sixes": 1,
-                "venue_factor": "Surface characteristics tested",
-                "adv": "Competitive Duel"
-            },
-            {
-                "batter": "Key Batter 2",
-                "batter_hand": "Left-Hand Bat (LHB)",
-                "bowler": "Lead Spinner",
-                "bowler_arm": "Slow Left-Arm Orthodox (SLA)",
-                "speed": "91.0 km/h",
-                "runs": 28,
-                "balls": 19,
-                "dism": 0,
-                "sr": 147.4,
-                "dots": 25.0,
-                "fours": 3,
-                "sixes": 1,
-                "venue_factor": "Turning trajectory into batting arc",
-                "adv": "Batter Edge"
-            }
-        ],
-        "handedness_matrix": [
-            {
-                "batter": "Top Batter",
-                "hand": "RHB",
-                "vs_rap": "Avg 38.0 | SR 145.0",
-                "vs_lap": "Avg 31.0 | SR 130.0",
-                "vs_ob": "Avg 40.0 | SR 148.0",
-                "vs_lb": "Avg 29.5 | SR 125.0",
-                "vs_sla": "Avg 36.0 | SR 138.0",
-                "weakness_speed": "Seam deviation > 138 km/h",
-                "venue_fit": "Favorable Ground"
-            }
-        ],
-        "venue_player_records": [
-            {
-                "player": "Star Performer",
-                "team": "DOM",
-                "role": "AR",
-                "hand": "RHB / RAF",
-                "matches": 5,
-                "runs_wkts": "142 runs, 6 wkts",
-                "avg": "35.5",
-                "sr_econ": "142.0 SR",
-                "fantasy_avg": "66.0 pts",
-                "badge": "Key Factor"
-            }
-        ]
+        "matchups": [],
+        "handedness_matrix": [],
+        "venue_player_records": []
     },
     "174953": {
         "id": "174953",
@@ -3530,67 +3322,9 @@ MASTER_FIXTURES = {
                 "adv": "Even"
             }
         ],
-        "matchups": [
-            {
-                "batter": "Key Batter 1",
-                "batter_hand": "Right-Hand Bat (RHB)",
-                "bowler": "Strike Pacer",
-                "bowler_arm": "Right-Arm Fast (RAF)",
-                "speed": "142.5 km/h",
-                "runs": 32,
-                "balls": 24,
-                "dism": 1,
-                "sr": 133.3,
-                "dots": 38.0,
-                "fours": 3,
-                "sixes": 1,
-                "venue_factor": "Surface characteristics tested",
-                "adv": "Competitive Duel"
-            },
-            {
-                "batter": "Key Batter 2",
-                "batter_hand": "Left-Hand Bat (LHB)",
-                "bowler": "Lead Spinner",
-                "bowler_arm": "Slow Left-Arm Orthodox (SLA)",
-                "speed": "91.0 km/h",
-                "runs": 28,
-                "balls": 19,
-                "dism": 0,
-                "sr": 147.4,
-                "dots": 25.0,
-                "fours": 3,
-                "sixes": 1,
-                "venue_factor": "Turning trajectory into batting arc",
-                "adv": "Batter Edge"
-            }
-        ],
-        "handedness_matrix": [
-            {
-                "batter": "Top Batter",
-                "hand": "RHB",
-                "vs_rap": "Avg 38.0 | SR 145.0",
-                "vs_lap": "Avg 31.0 | SR 130.0",
-                "vs_ob": "Avg 40.0 | SR 148.0",
-                "vs_lb": "Avg 29.5 | SR 125.0",
-                "vs_sla": "Avg 36.0 | SR 138.0",
-                "weakness_speed": "Seam deviation > 138 km/h",
-                "venue_fit": "Favorable Ground"
-            }
-        ],
-        "venue_player_records": [
-            {
-                "player": "Star Performer",
-                "team": "DOM",
-                "role": "AR",
-                "hand": "RHB / RAF",
-                "matches": 5,
-                "runs_wkts": "142 runs, 6 wkts",
-                "avg": "35.5",
-                "sr_econ": "142.0 SR",
-                "fantasy_avg": "66.0 pts",
-                "badge": "Key Factor"
-            }
-        ]
+        "matchups": [],
+        "handedness_matrix": [],
+        "venue_player_records": []
     },
     "ind_w_vs_zim_w_2026_03": {
         "id": "ind_w_vs_zim_w_2026_03",
@@ -3725,66 +3459,8 @@ MASTER_FIXTURES = {
                 "adv": "Batter Dominant"
             }
         ],
-        "matchups": [
-            {
-                "batter": "Key Batter 1",
-                "batter_hand": "Right-Hand Bat (RHB)",
-                "bowler": "Strike Pacer",
-                "bowler_arm": "Right-Arm Fast (RAF)",
-                "speed": "142.5 km/h",
-                "runs": 32,
-                "balls": 24,
-                "dism": 1,
-                "sr": 133.3,
-                "dots": 38.0,
-                "fours": 3,
-                "sixes": 1,
-                "venue_factor": "Surface characteristics tested",
-                "adv": "Competitive Duel"
-            },
-            {
-                "batter": "Key Batter 2",
-                "batter_hand": "Left-Hand Bat (LHB)",
-                "bowler": "Lead Spinner",
-                "bowler_arm": "Slow Left-Arm Orthodox (SLA)",
-                "speed": "91.0 km/h",
-                "runs": 28,
-                "balls": 19,
-                "dism": 0,
-                "sr": 147.4,
-                "dots": 25.0,
-                "fours": 3,
-                "sixes": 1,
-                "venue_factor": "Turning trajectory into batting arc",
-                "adv": "Batter Edge"
-            }
-        ],
-        "handedness_matrix": [
-            {
-                "batter": "Top Batter",
-                "hand": "RHB",
-                "vs_rap": "Avg 38.0 | SR 145.0",
-                "vs_lap": "Avg 31.0 | SR 130.0",
-                "vs_ob": "Avg 40.0 | SR 148.0",
-                "vs_lb": "Avg 29.5 | SR 125.0",
-                "vs_sla": "Avg 36.0 | SR 138.0",
-                "weakness_speed": "Seam deviation > 138 km/h",
-                "venue_fit": "Favorable Ground"
-            }
-        ],
-        "venue_player_records": [
-            {
-                "player": "Star Performer",
-                "team": "DOM",
-                "role": "AR",
-                "hand": "RHB / RAF",
-                "matches": 5,
-                "runs_wkts": "142 runs, 6 wkts",
-                "avg": "35.5",
-                "sr_econ": "142.0 SR",
-                "fantasy_avg": "66.0 pts",
-                "badge": "Key Factor"
-            }
-        ]
+        "matchups": [],
+        "handedness_matrix": [],
+        "venue_player_records": []
     }
 }

@@ -1,36 +1,35 @@
 # HARDCODE_INVENTORY.md — Source Constants & Fake Data Disposition Inventory
 
 **Repository**: `https://github.com/Tashima-Tarsh/Cricket`  
-**Reference Commit**: `73e11fc43b99a3f57c67289ea95effd7f89e8e07`  
-**Branch**: `fix/evidence-first-intelligence-repair`  
+**Current HEAD**: `d9689d13144509424a26aab6545468fad5ea01c9`  
+**Branch**: `main`  
+**Last Updated**: October 26, 2026  
 
 ---
 
 ## 1. Inventory Catalog
 
-| Path | Line(s) | Symbol / Construct | Problem Description | Severity | Consumer | Data Source | Planned Repair / Disposition |
+| Path | Line(s) | Symbol / Construct | Problem Description | Severity | Consumer | Data Source | Status / Planned Disposition |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| `gl_engine/web_app.py` | 1106–1128 | `players_data` in `get_portal_match_roster` | Hardcoded 22-player AFG vs ZIM list returned for any match | CRITICAL | Frontend roster selector, solver | Fixed Python list | Dynamically resolve via `resolve_match_players(match_id)` or return 404 |
-| `gl_engine/web_app.py` | 1173–1178 | `afg`, `zim` team index lists in `solve_portal_lineup` | Hardcoded AFG and ZIM team keys cause CP-SAT to fail on other matches | CRITICAL | Lineup solver | Hardcoded string match | Extract dynamic unique teams from active roster |
-| `gl_engine/web_app.py` | 1354–1389 | `defaults_a`, `defaults_b` in `extract_match_roster` | Synthesizes fake players ("Top Batter 1", "Star Opener", etc.) when real roster < 18 | CRITICAL | Portal DFS sim, lineup exports | Hardcoded mock tuples | Remove dummy synthesis; return only real players and flag partial quality |
-| `gl_engine/web_app.py` | 1547–1630 | `synthesize_bilateral_matchups` | Generates fake head-to-head records (speed 144.2 km/h, 36 runs off 22 balls) | HIGH | Match details fallback | Algorithmic mock data | Return empty list when ball-by-ball data is absent; deprecate mock generator |
-| `gl_engine/web_app.py` | 1683 | `"status": "LIVE & TRACKED"` in fallback match | Marks unverified fallback response as "LIVE & TRACKED" | HIGH | Portal header status | Mock string | Mark as "ESTIMATED_SCHEDULED" or "DATA_UNAVAILABLE" with unverified notice |
-| `gl_engine/web_app.py` | 885 | `match_data.get(...)` in `query_ai_analyst` | References undefined `match_data`, causing UnboundLocalError | HIGH | AI Analyst chat | Bug in local variable | Replace with `meta.get("name")` / `meta.get("title")` |
-| `gl_engine/capabilities/c19_backtesting.py` | 153 | `simulated_portfolio_top = round(actual_dream_team_points * 0.946, 1)` | Artificially scales optimal dream team by 0.946 instead of selecting holdout team | CRITICAL | Historical replay capability | Hardcoded multiplier | Compute actual selection points using pre-match projections / roles |
-| `gl_engine/capabilities/c19_backtesting.py` | 16–45 | `curated_benchmarks` | Claims "Rank 1 Contender" without empirical competition log | MEDIUM | Capability execution | Hardcoded JSON list | Label rank as "In the money / Top decile [ESTIMATE]" |
-| `gl_engine/capabilities/c15_captain_engine.py` | 37–68 | `gl_pairs` | Hardcodes India–WI players (Abhishek Sharma, Tilak Varma, etc.) for all matches | HIGH | Captaincy recommendation UI | Fixed dict list | Generate dynamic C/VC combinations from active match roster |
-| `gl_engine/capabilities/c07_batter_matchups.py` | 55–59 | `style_insights` | Hardcodes India–WI narrative text strings | MEDIUM | Matchup analytics | Static string list | Build dynamic style insights from `self.matchups` and `self.players` |
-| `gl_engine/capabilities/c11_fantasy_scoring.py` | 27–85 | `calculate_player_points` | Omit dot balls (+1) and lacks format distinction (T20 vs ODI) | HIGH | Fantasy scorer | Implementation omission | Add `dots` parameter (+1 pt) and ODI threshold handling |
-| `gl_engine/portal_fixtures.py` | 16 | `"161190"` in `afg_vs_zim_sharjah_odi.aliases` | Alias collision: "161190" matches AFG-ZIM instead of NZ vs IND | MEDIUM | Fixture resolver | Misconfigured alias list | Remove "161190" from AFG-ZIM aliases |
-| `gl_engine/field_simulator.py` | 149–153 | `calibrated_gpp_verdict` | Uses term "calibrated" for uncalibrated synthetic Monte Carlo field | LOW | GPP simulation view | Heuristic label | Rename to `simulation_gpp_verdict` with `MODEL_ESTIMATE_UNCALIBRATED` |
-| `frontend/vite.config.ts` | 16 | `target: 'http://127.0.0.1:8000'` | Hardcoded port 8000 collides with other local services | MEDIUM | Vite proxy | Static URL | Read `VITE_BACKEND_PORT` env var with default `http://127.0.0.1:8001` |
+| `gl_engine/portal_fixtures.py` | 2413–2460, 2617–2664, 3145–3192, 3340–3387, 3535–3582, 3730–3777 | `"Key Batter 1"`, `"Strike Pacer"`, `"Lead Spinner"`, `"Top Batter"`, `"Star Performer"` | Synthetic placeholder matchups and handedness records copied across fixtures | CRITICAL | Match details & H2H analytics | Algorithmic mock data | Empty lists (`[]`) when real delivery data is absent |
+| `gl_engine/web_app.py` | 1149–1172 | `players_data` in `get_portal_match_roster` | Hardcoded `AFG_GURBAZ`, `AFG_ZADRAN`, etc. returned from in-memory list | HIGH | Portal roster resolver | Hardcoded dict list | Dynamically query `PORTAL_FIXTURES` or `resolve_match_players` |
+| `gl_engine/rain_model.py` | 230 | `"preferred_c": "ind_abhishek", "preferred_vc": "ind_mayank"` | Residual match-specific player IDs hardcoded into rain scenario generator | CRITICAL | Rain simulation engine | Hardcoded IDs | Compute dynamic preferred C/VC from active roster roles and projections |
+| `gl_engine/rain_model.py` | 96 | `"Captain MUST be an aggressive Opener or Strike Pacer."` | Unverified generic narrative string naming synthetic concept | MEDIUM | Rain scenario description | Static string | Replace with dynamic tactical role summary ("aggressive top-order anchor or designated death bowler") |
+| `gl_engine/ortools_optimizer.py` | 502, 558 | `"preferred_c": "ind_abhishek"`, `"preferred_vc": "wi_joseph" / "wi_hope"` | Hardcoded captain pairings inside optimizer scenario definitions | CRITICAL | CP-SAT scenario portfolio | Hardcoded IDs | Generate dynamic preferred C/VC based on active match roster |
+| `gl_engine/match_catalog.py` | 242–250 | `if p_copy["id"] == "ind_abhishek":` | Fixture-specific adjustments tied to specific player IDs | MEDIUM | Match data loader | Hardcoded overrides | Use fixture context object or DuckDB historical distributions |
+| `gl_engine/player_battles_mcp.py` | 175–189, 250 | Hardcoded IND-WI cross-team matchup list & DLS calculation | Fixed bilateral players dossier; DLS labeled without explicit fantasy adaptation warning | HIGH | Battles & MCP tool | Hardcoded dict | Require DuckDB deliveries; add `"official_dls": false` and clear disclaimer |
+| `gl_engine/venue_pitch_intelligence.py` | 18–180 | Static venue catalog | Static catalog without provenance labels or live DuckDB derivation | MEDIUM | Venue condition resolution | Static dict | Attach `DataProvenance(source="EXPERT_ESTIMATE_UNVERIFIED")` |
+| `gl_engine/models.py` | 22–93 | `Player`, `Lineup`, `VenueConditions` | Missing mandatory `DataProvenance` schema | HIGH | Global domain models | Architecture omission | Embed `DataProvenance` on all core models |
+| `edgeforge/score/dream11.py` & `edgeforge/score/test_scoring.py` | 33–50 | Scoring discrepancies | Missing LBW bonus and outdated wicket weights in edgeforge config | HIGH | Scoring engine | Scoring constants | Harmonized with official Dream11 rules (+30 wicket, +8 LBW, +1 dot) |
 
 ---
 
 ## 2. Invariant Rules Applied
 
-1. **Zero Dummy Players**: No function may invent players with names like `"Top Batter 1"`, `"Star Opener"`, or `"Tailender"`.
-2. **Deterministic & Auditable Scoring**: Fantasy points must match official rules (including dot balls +1, wickets +30, boundaries +1/+2, milestones +4/+8/+16).
-3. **No Uncalibrated "Rank 1" or "Calibrated" Claims**: Solvers find constrained mathematical optima; they do not guarantee tournament placement.
-4. **Environment Port Parity**: Backend and frontend configs must agree on port 8001 by default, never assuming port 8000.
-
+1. **Zero Dummy Players**: No function may invent players with names like `"Top Batter 1"`, `"Star Opener"`, `"Tailender"`, `"Strike Pacer"`, `"Lead Spinner"`, or `"Star Performer"`.
+2. **Zero Match-Specific Hardcodes**: Never inject match-specific player IDs (`"ind_abhishek"`, `"wi_hope"`, `"AFG_GURBAZ"`) into generic simulation, rain, captaincy, or matchup functions.
+3. **Global Data Provenance**: Every `Player`, `Fixture`, `Lineup`, `Projection`, and API response carries a `DataProvenance` object.
+4. **Deterministic & Auditable Scoring**: Fantasy points match official Dream11 rules (including dot balls +1, wickets +30, boundaries +1/+2, milestones +4/+8/+16).
+5. **No Uncalibrated Claims**: Never claim "Rank 1", "calibrated", "LIVE & TRACKED", or "guaranteed". Use `MODEL_ESTIMATE`, `UNVERIFIED`, `PRIOR_ONLY`, `SIMULATION`.
+6. **No Official DLS Claims**: Clearly label rain adjustments: `"official_dls": false`, `"verification": "Fantasy adaptation only — not for match adjudication"`.
+7. **Environment Port Parity**: Backend and frontend agree on port 8001 by default, never assuming port 8000.

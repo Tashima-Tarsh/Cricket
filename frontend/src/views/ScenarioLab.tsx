@@ -76,7 +76,7 @@ export const computeScenario = (overs: number): DLSScenario => {
     fantasyAdjustment = `Strictly prioritize Top-3 batters & frontline strike bowlers. Lower order (No. 6-8) face only ~${lowerBalls} balls combined.`;
   } else if (validOvers >= 8) {
     tacticalKey = `${validOvers}-over sprint: ${ppOvers} overs powerplay. ${quotaBreakdown}. Zero settling time. Target ~${par} (${rrr} RPO). Chasing win equity at ${chaseEquity}%.`;
-    fantasyAdjustment = "Eliminate non-bowling middle-order batters entirely. Captain MUST be an aggressive Opener or Strike Pacer.";
+    fantasyAdjustment = "Eliminate non-bowling middle-order batters entirely. Captain MUST be an aggressive Opener or Frontline Strike Bowler.";
   } else {
     tacticalKey = `${validOvers}-over micro-sprint: Extreme lottery format. ${ppOvers} overs powerplay. Bowlers get 1 over each. Total balls: ${totalBalls}.`;
     fantasyAdjustment = "Max out top 3 batters. Captain high-SR opener (Abhishek/Samson/Hope). Bowlers selected purely on wicket-taking strike rate.";

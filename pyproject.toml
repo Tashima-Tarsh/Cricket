@@ -36,3 +36,9 @@ include = ["gl_engine*"]
 [tool.setuptools.package-data]
 gl_engine = ["data/*.json", "templates/*.html"]
 
+[tool.pytest.ini_options]
+testpaths = ["tests", "dream11-edge/tests", "edgeforge"]
+python_files = ["test_*.py"]
+addopts = "-q"
+
+
