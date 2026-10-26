@@ -11,7 +11,6 @@ from ortools.sat.python import cp_model
 from .models import Player, Lineup
 from .config import LineupConstraints, DEFAULT_CONSTRAINTS
 from .rain_model import RainReducedOversEngine
-from .scenario_templates import build_default_scenarios
 
 
 class ORToolsCricketOptimizer:
@@ -41,12 +40,6 @@ class ORToolsCricketOptimizer:
         excluded_player_ids: Optional[List[str]] = None,
         player_exposure_limits: Optional[Dict[str, float]] = None
     ) -> List[Lineup]:
-        """Generates a diverse set of valid Grand League lineups using Google OR-Tools CP-SAT.
-        Enforces target credit bands (79-85 Cr or 87-89 Cr) leaving budget on table to eliminate
-        field duplication, while selecting perfect venue-matched low-credit gems.
-        Supports syndicate player locks (100%), exclusions (0%), and max exposure percentage caps.
-        Dynamically adapts batting share decay and bowler quota compression if overs are cut by rain.
-        """
         lineups: List[Lineup] = []
         previous_team_player_indices: List[List[int]] = []
         player_usage_counts: Dict[str, int] = {}
@@ -56,7 +49,7 @@ class ORToolsCricketOptimizer:
         if overs < 20:
             self.players = RainReducedOversEngine.adjust_player_projections(self.players, overs, venue_conditions)
             self.player_map = {p.id: p for p in self.players}
-            rain_scenarios = RainReducedOversEngine.get_rain_scenarios(overs, players=self.players)
+            rain_scenarios = RainReducedOversEngine.get_rain_scenarios(overs)
             base_scenarios = custom_scenarios or rain_scenarios or self._get_default_scenarios()
         else:
             base_scenarios = custom_scenarios or self._get_default_scenarios()
@@ -67,7 +60,7 @@ class ORToolsCricketOptimizer:
         if risk_mode == "DIFFERENTIAL_HEAVY":
             effective_diffs = max(effective_diffs, 4)
         if spots >= 1500000:
-            effective_diffs = max(effective_diffs, 4)
+            effective_diffs = max(effective_diffs, 3)
         elif spots >= 700000:
             effective_diffs = max(effective_diffs, 3)
 
@@ -75,25 +68,29 @@ class ORToolsCricketOptimizer:
             eff_min_cr = float(min_credits)
             eff_max_cr = float(max_credits)
         elif credit_strategy == "79-85":
-            eff_min_cr = 79.0
-            eff_max_cr = 85.0
+            eff_min_cr, eff_max_cr = 79.0, 85.0
         elif credit_strategy == "87-89":
-            eff_min_cr = 87.0
-            eff_max_cr = 89.0
+            eff_min_cr, eff_max_cr = 87.0, 89.0
         elif credit_strategy == "90-95":
-            eff_min_cr = 90.0
-            eff_max_cr = 95.0
+            eff_min_cr, eff_max_cr = 90.0, 95.0
         else:
-            eff_min_cr = 79.0
-            eff_max_cr = 85.0
+            eff_min_cr, eff_max_cr = 79.0, 85.0
+
+        # Permanent zero-exposure exclusions
+        if player_exposure_limits:
+            for p_id, max_pct in player_exposure_limits.items():
+                if max_pct is not None and max_pct <= 0:
+                    excluded_set.add(p_id)
 
         for idx in range(num_teams):
             scenario = scenarios[idx % len(scenarios)]
             current_excluded = set(excluded_set)
             if player_exposure_limits:
                 for p_id, max_pct in player_exposure_limits.items():
+                    if max_pct is None or max_pct <= 0:
+                        continue
                     used = player_usage_counts.get(p_id, 0)
-                    if num_teams > 0 and (used / num_teams) * 100.0 >= max_pct:
+                    if num_teams > 0 and (used / float(num_teams)) * 100.0 >= max_pct:
                         current_excluded.add(p_id)
 
             result = self._solve_single_lineup(
@@ -131,6 +128,7 @@ class ORToolsCricketOptimizer:
         excluded_player_ids: Set[str],
         team_number: int = 1,
     ):
+        """Full CP-SAT solve adapted from verified e07a baseline."""
         model = cp_model.CpModel()
         n = len(self.players)
         if n < 11:
@@ -140,20 +138,20 @@ class ORToolsCricketOptimizer:
         c = [model.NewBoolVar(f"c_{i}") for i in range(n)]
         v = [model.NewBoolVar(f"v_{i}") for i in range(n)]
 
-        model.Add(sum(x) == 11)
-        model.Add(sum(c) == 1)
-        model.Add(sum(v) == 1)
+        model.Add(sum(x[i] for i in range(n)) == 11)
+        model.Add(sum(c[i] for i in range(n)) == 1)
+        model.Add(sum(v[i] for i in range(n)) == 1)
         for i in range(n):
             model.Add(c[i] + v[i] <= x[i])
 
-        credits = [int(round(float(p.credits) * 10)) for p in self.players]
-        model.Add(sum(x[i] * credits[i] for i in range(n)) >= int(min_credits * 10))
-        model.Add(sum(x[i] * credits[i] for i in range(n)) <= int(max_credits * 10))
+        credit_scaled = [int(round(float(p.credits) * 10)) for p in self.players]
+        model.Add(sum(x[i] * credit_scaled[i] for i in range(n)) >= int(round(min_credits * 10)))
+        model.Add(sum(x[i] * credit_scaled[i] for i in range(n)) <= int(round(max_credits * 10)))
 
-        roles = {"WK": [], "BAT": [], "AR": [], "BOWL": []}
+        role_indices = {"WK": [], "BAT": [], "AR": [], "BOWL": []}
         for i, p in enumerate(self.players):
-            roles.setdefault(p.role, []).append(i)
-        for role, idxs in roles.items():
+            role_indices.setdefault(p.role, []).append(i)
+        for role, idxs in role_indices.items():
             if not idxs:
                 continue
             lo = getattr(self.constraints, f"min_{role.lower()}", 1)
@@ -161,26 +159,19 @@ class ORToolsCricketOptimizer:
             model.Add(sum(x[i] for i in idxs) >= lo)
             model.Add(sum(x[i] for i in idxs) <= hi)
 
-        teams_map: Dict[str, List[int]] = {}
+        team_indices: Dict[str, List[int]] = {}
         for i, p in enumerate(self.players):
-            teams_map.setdefault(p.team, []).append(i)
-        teams = list(teams_map.keys())
-        for team_idxs in teams_map.values():
-            model.Add(sum(x[i] for i in team_idxs) >= self.constraints.min_players_per_team)
-            model.Add(sum(x[i] for i in team_idxs) <= self.constraints.max_players_per_team)
+            team_indices.setdefault(p.team, []).append(i)
+        teams = list(team_indices.keys())
+        for idxs in team_indices.values():
+            model.Add(sum(x[i] for i in idxs) >= self.constraints.min_players_per_team)
+            model.Add(sum(x[i] for i in idxs) <= self.constraints.max_players_per_team)
 
         ownership_available = any(getattr(p, "ownership_available", True) for p in self.players)
-        if ownership_available:
-            high_c = [i for i, p in enumerate(self.players) if (p.projected_ownership or 0) >= 70.0]
-            high_vc = [i for i, p in enumerate(self.players) if (p.projected_ownership or 0) >= 75.0]
-            for hc in high_c:
-                for hvc in high_vc:
-                    if hc != hvc:
-                        model.Add(c[hc] + v[hvc] <= 1)
-
-        diff_indices = [i for i, p in enumerate(self.players) if (p.projected_ownership or 100) < 35.0]
-        if ownership_available and min_diffs > 0 and diff_indices:
-            model.Add(sum(x[i] for i in diff_indices) >= min(min_diffs, len(diff_indices)))
+        if ownership_available and min_diffs > 0:
+            diff_idx = [i for i, p in enumerate(self.players) if (p.projected_ownership or 100.0) < 35.0]
+            if diff_idx:
+                model.Add(sum(x[i] for i in diff_idx) >= min(min_diffs, len(diff_idx)))
 
         for prev in previous_selections:
             model.Add(sum(x[i] for i in prev) <= max_overlap)
@@ -193,15 +184,14 @@ class ORToolsCricketOptimizer:
 
         pref_c = scenario.get("preferred_c") or scenario.get("preferred_c_id")
         pref_vc = scenario.get("preferred_vc") or scenario.get("preferred_vc_id")
-        c_idx = None
         if pref_c:
-            c_idx = next((i for i, p in enumerate(self.players) if p.id == pref_c), None)
-            if c_idx is not None:
-                model.Add(c[c_idx] == 1)
+            ci = next((i for i, p in enumerate(self.players) if p.id == pref_c), None)
+            if ci is not None:
+                model.Add(c[ci] == 1)
         if pref_vc:
-            vc_idx = next((i for i, p in enumerate(self.players) if p.id == pref_vc), None)
-            if vc_idx is not None and vc_idx != c_idx:
-                model.Add(v[vc_idx] == 1)
+            vi = next((i for i, p in enumerate(self.players) if p.id == pref_vc), None)
+            if vi is not None:
+                model.Add(v[vi] == 1)
 
         if overs <= 14 and not pref_c:
             for i, p in enumerate(self.players):
@@ -210,29 +200,27 @@ class ORToolsCricketOptimizer:
                 if order > 3 and exp_ov < 3.0 and p.role != "BOWL":
                     model.Add(c[i] == 0)
 
-        # Scenario team bias on projected points
         team_a_bias = float(scenario.get("team_a_bias") or scenario.get("ind_bias") or 1.0)
         team_b_bias = float(scenario.get("team_b_bias") or scenario.get("wi_bias") or 1.0)
-        team_list = list(teams_map.keys())
-        team_a = team_list[0] if team_list else None
-        team_b = team_list[1] if len(team_list) > 1 else team_a
+        team_a = teams[0] if teams else None
+        team_b = teams[1] if len(teams) > 1 else team_a
 
         scale = 10
-        obj_terms = []
+        terms = []
         for i, p in enumerate(self.players):
-            base = float(p.projected_points or 0)
+            base = float(p.projected_points or 0.0)
             if p.team == team_a:
                 base *= team_a_bias
             elif p.team == team_b:
                 base *= team_b_bias
             pts = int(round(base * scale))
-            obj_terms.append(x[i] * pts)
-            obj_terms.append(c[i] * pts)
-            obj_terms.append(v[i] * int(round(pts * 0.5)))
-        model.Maximize(sum(obj_terms))
+            terms.append(x[i] * pts)
+            terms.append(c[i] * pts)
+            terms.append(v[i] * int(round(pts * 0.5)))
+        model.Maximize(sum(terms))
 
         solver = cp_model.CpSolver()
-        solver.parameters.max_time_in_seconds = 8.0
+        solver.parameters.max_time_in_seconds = 12.0
         status = solver.Solve(model)
         if status not in (cp_model.OPTIMAL, cp_model.FEASIBLE):
             return None
@@ -245,20 +233,18 @@ class ORToolsCricketOptimizer:
         vice_captain = self.players[vc_i]
         total_credits = round(sum(p.credits for p in selected_players), 1)
         projected_pts = round(
-            sum(p.projected_points or 0 for p in selected_players)
+            sum((p.projected_points or 0) for p in selected_players)
             + (captain.projected_points or 0)
             + 0.5 * (vice_captain.projected_points or 0),
             1,
         )
         simulated_ceiling = round(projected_pts * 1.15, 1)
-        total_ownership = round(sum(p.projected_ownership or 0 for p in selected_players), 1)
+        total_ownership = round(sum((p.projected_ownership or 0) for p in selected_players), 1)
         diff_count = sum(1 for p in selected_players if (p.projected_ownership or 100) < 35.0)
-
         core_count = sum(1 for p in selected_players if (p.projected_ownership or 0) >= 60.0)
         rotation_count = sum(1 for p in selected_players if 16.0 <= (p.projected_ownership or 0) < 60.0)
         contrarian_count = sum(1 for p in selected_players if (p.projected_ownership or 0) < 16.0)
         mnc_summary = f"{core_count} Core | {rotation_count} Rotation | {contrarian_count} Contrarian"
-
         c_own = getattr(captain, "captain_percentage", 0.0) or ((captain.projected_ownership or 0) * 0.3)
         vc_own = getattr(vice_captain, "vice_captain_percentage", 0.0) or ((vice_captain.projected_ownership or 0) * 0.2)
         if c_own >= 20.0 and vc_own >= 15.0:
@@ -269,7 +255,6 @@ class ORToolsCricketOptimizer:
             cvc_type = "Combo C (The GL Killer - Low C / High VC)"
         else:
             cvc_type = "Combo B (Differentiated C/VC)"
-
         team_balance = {t: sum(1 for p in selected_players if p.team == t) for t in teams}
 
         lineup = Lineup(
@@ -293,5 +278,30 @@ class ORToolsCricketOptimizer:
         return lineup, selected
 
     def _get_default_scenarios(self) -> List[Dict[str, Any]]:
-        """Dynamic scenarios from active roster — no hardcoded player IDs."""
-        return build_default_scenarios(self.players)
+        """Player-agnostic templates; preferred_c/vc are None (resolved dynamically if needed)."""
+        return [
+            {"tag": "EXPRESS_PACE_CARNAGE", "name": "Express Pace & Seam Emphasis", "ind_bias": 1.05, "wi_bias": 1.05,
+             "preferred_c": None, "preferred_vc": None, "gl_potential": "High-Ceiling Leverage",
+             "rationale": "Damp or overcast conditions amplify early seam. Prioritise frontline pace and top-order anchors."},
+            {"tag": "TEAM_B_COUNTER", "name": "Underdog Counter-Punch", "ind_bias": 0.85, "wi_bias": 1.30,
+             "preferred_c": None, "preferred_vc": None, "gl_potential": "High Volatility",
+             "rationale": "Leverage underdog volume via top-order batters and two-way all-rounders."},
+            {"tag": "MIDDLE_ORDER_REBUILD", "name": "Middle-Overs Recovery", "ind_bias": 1.15, "wi_bias": 0.95,
+             "preferred_c": None, "preferred_vc": None, "gl_potential": "Elite Floor + Ceiling",
+             "rationale": "Early wickets favour middle-order anchors and bowling all-rounders."},
+            {"tag": "DEATH_OVERS_BLITZ", "name": "Death Overs Boundary Emphasis", "ind_bias": 0.95, "wi_bias": 1.20,
+             "preferred_c": None, "preferred_vc": None, "gl_potential": "Contrarian Multiplier",
+             "rationale": "Finishers and death bowlers drive ceiling in slog-phase scripts."},
+            {"tag": "TOP_ORDER_STACK", "name": "Top-Order Concentration", "ind_bias": 1.10, "wi_bias": 1.10,
+             "preferred_c": None, "preferred_vc": None, "gl_potential": "High Aggregate Ceiling",
+             "rationale": "Concentrate volume on top-3 batters who face the majority of deliveries."},
+            {"tag": "SPIN_CHOKE", "name": "Spin / Grip Surface", "ind_bias": 1.05, "wi_bias": 1.05,
+             "preferred_c": None, "preferred_vc": None, "gl_potential": "Dot-Ball Accumulator",
+             "rationale": "Gripping surfaces elevate spinner and cutter value."},
+            {"tag": "PACE_STRANGLE", "name": "Dual Pace Strangle", "ind_bias": 1.08, "wi_bias": 1.08,
+             "preferred_c": None, "preferred_vc": None, "gl_potential": "Wicket Multiplier",
+             "rationale": "Two frontline pacers who keep full quotas remove top orders early."},
+            {"tag": "ANTI_CHALK_LEVERAGE", "name": "Anti-Chalk Leverage Portfolio", "ind_bias": 1.00, "wi_bias": 1.10,
+             "preferred_c": None, "preferred_vc": None, "gl_potential": "Low-Duplication Portfolio",
+             "rationale": "Prefer lower-ownership ceiling plays; leave credits unspent for uniqueness. Not a Rank guarantee."},
+        ]
