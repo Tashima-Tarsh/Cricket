@@ -46,6 +46,9 @@ if os.getenv("ALLOW_ALL_ORIGINS", "false").lower() in ["true", "1"]:
     ALLOWED_ORIGINS = ["*"]
 
 app = FastAPI(title="Cricket Mega Contest Intelligence Portal")
+from .provenance import install_provenance, annotate_payload
+from .roster_safety import validate_roster
+install_provenance(app)
 
 app.add_middleware(
     CORSMiddleware,
@@ -174,17 +177,15 @@ async def unknown_match_handler(request: Request, exc: UnknownMatchError):
 def resolve_match_players(match_id=None):
     """One fixture resolver for state, optimization and exports; no default on unknown IDs."""
     from .universal_engine import get_universal_engine
-    clean_id = (match_id or "ind_w_vs_zim_w_2026_02").removeprefix("display_")
     engine = get_universal_engine()
+    clean_id = (match_id or engine._active_match_id).removeprefix("display_")
     if clean_id in engine._matches:
         meta = engine._matches[clean_id]
         raw = engine._profile_match_players(meta)
-        if len(raw) < 11:
-            raise HTTPException(503, "Fixture player pool is unavailable")
+        validate_roster(raw)
         return meta, [Player(**p) for p in raw]
     data = get_match_data(clean_id)
-    if len(data["players"]) < 11:
-        raise HTTPException(503, "Fixture player pool is unavailable")
+    validate_roster(data["players"])
     players, _ = get_enriched_players(data["players"])
     return data["match_info"], players
 
@@ -1140,74 +1141,16 @@ def get_2026_schedule():
 
 
 @app.get("/api/portal/roster")
-def get_portal_match_roster(match_id: str = "afg_vs_zim_sharjah_odi"):
-    """Returns the player roster for the requested fixture. Dynamically resolves squads without fabricating players."""
-    clean_id = (match_id or "afg_vs_zim_sharjah_odi").replace("display_", "")
-    
-    # 1. Afghanistan vs Zimbabwe confirmed 22-player XI
-    if clean_id in ["afg_vs_zim_sharjah_odi", "afg_vs_zim", "sharjah_odi"]:
-        players_data = [
-            {"id": "AFG_GURBAZ", "name": "R Gurbaz", "team": "AFG", "role": "WK", "sel": 79.34, "credits": 8.5, "type": "RHB_WK", "tier": "CORE", "style": "Aggressive Opener / Wicketkeeper", "projected_points": 58.4},
-            {"id": "AFG_ZADRAN", "name": "I Zadran", "team": "AFG", "role": "BAT", "sel": 88.72, "credits": 7.0, "type": "RHB", "tier": "CORE", "style": "Orthodox ODI Anchor (Avg 48+)", "projected_points": 64.8},
-            {"id": "AFG_ATAL", "name": "S Atal", "team": "AFG", "role": "BAT", "sel": 82.41, "credits": 7.0, "type": "LHB", "tier": "CORE", "style": "Top-Order Powerplay Striker", "projected_points": 44.5},
-            {"id": "AFG_RSHAH", "name": "R Shah", "team": "AFG", "role": "AR", "sel": 31.61, "credits": 8.0, "type": "RHB_LB", "tier": "DIFFERENTIAL", "style": "Afghanistan Core #3 Accumulator", "projected_points": 56.2},
-            {"id": "AFG_SHAHIDI", "name": "H Shahidi", "team": "AFG", "role": "BAT", "sel": 13.50, "credits": 9.0, "type": "LHB", "tier": "CONTRARIAN", "style": "Captain / Spin & Seam Rescuer", "projected_points": 58.0},
-            {"id": "AFG_OMARZAI", "name": "A Omarzai", "team": "AFG", "role": "AR", "sel": 91.81, "credits": 8.5, "type": "RHB_PACE", "tier": "CORE", "style": "8-10 Overs Pace + Middle-Order Finisher", "projected_points": 76.5},
-            {"id": "AFG_NABI", "name": "M Nabi", "team": "AFG", "role": "AR", "sel": 54.25, "credits": 8.0, "type": "RHB_SPIN", "tier": "MID_TIER", "style": "Veteran Off-Spin vs Zimbabwe LHBs", "projected_points": 49.0},
-            {"id": "AFG_RASHID", "name": "Rashid Khan", "team": "AFG", "role": "BOWL", "sel": 93.58, "credits": 9.0, "type": "RHB_SPIN", "tier": "CORE", "style": "World-Class Leg-Spin", "projected_points": 88.0},
-            {"id": "AFG_GHAZANFAR", "name": "AM Ghazanfar", "team": "AFG", "role": "BOWL", "sel": 33.79, "credits": 7.0, "type": "RHB_SPIN", "tier": "DIFFERENTIAL", "style": "Mystery Spinner", "projected_points": 58.5},
-            {"id": "AFG_SAMI", "name": "B Sami", "team": "AFG", "role": "BOWL", "sel": 11.92, "credits": 7.5, "type": "RHB_PACE", "tier": "CONTRARIAN", "style": "Speed Pacer", "projected_points": 41.0},
-            {"id": "AFG_FAROOQI", "name": "F Farooqi", "team": "AFG", "role": "BOWL", "sel": 2.99, "credits": 8.0, "type": "LAFM_PACE", "tier": "CONTRARIAN", "style": "Left-Arm Swing Powerplay Spearhead", "projected_points": 72.0},
-            {"id": "ZIM_BENNETT", "name": "B Bennett", "team": "ZIM", "role": "AR", "sel": 48.72, "credits": 7.5, "type": "RHB_SPIN", "tier": "MID_TIER", "style": "Opening Batter + Off-Spin Variations", "projected_points": 42.0},
-            {"id": "ZIM_MARUMANI", "name": "T Marumani", "team": "ZIM", "role": "WK", "sel": 0.62, "credits": 7.5, "type": "LHB_WK", "tier": "CONTRARIAN", "style": "Top-Order Wicketkeeper Batter", "projected_points": 28.0},
-            {"id": "ZIM_TSIGA", "name": "T Tsiga", "team": "ZIM", "role": "WK", "sel": 7.91, "credits": 6.5, "type": "LHB_WK", "tier": "CONTRARIAN", "style": "Budget Keeper / Middle Order", "projected_points": 30.0},
-            {"id": "ZIM_TAYLOR", "name": "B Taylor", "team": "ZIM", "role": "WK", "sel": 52.51, "credits": 8.0, "type": "RHB_WK", "tier": "MID_TIER", "style": "Experienced Wicketkeeper Anchor", "projected_points": 52.0},
-            {"id": "ZIM_RAZA", "name": "S Raza", "team": "ZIM", "role": "AR", "sel": 93.72, "credits": 9.0, "type": "RHB_SPIN", "tier": "CORE", "style": "10 Overs Off-Spin + #5 Power Anchor", "projected_points": 82.0},
-            {"id": "ZIM_MADHEVERE", "name": "W Madhevere", "team": "ZIM", "role": "AR", "sel": 8.80, "credits": 6.5, "type": "RHB_SPIN", "tier": "CONTRARIAN", "style": "Middle-Overs Utility Off-Spin", "projected_points": 32.0},
-            {"id": "ZIM_BURL", "name": "R Burl", "team": "ZIM", "role": "AR", "sel": 15.71, "credits": 7.5, "type": "LHB_SPIN", "tier": "CONTRARIAN", "style": "LHB Finisher + Leg-Spin Weapon", "projected_points": 44.0},
-            {"id": "ZIM_EVANS", "name": "B Evans", "team": "ZIM", "role": "AR", "sel": 89.72, "credits": 7.5, "type": "RHB_PACE", "tier": "CORE", "style": "Death Overs Pacer + Boundary Hitter", "projected_points": 65.0},
-            {"id": "ZIM_NYAMHURI", "name": "N Nyamhuri", "team": "ZIM", "role": "BOWL", "sel": 0.63, "credits": 8.0, "type": "LMF_PACE", "tier": "CONTRARIAN", "style": "Left-Arm Medium Pacer Value Pick", "projected_points": 35.0},
-            {"id": "ZIM_MASAKADZA", "name": "W Masakadza", "team": "ZIM", "role": "BOWL", "sel": 24.00, "credits": 7.5, "type": "LHB_SPIN", "tier": "DIFFERENTIAL", "style": "Slow Left-Arm Orthodox", "projected_points": 46.0},
-            {"id": "ZIM_MUZARABANI", "name": "B Muzarabani", "team": "ZIM", "role": "BOWL", "sel": 54.48, "credits": 8.5, "type": "RHB_PACE", "tier": "MID_TIER", "style": "Express Bounce Strike Bowler", "projected_points": 75.0}
-        ]
-        return {"status": "success", "match_id": match_id, "roster": players_data, "total_players": len(players_data)}
-
-    # 2. Try dynamic resolution via resolve_match_players
-    try:
-        meta, players = resolve_match_players(clean_id)
-        roster = [
-            {
-                "id": p.id,
-                "name": p.name,
-                "team": p.team,
-                "role": p.role,
-                "sel": p.projected_ownership,
-                "credits": p.credits,
-                "type": f"{p.role}_{p.team}",
-                "tier": "CORE" if p.projected_ownership >= 60 else "DIFFERENTIAL" if p.projected_ownership >= 25 else "CONTRARIAN",
-                "style": p.archetype or f"{p.team} {p.role}",
-                "projected_points": p.projected_points
-            }
-            for p in players
-        ]
-        return {"status": "success", "match_id": match_id, "roster": roster, "total_players": len(roster)}
-    except Exception:
-        pass
-
-    # 3. Try MASTER_FIXTURES
-    from .portal_fixtures import MASTER_FIXTURES
-    mf = MASTER_FIXTURES.get(clean_id)
-    if not mf:
-        for item in MASTER_FIXTURES.values():
-            if clean_id in item.get("aliases", []):
-                mf = item
-                break
-    if mf:
-        extracted = extract_match_roster(mf)
-        if extracted:
-            return {"status": "success", "match_id": match_id, "roster": extracted, "total_players": len(extracted)}
-
-    raise HTTPException(status_code=404, detail=f"Confirmed player roster for match '{match_id}' is not available. STRIKE//OS never manufactures fake players.")
+def get_portal_match_roster(match_id: Optional[str] = None):
+    """Resolve only the requested/active fixture; unavailable rosters fail closed."""
+    meta, players = resolve_match_players(match_id)
+    validate_roster(players)
+    roster = [{**p.model_dump(mode="json"), "sel": p.projected_ownership,
+               "type": f"{p.role}_{p.team}", "tier": "UNVERIFIED",
+               "style": f"{p.team} {p.role}"} for p in players]
+    return annotate_payload({"status": "success", "match_id": meta["id"],
+                             "roster": roster, "total_players": len(roster)},
+                            "fixture_resolver:unverified")
 
 @app.get("/api/portal/solve-lineup")
 @app.post("/api/portal/solve-lineup")
@@ -1668,6 +1611,8 @@ if FRONTEND_DIST.exists():
 
     @app.get("/{full_path:path}")
     def serve_spa(full_path: str):
+        if full_path.startswith("api/"):
+            raise HTTPException(404, "Unknown API endpoint")
         no_cache_headers = {
             "Cache-Control": "no-cache, no-store, must-revalidate",
             "Pragma": "no-cache",

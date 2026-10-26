@@ -2,6 +2,8 @@
 from pydantic import BaseModel, Field
 from typing import List, Dict, Optional, Literal
 
+from .provenance import DataProvenance, unverified_provenance
+
 RoleType = Literal["WK", "BAT", "AR", "BOWL"]
 BattingStyle = Literal["RHB", "LHB"]
 BowlingStyle = str
@@ -20,6 +22,7 @@ class PlayerStats(BaseModel):
     powerplay_overs_rate: float = 0.0
 
 class Player(BaseModel):
+    provenance: DataProvenance = Field(default_factory=unverified_provenance)
     id: str
     name: str
     team: str  # "IND" or "WI"
@@ -75,6 +78,7 @@ class TossScenario(BaseModel):
     bat_first_advantage: float = 1.0
 
 class Lineup(BaseModel):
+    provenance: DataProvenance = Field(default_factory=lambda: DataProvenance(source="estimated", verification_status="MODEL_ESTIMATE", notes="Constrained optimum under model assumptions; skill not established."))
     team_name: str
     scenario_tag: str
     players: List[Player]
