@@ -25,6 +25,15 @@ class FantasyScoringConfig(BaseModel):
     runs_50_bonus: float = 8.0
     runs_100_bonus: float = 16.0
 
+    # Additional format rule parameters (legacy-v3 compatibility profile)
+    t10_30_bonus: float = 8.0
+    t10_50_bonus: float = 16.0
+    odi_50_bonus: float = 4.0
+    odi_100_bonus: float = 8.0
+    odi_150_bonus: float = 16.0
+    odi_wicket: float = 25.0
+    maiden_odi: float = 4.0
+
     # Strike Rate Bonus/Penalty (min balls depend on format — applied in scorer)
     strike_rate_bonuses: Dict[str, float] = Field(default_factory=lambda: {
         "over_170": 6.0,

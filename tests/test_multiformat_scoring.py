@@ -102,6 +102,21 @@ class TestMultiFormatScoring(unittest.TestCase):
         self.assertEqual(c_gl["total_points"], 116.0)
         self.assertEqual(vc_gl["total_points"], 87.0)
 
+    def test_shared_scoring_parity_at_economy_boundary(self):
+        from edge.score import BowlLine, BatLine, FieldLine, points
+        from edgeforge.score.dream11 import Dream11Scorer
+        from gl_engine.capabilities.c11_fantasy_scoring import CricketFantasyScoring
+        common = dict(wickets=4, bowled_lbw=2, overs_bowled=4.0,
+                      runs_conceded=20, is_playing=False, match_format="T20")
+        core = CricketFantasyScoring().calculate_player_points(**common)["total_points"]
+        adapter = Dream11Scorer().calculate(**common).total
+        legacy = points(BatLine(batted=False), BowlLine(
+            balls=24, runs=20, wickets=4, lbw_bowled=2
+        ), FieldLine())
+        self.assertEqual(core, adapter)
+        self.assertEqual(core, legacy)
+        self.assertEqual(core, 148.0)
+
     def test_duck_penalty(self):
         """Duck (-2 pts) when dismissed for 0 after facing at least 1 ball."""
         gl_res = self.gl_scorer.calculate_player_points(

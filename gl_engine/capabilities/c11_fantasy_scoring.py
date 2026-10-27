@@ -124,8 +124,8 @@ class CricketFantasyScoring:
         breakdown["batting"] = round(bat_pts, 1)
 
         # Bowling Points
-        w_val = 25.0 if fmt == "ODI" else self.config.wicket
-        m_val = 4.0 if fmt == "ODI" else self.config.maiden_over
+        w_val = self.config.odi_wicket if fmt == "ODI" else self.config.wicket
+        m_val = self.config.maiden_odi if fmt == "ODI" else self.config.maiden_over
         bowl_pts = (
             wickets * w_val
             + bowled_lbw * self.config.bowled_lbw_bonus
@@ -226,7 +226,8 @@ class CricketFantasyScoring:
             "total_points": final_total,
             "breakdown": breakdown,
             "provenance": DataProvenance(
-                source="DREAM11_RULES_V3",
-                verification_status="VERIFIED"
+                source="LEGACY_DREAM11_RULES_V3",
+                verification_status="UNVERIFIED",
+                notes="Legacy compatibility rules: current official contest scoring must be version-checked before use."
             ).model_dump()
         }
