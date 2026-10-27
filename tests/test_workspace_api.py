@@ -28,7 +28,11 @@ class WorkspaceApiTests(unittest.TestCase):
         self.assertEqual(response.status_code, 409)
 
     def test_custom_captain_and_scenario_are_solved(self):
-        response = self.client.get("/api/ortools/optimize?teams=1&scenario=PACE_DOMINANCE&captain=TILAK&risk=BALANCED&match_id=custom_test_archive")
+        from gl_engine.universal_engine import get_universal_engine
+        engine = get_universal_engine()
+        players = engine._profile_match_players(engine._matches[FIXTURE_ID])
+        captain_id = next(p["id"] for p in players if "Tilak" in p["name"])
+        response = self.client.get(f"/api/ortools/optimize?teams=1&scenario=PACE_DOMINANCE&captain={captain_id}&risk=BALANCED&match_id={FIXTURE_ID}")
         self.assertEqual(response.status_code, 200)
         data = response.json()
         self.assertIn("generated_at", data)

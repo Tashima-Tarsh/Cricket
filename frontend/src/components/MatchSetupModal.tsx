@@ -105,22 +105,8 @@ export const MatchSetupModal: React.FC<MatchSetupModalProps> = ({
   };
 
   const handleLoadCricsheetMatch = async (matchId: string) => {
-    setIsSaving(true);
-    setFeedError(null);
-    try {
-      const res = await fetch(`/api/cricsheet/load/${encodeURIComponent(matchId)}`, { method: "POST" });
-      if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.detail || "Failed to load Cricsheet match.");
-      }
-      const data = await res.json();
-      onApplyMatch(data.match, data.players);
-      onClose();
-    } catch (err) {
-      setFeedError(err instanceof Error ? err.message : "Could not load archived match.");
-    } finally {
-      setIsSaving(false);
-    }
+    // Historical scorecards lack contest prices and verified fantasy roles.
+    window.open(`/api/cricsheet/scorecard/${encodeURIComponent(matchId)}`, "_blank", "noopener,noreferrer");
   };
 
   const fetchLiveMatches = async () => {
@@ -157,55 +143,17 @@ export const MatchSetupModal: React.FC<MatchSetupModalProps> = ({
     onClose();
   };
 
-  // Load a live match directly
-  const handleLoadLiveMatch = async (item: LiveMatchItem) => {
-    setIsSaving(true);
-    setFeedError(null);
-    try {
-      const rawId = item.id.replace("cricbuzz_", "").replace("espn_rss_", "").trim();
-      const res = await fetch(`/api/live/load/${encodeURIComponent(rawId)}`, { method: "POST" });
-      if (res.ok) {
-        const data = await res.json();
-        onApplyMatch(data.match, data.players);
-        onClose();
-        return;
-      }
-      // Fallback
-      const updatedMatch: MatchInfo = {
-        ...currentMatch,
-        id: item.id,
-        name: item.title,
-        teams: {
-          home: {
-            name: item.team_home,
-            code: item.team_home.substring(0, 3).toUpperCase(),
-            score: item.score_home || "",
-            overs: ""
-          },
-          away: {
-            name: item.team_away,
-            code: item.team_away.substring(0, 3).toUpperCase(),
-            score: item.score_away || "",
-            overs: ""
-          }
-        },
-        toss: {
-          winner: "TBD",
-          choice: "bowl",
-          statement: item.toss || "Awaiting toss declaration"
-        },
-        venue: {
-          ...currentMatch.venue,
-          pitch_nature: item.pitch_report || currentMatch.venue.pitch_nature
-        }
-      };
-      onApplyMatch(updatedMatch);
-      onClose();
-    } catch (err) {
-      setFeedError(err instanceof Error ? err.message : "Live match ingestion failed.");
-    } finally {
-      setIsSaving(false);
-    }
+  // Live listings are discovery references only; they cannot be trusted XI imports.
+  const handleLoadLiveMatch = (item: LiveMatchItem) => {
+    setMatchName(item.title);
+    setTeamHomeName(item.team_home || "");
+    setTeamAwayName(item.team_away || "");
+    setTeamHomeCode("");
+    setTeamAwayCode("");
+    setHomeXI([]);
+    setAwayXI([]);
+    setActiveTab("custom_setup");
+    setFeedError("A live match reference is not a confirmed XI. Enter both teams, original player roles, credits and complete XIs to continue; no players or prices are generated.");
   };
 
   // Submit custom match form
@@ -283,7 +231,7 @@ export const MatchSetupModal: React.FC<MatchSetupModalProps> = ({
                 </span>
               </div>
               <p className="text-xs text-slate-400 font-sans">
-                Select a live match from ESPN/Cricbuzz or configure custom match, toss, pitch & lineups
+                Browse live references or original archives, then submit real XIs and credits
               </p>
             </div>
           </div>
@@ -448,7 +396,7 @@ export const MatchSetupModal: React.FC<MatchSetupModalProps> = ({
                         disabled={isSaving}
                         className="w-full py-2 rounded text-xs font-sans font-bold flex items-center justify-center gap-2 transition-all bg-slate-800 hover:bg-cyan-600 text-slate-200 hover:text-white border border-white/10 disabled:opacity-50"
                       >
-                        <Zap size={14} /> {isSaving ? "INGESTING XI & SOLVING..." : "LOAD VERIFIED HISTORICAL FIXTURE"}
+                        <Zap size={14} /> "VIEW ORIGINAL CRICSHEET SCORECARD"
                       </button>
                     </div>
                   ))}
@@ -464,10 +412,10 @@ export const MatchSetupModal: React.FC<MatchSetupModalProps> = ({
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div>
                 <span className="text-xs font-sans text-slate-300 uppercase tracking-wider flex items-center gap-1.5 font-bold">
-                  <Database size={13} className="text-emerald-400" /> Real Matches for 18 October 2026 ({liveMatches.length} Total)
+                  <Database size={13} className="text-emerald-400" /> Live match references ({liveMatches.length} Total)
                 </span>
                 <span className="text-[11px] text-slate-400">
-                  Live scores & squads synchronized directly via ESPNcricinfo cricdata SDK
+                  Live references are unverified; configure real XIs and fantasy credits before optimization
                 </span>
               </div>
 
@@ -612,7 +560,7 @@ export const MatchSetupModal: React.FC<MatchSetupModalProps> = ({
                         : "bg-slate-800 hover:bg-emerald-600 text-slate-200 hover:text-white border border-white/10"
                     }`}
                   >
-                    <Zap size={14} /> {isSaving ? "SYNCING LIVE LINEUPS & SOLVING..." : (currentMatch.id === m.id ? "ACTIVE LIVE MATCH" : "⚡ SYNC LIVE LINEUP & SOLVE")}
+                    <Zap size={14} /> "CONFIGURE VERIFIED XI"
                   </button>
                 </div>
               ))}

@@ -1,12 +1,11 @@
 """CricketData.org Live Cricket API Integration.
 Connects to CricketData / CricAPI endpoints to fetch live matches, squads, toss updates, and scorecards.
-Includes automatic fallback to high-fidelity simulated live match feeds when running without an API key.
+Unavailable external data returns an explicit unavailable result; no example scores.
 """
 
 import os
 import requests
 from typing import Dict, Any, List, Optional
-from datetime import datetime
 
 
 CRICKETDATA_BASE_URL = "https://api.cricapi.com/v1"
@@ -78,126 +77,3 @@ class CricketDataClient:
                 return res["data"]
 
         return {"status": "UNAVAILABLE", "data": None}
-
-    # -------------------------------------------------------------
-    # High-Fidelity Mock & Local Simulation Engine
-    # -------------------------------------------------------------
-    def _mock_current_matches(self) -> List[Dict[str, Any]]:
-        return [
-            {
-                "id": "ind-vs-wi-t20i-2026",
-                "name": "India vs West Indies, 4th T20I",
-                "matchType": "t20",
-                "status": "India won the toss and elected to bat first",
-                "venue": "Rajiv Gandhi International Stadium, Hyderabad",
-                "date": datetime.now().strftime("%Y-%m-%d"),
-                "teams": ["India", "West Indies"],
-                "teamInfo": [
-                    {"name": "India", "shortname": "IND", "img": "ind_flag.png"},
-                    {"name": "West Indies", "shortname": "WI", "img": "wi_flag.png"}
-                ],
-                "score": [
-                    {"r": 118, "w": 2, "o": 11.4, "inning": "India Inning 1"}
-                ],
-                "tossWinner": "India",
-                "tossChoice": "bat",
-                "matchStarted": True,
-                "matchEnded": False
-            },
-            {
-                "id": "csk-vs-mi-ipl-2026",
-                "name": "Chennai Super Kings vs Mumbai Indians, Match 28",
-                "matchType": "t20",
-                "status": "Match scheduled to start at 19:30 IST",
-                "venue": "MA Chidambaram Stadium, Chepauk, Chennai",
-                "date": datetime.now().strftime("%Y-%m-%d"),
-                "teams": ["Chennai Super Kings", "Mumbai Indians"],
-                "teamInfo": [
-                    {"name": "Chennai Super Kings", "shortname": "CSK"},
-                    {"name": "Mumbai Indians", "shortname": "MI"}
-                ],
-                "tossWinner": None,
-                "matchStarted": False,
-                "matchEnded": False
-            }
-        ]
-
-    def _mock_match_info(self, match_id: str) -> Dict[str, Any]:
-        return {
-            "id": match_id,
-            "name": "India vs West Indies, 4th T20I",
-            "matchType": "t20",
-            "status": "Live - 1st Innings in progress",
-            "venue": "Rajiv Gandhi International Stadium, Hyderabad",
-            "tossWinner": "India",
-            "tossChoice": "bat",
-            "teams": ["India", "West Indies"],
-            "series_id": "wi-tour-of-ind-2026",
-            "date": datetime.now().strftime("%Y-%m-%d")
-        }
-
-    def _mock_match_squad(self, match_id: str) -> Dict[str, Any]:
-        return {
-            "match_id": match_id,
-            "teams": {
-                "IND": {
-                    "playing_xi": [
-                        {"name": "Sanju Samson", "role": "WK", "captain": False},
-                        {"name": "Abhishek Sharma", "role": "BAT", "captain": False},
-                        {"name": "Ishan Kishan", "role": "BAT", "captain": False},
-                        {"name": "Suryakumar Yadav", "role": "BAT", "captain": True},
-                        {"name": "Tilak Varma", "role": "BAT", "captain": False},
-                        {"name": "Hardik Pandya", "role": "AR", "captain": False},
-                        {"name": "Axar Patel", "role": "AR", "captain": False},
-                        {"name": "Kuldeep Yadav", "role": "BOWL", "captain": False},
-                        {"name": "Arshdeep Singh", "role": "BOWL", "captain": False},
-                        {"name": "Jasprit Bumrah", "role": "BOWL", "captain": False},
-                        {"name": "Mayank Yadav", "role": "BOWL", "captain": False}
-                    ],
-                    "bench": ["Shreyas Iyer", "Ravi Bishnoi", "Harshit Rana"]
-                },
-                "WI": {
-                    "playing_xi": [
-                        {"name": "Brandon King", "role": "BAT", "captain": False},
-                        {"name": "Shai Hope", "role": "WK", "captain": False},
-                        {"name": "Nicholas Pooran", "role": "WK", "captain": False},
-                        {"name": "Rovman Powell", "role": "BAT", "captain": True},
-                        {"name": "Shimron Hetmyer", "role": "BAT", "captain": False},
-                        {"name": "Sherfane Rutherford", "role": "BAT", "captain": False},
-                        {"name": "Romario Shepherd", "role": "AR", "captain": False},
-                        {"name": "Roston Chase", "role": "AR", "captain": False},
-                        {"name": "Akeal Hosein", "role": "BOWL", "captain": False},
-                        {"name": "Gudakesh Motie", "role": "BOWL", "captain": False},
-                        {"name": "Alzarri Joseph", "role": "BOWL", "captain": False}
-                    ],
-                    "bench": ["Matthew Forde", "Shamar Joseph", "Fabian Allen"]
-                }
-            }
-        }
-
-    def _mock_match_scorecard(self, match_id: str) -> Dict[str, Any]:
-        return {
-            "match_id": match_id,
-            "status": "In Progress",
-            "innings": [
-                {
-                    "team": "India",
-                    "score": 118,
-                    "wickets": 2,
-                    "overs": 11.4,
-                    "batting": [
-                        {"batsman": "Sanju Samson", "r": 34, "b": 18, "4s": 4, "6s": 2, "out": True, "dismissal": "c Hope b Joseph"},
-                        {"batsman": "Abhishek Sharma", "r": 58, "b": 29, "4s": 6, "6s": 3, "out": False},
-                        {"batsman": "Suryakumar Yadav", "r": 16, "b": 12, "4s": 2, "6s": 0, "out": True, "dismissal": "c Hetmyer b Motie"},
-                        {"batsman": "Tilak Varma", "r": 8, "b": 6, "4s": 1, "6s": 0, "out": False}
-                    ],
-                    "bowling": [
-                        {"bowler": "Akeal Hosein", "o": 3.0, "m": 0, "r": 22, "w": 0},
-                        {"bowler": "Alzarri Joseph", "o": 3.0, "m": 0, "r": 32, "w": 1},
-                        {"bowler": "Gudakesh Motie", "o": 3.0, "m": 0, "r": 24, "w": 1},
-                        {"bowler": "Romario Shepherd", "o": 2.4, "m": 0, "r": 36, "w": 0}
-                    ]
-                }
-            ]
-        }
-

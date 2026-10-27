@@ -81,7 +81,7 @@ export const PlayerPropsOracle: React.FC = () => {
               BATTER RUNS & BOWLER WICKETS
             </span>
             <span className="rounded bg-purple-500/10 px-2.5 py-1 text-xs font-mono text-purple-300 border border-purple-500/20">
-              CALIBRATED EDGES
+              UNVERIFIED MARKET DATA
             </span>
           </div>
 
@@ -91,7 +91,7 @@ export const PlayerPropsOracle: React.FC = () => {
                 <span>🎯</span> Player Props vs Market Lines
               </h1>
               <p className="text-sm text-slate-300 mt-1 max-w-2xl">
-                Algorithmic projection comparison against standard DraftKings lines for batters and bowlers. Pinpoints exploitable edges with statistical confidence tiers and micro head-to-head tactical notes.
+                No real bookmaker lines or calibrated probabilities are connected. This page will not invent odds, player props or recommendations.
               </p>
             </div>
             <button

@@ -113,8 +113,10 @@ class UnifiedCricketDataHub:
                               "records_indexed": None, "last_sync": None, "info": PROVIDER_METADATA["cricdata"]}
         return result
 
-    def fetch_unified_live_match(self, match_id: str = "ind-vs-wi-t20i-2026") -> Dict[str, Any]:
+    def fetch_unified_live_match(self, match_id: str) -> Dict[str, Any]:
         """Gathers and cross-references live match data across all available providers."""
+        if not match_id or not str(match_id).strip():
+            raise ValueError("Explicit provider match ID required")
         # 1. Match info & toss from Roanuz Match API
         roanuz_intel = self.roanuz_match.get_match_intelligence(match_id)
         

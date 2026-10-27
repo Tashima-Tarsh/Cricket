@@ -47,14 +47,7 @@ class DailyMatchSyncEngine:
         except Exception as e:
             pass
 
-        # 2. Ingest from Cricbuzz Scraper Hub
-        cricbuzz_matches = self._fetch_cricbuzz_fixtures()
-        if cricbuzz_matches:
-            # deduplicate by team names
-            existing_titles = {m.get("title", "").lower() for m in matches}
-            for cm in cricbuzz_matches:
-                if cm.get("title", "").lower() not in existing_titles:
-                    matches.append(cm)
+        # Third-party scraping disabled. ESPN references do not establish a verified XI.
 
         # 3. Enrich with AI Archetype Classification
         for m in matches:
@@ -74,93 +67,14 @@ class DailyMatchSyncEngine:
         return matches
 
     def _fetch_cricbuzz_fixtures(self) -> List[Dict[str, Any]]:
-        """Scrapes live, scheduled, and completed fixtures from Cricbuzz schedule hub."""
-        url = "https://www.cricbuzz.com/cricket-match/live-scores"
-        req = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
-        try:
-            with urllib.request.urlopen(req, timeout=10) as resp:
-                html = resp.read().decode("utf-8", errors="ignore")
-                
-            from html.parser import HTMLParser
-            class MatchParser(HTMLParser):
-                def __init__(self):
-                    super().__init__()
-                    self.texts = []
-                def handle_data(self, data):
-                    d = data.strip()
-                    if d: self.texts.append(d)
-
-            p = MatchParser()
-            p.feed(html)
-
-            # Find match links and headers
-            matches = []
-            links = re.findall(r'href=["\'](/live-cricket-scores/\d+/[^"\']+|/cricket-scores/\d+/[^"\']+)["\']', html)
-            unique_links = list(dict.fromkeys(links))
-
-            for l in unique_links[:15]:
-                match_id = re.search(r'/(\d+)/', l)
-                m_id = match_id.group(1) if match_id else "unknown"
-                clean_title = l.split("/")[-1].replace("-", " ").title()
-                
-                # Determine state
-                state = "VERIFIED_LIVE" if "live" in l else "UPCOMING"
-                if "preview" in l:
-                    state = "UPCOMING"
-
-                matches.append({
-                    "id": f"cb_{m_id}",
-                    "match_id": m_id,
-                    "title": clean_title,
-                    "provider": "Cricbuzz Live Hub",
-                    "state": state,
-                    "status": "LIVE" if state == "VERIFIED_LIVE" else "SCHEDULED",
-                    "details": f"Tracked live via Cricbuzz match {m_id}",
-                    "link": f"https://www.cricbuzz.com{l}",
-                    "format": "T20" if "t20" in l.lower() else ("ODI" if "odi" in l.lower() else "TEST"),
-                    "category": "WOMEN_CRICKET" if any(w in l.lower() for w in ["women", "w-vs", "w_vs", "wmn"]) else "INTERNATIONAL"
-                })
-            return matches
-        except Exception as e:
-            return []
+        """Removed unlicensed HTML scraping and URL-based verified-live guesses."""
+        return []
 
     def fetch_live_commentary_and_scorecard(self, match_id: str) -> Dict[str, Any]:
-        """Fetches ball-by-ball commentary, scorecard, and pitch quotes for a specific match."""
-        clean_id = re.sub(r'[^0-9]', '', match_id)
-        if not clean_id:
-            return {"error": "Invalid match id"}
-
-        scorecard_url = f"https://www.cricbuzz.com/live-cricket-scorecard/{clean_id}"
-        comm_url = f"https://www.cricbuzz.com/live-cricket-scores/{clean_id}"
-
-        data = {
-            "match_id": clean_id,
-            "synced_at": datetime.now(timezone.utc).isoformat(),
-            "pitch_report": "Standard surface",
-            "toss": "Pending",
-            "scorecard": {},
-            "key_events": []
-        }
-
-        try:
-            req = urllib.request.Request(comm_url, headers={"User-Agent": USER_AGENT})
-            with urllib.request.urlopen(req, timeout=10) as resp:
-                html = resp.read().decode("utf-8", errors="ignore")
-                
-            # Pitch report
-            p_match = re.search(r'Pitch Report.*?:(.*?)(?:Match Videos|\n\n|<div)', html, re.DOTALL | re.IGNORECASE)
-            if p_match:
-                clean_pitch = re.sub(r'<[^>]+>', '', p_match.group(1)).strip()
-                data["pitch_report"] = clean_pitch[:500]
-
-            # Toss
-            t_match = re.search(r'([A-Za-z ]+ have won the toss and (?:have )?opted to [A-Za-z ]+)', html, re.IGNORECASE)
-            if t_match:
-                data["toss"] = t_match.group(1).strip()
-        except Exception:
-            pass
-
-        return data
+        """Only licensed adapters may provide verified ball-by-ball observations."""
+        return {"status": "UNAVAILABLE", "match_id": match_id,
+                "reason": "Licensed scorecard/commentary provider not configured",
+                "pitch_report": None, "toss": None, "scorecard": None, "key_events": []}
 
     def _classify_archetype(self, match: Dict[str, Any]) -> str:
         """Classifies match into one of the 4 Universal Match Archetypes."""

@@ -159,9 +159,9 @@ class UniversalMatchEngine:
             "venue": venue_data,
             "teams": teams_data,
             "toss": toss_data,
-            "current_crr": payload.get("current_crr", 7.50),
-            "projected_total": payload.get("projected_total", 150),
-            "chasing_win_prob": payload.get("chasing_win_prob", 55.0),
+            "current_crr": payload.get("current_crr", 0.0),
+            "projected_total": payload.get("projected_total", 0.0),
+            "chasing_win_prob": payload.get("chasing_win_prob"),
             "playing_xi_home": xi_home,
             "playing_xi_away": xi_away
         }
@@ -354,40 +354,21 @@ class UniversalMatchEngine:
         4. HIGH_STAKES_PARITY: Evenly matched franchises / tournament knockouts.
         """
         venue = match_meta.get("venue", {})
-        par = float(venue.get("avg_first_innings", 155.0))
-        toss_stmt = (match_meta.get("toss", {}).get("statement") or "").lower()
-        h_code = match_meta.get("teams", {}).get("home", {}).get("code", "")
-        a_code = match_meta.get("teams", {}).get("away", {}).get("code", "")
-        
-        # Mismatch detection
-        mismatch_teams = {"ZIM-W", "SCO-W", "USA", "NAM", "UAE", "NEP", "PNG"}
-        if a_code in mismatch_teams or h_code in mismatch_teams or "zimbabwe" in toss_stmt:
-            return "ASYMMETRIC_MISMATCH"
-        
+        par_raw = venue.get("avg_first_innings")
+        if par_raw is None:
+            return "UNCLASSIFIED_INSUFFICIENT_VENUE_EVIDENCE"
+        par = float(par_raw)
         if par >= 180.0:
             return "ROAD_HIGHWAY"
-        elif par <= 145.0 or venue.get("spin_wicket_pct", 50.0) >= 55.0:
+        if par <= 145.0:
+            return "SPIN_CHOKE_MINEFIELD"
+        spin = venue.get("spin_wicket_pct")
+        if spin is not None and float(spin) >= 55.0:
             return "SPIN_CHOKE_MINEFIELD"
         return "HIGH_STAKES_PARITY"
 
     def apply_dead_rubber_captain_filter(self, pool: List[Dict[str, Any]], match_meta: Dict[str, Any]) -> List[Dict[str, Any]]:
-        """Dead-Rubber Captaincy Bias Filter:
-        Detects when a series is already decided (e.g. 2-0 up) and captain announces
-        'game time for middle order' -> penalizes captain's projected balls by 35% and boosts middle order (No. 3-5).
-        """
-        toss_stmt = (match_meta.get("toss", {}).get("statement") or "").lower()
-        is_dead_rubber = any(k in toss_stmt for k in ["middle order", "game time", "rested", "experiment", "series won", "testing"])
-        
-        if is_dead_rubber:
-            for p in pool:
-                if p.get("is_c"):
-                    # Captain demotes self or delegates overs
-                    p["projected_points"] = round(p.get("projected_points", 40.0) * 0.65, 1)
-                    p["ceiling_score"] = round(p.get("ceiling_score", 60.0) * 0.65, 1)
-                elif p.get("role") in ("BAT", "AR") and 3 <= p.get("batting_order", 7) <= 5:
-                    # Middle-order batters get promoted volume
-                    p["projected_points"] = round(p.get("projected_points", 35.0) * 1.35, 1)
-                    p["ceiling_score"] = round(p.get("ceiling_score", 55.0) * 1.45, 1)
+        """Do not infer roster changes or player opportunity from generic toss text."""
         return pool
 
     def _solve_four_gl_teams(self, players: List[Dict[str, Any]], match_meta: Dict[str, Any]) -> Dict[str, Any]:

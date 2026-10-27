@@ -13,7 +13,6 @@ Best Use: Live matches, comprehensive scorecards, playing XI lineups, bowling & 
 import os
 import requests
 from typing import Dict, Any, List, Optional
-from datetime import datetime
 
 
 SPORTMONKS_BASE_URL = "https://cricket.sportmonks.com/api/v2.0"
@@ -118,67 +117,3 @@ class SportmonksCricketClient:
         elif "bowler" in r:
             return "BOWL"
         return "BAT"
-
-    # --- Realistic Mock Fallback ---
-    def _mock_livescores(self) -> List[Dict[str, Any]]:
-        return [{
-            "id": 984512,
-            "round": "4th T20I",
-            "type": "T20I",
-            "status": "1st Innings",
-            "note": "India won the toss and elected to bat",
-            "starting_at": datetime.now().isoformat(),
-            "localteam": {"id": 101, "name": "India", "code": "IND"},
-            "visitorteam": {"id": 202, "name": "West Indies", "code": "WI"},
-            "runs": [
-                {"team_id": 101, "inning": 1, "score": 118, "wickets": 2, "overs": 11.4}
-            ]
-        }]
-
-    def _mock_fixture(self, fixture_id: Any) -> Dict[str, Any]:
-        return {
-            "id": fixture_id or 984512,
-            "localteam_id": 101,
-            "visitorteam_id": 202,
-            "status": "In Progress",
-            "localteam": {"id": 101, "name": "India", "code": "IND"},
-            "visitorteam": {"id": 202, "name": "West Indies", "code": "WI"},
-            "venue": {
-                "name": "Rajiv Gandhi International Stadium",
-                "city": "Hyderabad",
-                "capacity": 55000
-            },
-            "lineup": [
-                {"id": 1, "fullname": "Sanju Samson", "team_id": 101, "position": {"name": "Wicketkeeper"}, "lineup": {"lineup": True}},
-                {"id": 2, "fullname": "Abhishek Sharma", "team_id": 101, "position": {"name": "Batsman"}, "lineup": {"lineup": True}},
-                {"id": 3, "fullname": "Ishan Kishan", "team_id": 101, "position": {"name": "Wicketkeeper"}, "lineup": {"lineup": True}},
-                {"id": 4, "fullname": "Suryakumar Yadav", "team_id": 101, "position": {"name": "Batsman"}, "lineup": {"lineup": True}},
-                {"id": 5, "fullname": "Tilak Varma", "team_id": 101, "position": {"name": "Batsman"}, "lineup": {"lineup": True}},
-                {"id": 6, "fullname": "Hardik Pandya", "team_id": 101, "position": {"name": "Allrounder"}, "lineup": {"lineup": True}},
-                {"id": 7, "fullname": "Axar Patel", "team_id": 101, "position": {"name": "Allrounder"}, "lineup": {"lineup": True}},
-                {"id": 8, "fullname": "Kuldeep Yadav", "team_id": 101, "position": {"name": "Bowler"}, "lineup": {"lineup": True}},
-                {"id": 9, "fullname": "Arshdeep Singh", "team_id": 101, "position": {"name": "Bowler"}, "lineup": {"lineup": True}},
-                {"id": 10, "fullname": "Jasprit Bumrah", "team_id": 101, "position": {"name": "Bowler"}, "lineup": {"lineup": True}},
-                {"id": 11, "fullname": "Mayank Yadav", "team_id": 101, "position": {"name": "Bowler"}, "lineup": {"lineup": True}},
-                {"id": 12, "fullname": "Brandon King", "team_id": 202, "position": {"name": "Batsman"}, "lineup": {"lineup": True}},
-                {"id": 13, "fullname": "Shai Hope", "team_id": 202, "position": {"name": "Wicketkeeper"}, "lineup": {"lineup": True}},
-                {"id": 14, "fullname": "Nicholas Pooran", "team_id": 202, "position": {"name": "Wicketkeeper"}, "lineup": {"lineup": True}},
-                {"id": 15, "fullname": "Rovman Powell", "team_id": 202, "position": {"name": "Batsman"}, "lineup": {"lineup": True}},
-                {"id": 16, "fullname": "Shimron Hetmyer", "team_id": 202, "position": {"name": "Batsman"}, "lineup": {"lineup": True}},
-                {"id": 17, "fullname": "Sherfane Rutherford", "team_id": 202, "position": {"name": "Batsman"}, "lineup": {"lineup": True}},
-                {"id": 18, "fullname": "Romario Shepherd", "team_id": 202, "position": {"name": "Allrounder"}, "lineup": {"lineup": True}},
-                {"id": 19, "fullname": "Roston Chase", "team_id": 202, "position": {"name": "Allrounder"}, "lineup": {"lineup": True}},
-                {"id": 20, "fullname": "Akeal Hosein", "team_id": 202, "position": {"name": "Bowler"}, "lineup": {"lineup": True}},
-                {"id": 21, "fullname": "Gudakesh Motie", "team_id": 202, "position": {"name": "Bowler"}, "lineup": {"lineup": True}},
-                {"id": 22, "fullname": "Alzarri Joseph", "team_id": 202, "position": {"name": "Bowler"}, "lineup": {"lineup": True}}
-            ],
-            "batting": [
-                {"player_id": 1, "score": 34, "balls": 18, "four_x": 4, "six_x": 2, "strike_rate": 188.89},
-                {"player_id": 2, "score": 58, "balls": 29, "four_x": 6, "six_x": 3, "strike_rate": 200.0}
-            ],
-            "bowling": [
-                {"player_id": 20, "overs": 3.0, "medians": 0, "runs": 22, "wickets": 0, "rate": 7.33},
-                {"player_id": 22, "overs": 3.0, "medians": 0, "runs": 32, "wickets": 1, "rate": 10.67}
-            ]
-        }
-

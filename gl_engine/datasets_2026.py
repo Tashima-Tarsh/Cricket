@@ -113,36 +113,11 @@ class Datasets2026Pipeline:
         self.iq = CricIQAnalytics()
 
     def get_season_2026_fixtures(self) -> List[Dict[str, Any]]:
-        """Returns 2026 schedule for IPL & International T20s."""
-        return [
-            {
-                "match_id": "ipl_2026_m01",
-                "season": 2026,
-                "tournament": "Indian Premier League 2026",
-                "teams": ["Chennai Super Kings", "Royal Challengers Bengaluru"],
-                "venue": "MA Chidambaram Stadium, Chepauk, Chennai",
-                "date": "2026-03-22",
-                "status": "Scheduled"
-            },
-            {
-                "match_id": "ipl_2026_m02",
-                "season": 2026,
-                "tournament": "Indian Premier League 2026",
-                "teams": ["Sunrisers Hyderabad", "Kolkata Knight Riders"],
-                "venue": "Rajiv Gandhi International Stadium, Hyderabad",
-                "date": "2026-03-23",
-                "status": "Scheduled"
-            },
-            {
-                "match_id": "ind_wi_t20_2026_m4",
-                "season": 2026,
-                "tournament": "West Indies tour of India 2026",
-                "teams": ["India", "West Indies"],
-                "venue": "Rajiv Gandhi International Stadium, Hyderabad",
-                "date": "2026-10-14",
-                "status": "Completed"
-            }
-        ]
+        """Only provider-sourced season fixtures may be returned as scheduled.
+
+        The previous hand-authored list was neither provider-verified nor live.
+        """
+        return []
 
     def export_to_databricks_format(self, output_path: str = "data/openipl_2026_export.json") -> str:
         """Exports normalized tournament telemetry to JSON / Parquet-ready tabular format."""
