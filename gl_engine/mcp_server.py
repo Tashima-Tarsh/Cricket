@@ -25,7 +25,7 @@ if str(root_dir) not in sys.path:
 from gl_engine.daily_match_sync import DailyMatchSyncEngine
 from gl_engine.nlp_deconstructor import NLPCommentaryDeconstructor
 from gl_engine.player_battles_mcp import PlayerBattlesMCPEngine
-from gl_engine.universal_engine import UniversalMatchEngine
+from gl_engine.universal_engine import get_universal_engine
 from gl_engine.ball_simulator import BallByBallGenerativeSimulator
 
 logging.basicConfig(level=logging.ERROR)  # Keep stdout clean for MCP JSON-RPC
@@ -36,7 +36,7 @@ class CricketMCPServer:
         self.sync_engine = DailyMatchSyncEngine()
         self.nlp = NLPCommentaryDeconstructor()
         self.battles = PlayerBattlesMCPEngine()
-        self.universal = UniversalMatchEngine()
+        self.universal = get_universal_engine()
         self.simulator = BallByBallGenerativeSimulator()
 
     def get_tool_definitions(self) -> List[Dict[str, Any]]:
@@ -96,20 +96,22 @@ class CricketMCPServer:
                 "inputSchema": {
                     "type": "object",
                     "properties": {
-                        "match_id": {"type": "string", "default": "ind_w_vs_zim_w_2026_02"},
+                        "match_id": {"type": "string", "minLength": 1},
                         "n_sims": {"type": "integer", "minimum": 1, "maximum": 1000, "default": 100},
                         "pitch_class": {"type": "string", "enum": ["BALANCED", "FLAT_HIGHWAY", "DRY_TURNER"], "default": "BALANCED"}
-                    }
+                    },
+                    "required": ["match_id"]
                 }
             },
             {
                 "name": "solve_gpp_lineups",
-                "description": "Runs Google OR-Tools CP-SAT solver enforcing the 3 Invariable Laws of Rank 1 (13.5-19.0 unspent credits, independent C/VC).",
+                "description": "Runs uncalibrated CP-SAT fantasy lineup scenarios for a connected fixture.",
                 "inputSchema": {
                     "type": "object",
                     "properties": {
-                        "match_id": {"type": "string", "default": "ind_w_vs_zim_w_2026_03"}
-                    }
+                        "match_id": {"type": "string", "minLength": 1}
+                    },
+                    "required": ["match_id"]
                 }
             }
         ]
@@ -150,7 +152,9 @@ class CricketMCPServer:
                 raise ValueError("Unknown pitch_class")
             if set(arguments) - {"match_id", "n_sims", "pitch_class"}:
                 raise ValueError("Unknown simulation argument; use match_id, n_sims and pitch_class")
-            match_id = arguments.get("match_id", "ind_w_vs_zim_w_2026_02")
+            match_id = arguments.get("match_id")
+            if not isinstance(match_id, str) or not match_id.strip():
+                raise ValueError("Explicit match_id required")
             if match_id not in self.universal._matches:
                 raise ValueError("Unknown or disconnected match")
             meta = self.universal._matches[match_id]
@@ -165,7 +169,9 @@ class CricketMCPServer:
                     "data_provenance": "SIMULATED_UNCALIBRATED", "player_distributions": sim_results}
 
         elif name == "solve_gpp_lineups":
-            match_id = arguments.get("match_id", "ind_w_vs_zim_w_2026_03")
+            match_id = arguments.get("match_id")
+            if not isinstance(match_id, str) or not match_id.strip():
+                raise ValueError("Explicit match_id required")
             state = self.universal.get_unified_state(match_id)
             return {
                 "match": state.get("match"),

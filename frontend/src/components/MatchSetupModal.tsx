@@ -468,7 +468,7 @@ export const MatchSetupModal: React.FC<MatchSetupModalProps> = ({
 
                         {m.data_provenance === "LIVE_CRICDATA_SDK" ? (
                           <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-bold border border-emerald-500/30">
-                            VERIFIED LIVE 18-OCT-2026
+                            Provider-supplied · verification pending
                           </span>
                         ) : m.data_provenance === "VERIFIED_LIVE_RSS" ? (
                           <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-sky-500/20 text-sky-300 font-bold border border-sky-500/30">

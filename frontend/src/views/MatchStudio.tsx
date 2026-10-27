@@ -35,12 +35,12 @@ export const MatchStudio: React.FC = () => {
       ? "Test"
       : "ODI"
   );
-  const [homeTeam, setHomeTeam] = useState(currentMatch.teams.home.code || "IND-W");
-  const [awayTeam, setAwayTeam] = useState(currentMatch.teams.away.code || "ZIM-W");
-  const [venueName, setVenueName] = useState(currentMatch.venue.name || "BCA Stadium, Kotambi, Vadodara");
-  const [pitchNature, setPitchNature] = useState<string>(currentMatch.venue.pitch_nature || "Dry Turner");
+  const [homeTeam, setHomeTeam] = useState(currentMatch.teams.home.code || "");
+  const [awayTeam, setAwayTeam] = useState(currentMatch.teams.away.code || "");
+  const [venueName, setVenueName] = useState(currentMatch.venue.name || "");
+  const [pitchNature, setPitchNature] = useState<string>(currentMatch.venue.pitch_nature || "");
   const [overs, setOvers] = useState<number>(activeOvers && activeOvers > 0 ? activeOvers : 50);
-  const [tossWinner, setTossWinner] = useState<string>(currentMatch.toss.winner || "ZIM-W");
+  const [tossWinner, setTossWinner] = useState<string>(currentMatch.toss.winner || "");
   const [tossDecision, setTossDecision] = useState<"bat" | "bowl">(currentMatch.toss.choice || "bat");
 
   // Roster State
@@ -89,7 +89,7 @@ export const MatchStudio: React.FC = () => {
   const fetchLiveToss = async () => {
     setIsFetchingToss(true);
     try {
-      const matchId = currentMatch.id || "ind_w_vs_zim_w_2026_02";
+      const matchId = currentMatch.id;
       const res = await fetch(`/api/live/toss-feed?match_id=${encodeURIComponent(matchId)}`);
       if (res.ok) {
         const data = await res.json();

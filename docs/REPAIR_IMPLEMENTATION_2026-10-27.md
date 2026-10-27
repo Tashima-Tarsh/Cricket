@@ -67,3 +67,55 @@ now return HTTP 503 instead of leaking unsourced measurements from the
 experimental pitch-vision module. Rendering-only mock trajectories in the
 frontend remain labelled as sample illustrations and must never enter analysis
 or be represented as observed.
+
+## New dated official scoring profile (2026-10-27)
+
+The source-backed `dream11_published_2026_10_27` profile is available via
+`POST /api/v1/score` with an explicit `rule_version` field for T20, ODI and
+T10. The old `legacy_v3` profile remains unchanged for previous consumers;
+this avoids silently rewriting old archives. Source:
+https://www.dream11.com/fantasy-cricket/point-system
+
+The published rule profile uses T20 boundary +4, six +6, 25/50/75/100
+bonuses 4/8/12/16 and five-wicket haul +12; ODI one point per **three**
+dot balls with 25 through 150-run thresholds; T10 25/50/75/100 and
+two-through-five wicket thresholds. The scorer does not guess dismissals
+from a zero-run scorecard; `was_dismissed` must be explicit. Full match
+substitute handling still needs fielding participation evidence.
+
+
+## Licensed live-data corroboration
+
+`POST /api/v1/live/verify-xi` requires an admin bearer token plus explicit
+Sportmonks fixture ID and CricAPI match ID, and it requires both authorized
+live feeds to independently declare exactly 11 named players for each of the
+same two teams. Conflicts and squad-only data return errors. Provider config
+is visible at `GET /api/v1/live/providers`. No tokens are checked into source.
+
+**Cricbuzz** is a browser reference only. Its terms expressly restrict
+automated scraping, so the integration intentionally does not scrape their
+site or reuse unofficial JSON APIs. Direct authorization/licensing must be
+obtained before any Cricbuzz-derived programmatic ingestion.
+
+The corroboration API does **not** automatically lock a Dream11 contest or
+claim that player-credit identities are matched. It only reports agreements
+between two remote providers. Frontend "simulate" options remain strictly
+administrative test controls, not provider-confirmed facts.
+
+## Out-of-time prediction evaluation
+
+`python -m gl_engine.model_validation --output model-validation-report.json`
+trains a fresh XGBoost regression on 65% of historical dates, estimates
+residual prediction intervals on the next 15% and reports untouched 20%
+date-split performance. Features are strictly earlier-date player partial
+scoring histories; same-day games cannot leak into feature vectors.
+
+The CI artifact `historical-out-of-time-validation` records all metrics
+(MAE/RMSE/R²/bias, n, historical-baseline comparison and empirical 90%
+residual interval coverage). Any R² <=0.05 or relative MAE lift <=2%
+is flagged as SKILL_NOT_ESTABLISHED. Even a positive metric only
+validates this **partial Cricsheet proxy, conditioned on known participants**,
+not the current deployed historical model or a contest winner/Rank-1 metric.
+
+Automatic synthetic retraining is disabled when the model or data are absent.
+Providers and exact XI are still required to use any projection on a live fixture.

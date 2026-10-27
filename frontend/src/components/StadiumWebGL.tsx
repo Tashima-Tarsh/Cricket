@@ -2,7 +2,8 @@ import { useGraphics } from "../hooks/useGraphics";
 import React, { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
 import { CameraPreset, BallTrajectory } from "../types";
-import { BALL_TRAJECTORIES } from "../data/mockData";
+// Do not manufacture ball trajectories, speeds or pitch coordinates.
+const BALL_TRAJECTORIES: BallTrajectory[] = [];
 import { Eye, Crosshair, Compass, ShieldAlert, Layers, ZoomIn, ZoomOut, RotateCcw } from "lucide-react";
 
 function disposeObject(object: THREE.Object3D) {

@@ -258,7 +258,7 @@ export const PlayerIntel: React.FC<PlayerIntelProps> = ({ players }) => {
             <div className="flex flex-wrap items-center justify-between gap-2 text-[10px] font-mono text-slate-400 bg-slate-950/70 px-3 py-1.5 rounded-lg border border-white/5 mt-3">
               <span className="flex items-center gap-1.5">
                 <ShieldCheck size={12} className="text-emerald-400" />
-                <span>PROVENANCE: XGBoost Fantasy Regressor v3.4 (Trained on 1,243 Cricsheet Matches)</span>
+                <span>PROVENANCE: Research projections are uncalibrated; inspect source and sample size before acting.</span>
               </span>
               <span>Confidence: 90% Range [{activePlayer.floor_score.toFixed(1)} – {activePlayer.ceiling_score.toFixed(1)} pts]</span>
             </div>

@@ -18,6 +18,13 @@ jobs:
       - run: python -m compileall -q gl_engine edgeforge dream11-edge/edge
       - run: python -m unittest discover -s tests -p 'test_*.py' -v
       - run: python -m pytest tests dream11-edge/tests edgeforge/score -q
+      - run: python -m gl_engine.model_validation --output model-validation-report.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: historical-out-of-time-validation
+          path: model-validation-report.json
+          if-no-files-found: warn
         env:
           PYTHONPATH: dream11-edge
   frontend:

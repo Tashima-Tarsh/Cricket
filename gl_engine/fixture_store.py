@@ -19,6 +19,10 @@ class FixturePlayer(BaseModel):
     bat_hand: Literal["RHB", "LHB"]
     bowl_style: str = Field(max_length=100)
     projected_ownership: float | None = Field(default=None, ge=0, le=100)
+    expected_overs: float | None = Field(default=None, ge=0, le=10)
+    is_c: bool = False
+    is_vc: bool = False
+    is_wk: bool = False
 
 
 class CustomFixture(BaseModel):

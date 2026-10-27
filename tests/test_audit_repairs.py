@@ -15,10 +15,14 @@ from gl_engine import universal_engine as ue, live_feed
 from gl_engine.models import Player
 from gl_engine.ortools_optimizer import ORToolsCricketOptimizer
 from gl_engine.web_app import app, MATCH_FILE
+from support_runtime_fixture import FIXTURE_ID, build_fixture, connected_fixture
 
 
 class AuditRepairTests(unittest.TestCase):
     def setUp(self):
+        self._fixture_context = connected_fixture()
+        self.engine = self._fixture_context.__enter__()
+        self.addCleanup(self._fixture_context.__exit__, None, None, None)
         self.client = TestClient(app)
         self.players = [Player(**p) for p in json.loads(MATCH_FILE.read_text(encoding="utf-8"))["players"]]
 
@@ -63,7 +67,7 @@ class AuditRepairTests(unittest.TestCase):
                             [p['projected_points'] for p in short['players']])
 
     def test_analyst_rain_query_is_an_explicit_illustration(self):
-        result = self.client.get('/api/analyst/query?q=rain&match_id=ind_vs_wi_5th_t20_2026')
+        result = self.client.get(f'/api/analyst/query?q=rain&match_id={FIXTURE_ID}')
         self.assertEqual(result.status_code, 200)
         self.assertEqual(result.json()['provenance']['source'], 'RULE_BASED_RETRIEVAL')
         self.assertIn('illustrative', result.json()['reply'].lower())
@@ -103,7 +107,7 @@ class AuditRepairTests(unittest.TestCase):
             con.execute("INSERT INTO deliveries VALUES ('Other', 'Other', 999, 999, true)")
             con.close()
             engine = ue.UniversalMatchEngine()
-            meta = copy.deepcopy(engine._matches['afg_vs_ban_odi_sharjah'])
+            meta = copy.deepcopy(build_fixture())
             meta['playing_xi_home'] = [dict(name="x'OR(1=1)OR'X", role='BAT', credits=8)]
             meta['playing_xi_away'] = []
             with patch.object(ue, 'DB_PATH', path):
@@ -112,7 +116,7 @@ class AuditRepairTests(unittest.TestCase):
 
     def test_unicode_and_punctuation_names_keep_distinct_player_ids(self):
         engine = ue.UniversalMatchEngine()
-        meta = copy.deepcopy(engine._matches['afg_vs_ban_odi_sharjah'])
+        meta = copy.deepcopy(build_fixture())
         names = ['A B', 'A-B', '\u0928\u093f\u0924\u093f\u0936', '\u0930\u094b\u0939\u093f\u0924']
         meta['playing_xi_home'] = [dict(name=n, role='BAT', credits=8) for n in names]
         meta['playing_xi_away'] = []
@@ -123,7 +127,7 @@ class AuditRepairTests(unittest.TestCase):
         engine = ue.UniversalMatchEngine()
         with patch.object(ue, 'DB_PATH', Path('__absent__.duckdb')):
             self.assertEqual(engine._build_battle_matrix([p.model_dump() for p in self.players],
-                                                       engine._matches['afg_ban']), [])
+                                                       build_fixture()), [])
 
     def test_model_features_do_not_use_target_day(self):
         from gl_engine.xgboost_model import prepare_prematch_features
@@ -171,7 +175,7 @@ class AuditRepairTests(unittest.TestCase):
         from gl_engine.mcp_server import CricketMCPServer
         server = CricketMCPServer()
         request = {'jsonrpc': '2.0', 'id': 1, 'method': 'tools/call', 'params': {
-            'name': 'simulate_ball_by_ball', 'arguments': {'match_id': 'afg_ban', 'n_sims': 2}}}
+            'name': 'simulate_ball_by_ball', 'arguments': {'match_id': FIXTURE_ID, 'n_sims': 2}}}
         output = io.StringIO()
         with patch('sys.stdin', io.StringIO(json.dumps(request) + '\n')), patch('sys.stdout', output):
             server.handle_stdio_rpc()

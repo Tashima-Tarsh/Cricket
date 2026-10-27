@@ -50,8 +50,7 @@ class CricketDataClient:
             if res2.get("status") == "success" and "data" in res2:
                 return res2["data"]
 
-        # Fallback to realistic live match feed
-        return self._mock_current_matches()
+        return []  # Do not forge live matches in offline mode
 
     def get_match_info(self, match_id: str) -> Dict[str, Any]:
         """Retrieves match status, toss results, venue, and teams."""
@@ -60,7 +59,7 @@ class CricketDataClient:
             if res.get("status") == "success" and "data" in res:
                 return res["data"]
 
-        return self._mock_match_info(match_id)
+        return {"status": "UNAVAILABLE", "data": None}
 
     def get_match_squad(self, match_id: str) -> Dict[str, Any]:
         """Retrieves playing 11 and bench players for both teams."""
@@ -69,7 +68,7 @@ class CricketDataClient:
             if res.get("status") == "success" and "data" in res:
                 return res["data"]
 
-        return self._mock_match_squad(match_id)
+        return {"status": "UNAVAILABLE", "data": None}
 
     def get_match_scorecard(self, match_id: str) -> Dict[str, Any]:
         """Retrieves live ball-by-ball / innings scorecard."""
@@ -78,7 +77,7 @@ class CricketDataClient:
             if res.get("status") == "success" and "data" in res:
                 return res["data"]
 
-        return self._mock_match_scorecard(match_id)
+        return {"status": "UNAVAILABLE", "data": None}
 
     # -------------------------------------------------------------
     # High-Fidelity Mock & Local Simulation Engine
