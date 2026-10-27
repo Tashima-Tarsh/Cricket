@@ -237,8 +237,7 @@ class XGBoostFantasyPredictor:
         import duckdb
         path = duckdb_path or (Path(__file__).parent.parent / "t20.duckdb")
         if not path.exists():
-            print(f"[XGBoost] DuckDB not found at {path}, using synthetic fallback.")
-            return self._train_baseline_synthetic()
+            raise RuntimeError(f"Historical DuckDB missing: {path}; synthetic fallback prohibited")
 
         con = duckdb.connect(str(path), read_only=True)
         query = """
@@ -308,7 +307,7 @@ class XGBoostFantasyPredictor:
         con.close()
 
         if len(df) < 50:
-            return self._train_baseline_synthetic()
+            raise RuntimeError("At least 50 observed historical rows required; synthetic fallback prohibited")
 
         # train_on_dataframe constructs all predictive roles/volumes from earlier dates.
         df["venue_par_score"] = 175.0
@@ -322,7 +321,9 @@ class XGBoostFantasyPredictor:
         return self.train_from_duckdb()
 
     def _train_baseline_synthetic(self) -> Dict[str, Any]:
-        """Trains a robust baseline XGBoost model ensuring strict pre-match feature priors without target leakage."""
+        """Disabled for production: synthetic evaluation cannot verify forecasting skill."""
+        raise RuntimeError("Synthetic training is prohibited for real fixture predictions")
+        # Legacy fixture-only prototype below is unreachable by design.
         np.random.seed(42)
         n = 600
         synthetic_rows = []
@@ -374,12 +375,9 @@ class XGBoostFantasyPredictor:
         Incorporates atmospheric physics (rain delay / overcast / damp red soil) into projections.
         """
         if not self.is_trained:
-            # Prefer training directly on the 17,526 DuckDB historical match records
-            try:
-                self.train_from_duckdb()
-            except Exception as e:
-                print(f"[XGBoost] DuckDB training notice: {e}, falling back to synthetic.")
-                self._train_baseline_synthetic()
+            raise RuntimeError(
+                "Validated historical model unavailable; automatic synthetic training is disabled."
+            )
 
         feat_dict = self.extract_features_from_player(player, venue, weather)
         df_feat = pd.DataFrame([feat_dict])[FEATURE_COLS]

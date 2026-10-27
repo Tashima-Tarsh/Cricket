@@ -160,6 +160,12 @@ def optimize(request: OptimizeRequest):
     }
 
 
+@router.get("/evaluation/model")
+def out_of_time_model_evaluation():
+    from .model_validation import audit_database
+    return audit_database()
+
+
 @router.get("/evaluation")
 def evaluation():
     from .capabilities.c19_backtesting import CricketBacktesting

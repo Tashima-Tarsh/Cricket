@@ -101,3 +101,21 @@ The corroboration API does **not** automatically lock a Dream11 contest or
 claim that player-credit identities are matched. It only reports agreements
 between two remote providers. Frontend "simulate" options remain strictly
 administrative test controls, not provider-confirmed facts.
+
+## Out-of-time prediction evaluation
+
+`python -m gl_engine.model_validation --output model-validation-report.json`
+trains a fresh XGBoost regression on 65% of historical dates, estimates
+residual prediction intervals on the next 15% and reports untouched 20%
+date-split performance. Features are strictly earlier-date player partial
+scoring histories; same-day games cannot leak into feature vectors.
+
+The CI artifact `historical-out-of-time-validation` records all metrics
+(MAE/RMSE/R²/bias, n, historical-baseline comparison and empirical 90%
+residual interval coverage). Any R² <=0.05 or relative MAE lift <=2%
+is flagged as SKILL_NOT_ESTABLISHED. Even a positive metric only
+validates this **partial Cricsheet proxy, conditioned on known participants**,
+not the current deployed historical model or a contest winner/Rank-1 metric.
+
+Automatic synthetic retraining is disabled when the model or data are absent.
+Providers and exact XI are still required to use any projection on a live fixture.
