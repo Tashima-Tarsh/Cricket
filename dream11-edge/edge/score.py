@@ -90,36 +90,22 @@ def eco_bonus(runs: int, balls: int) -> float:
 
 
 def points(bat: BatLine, bowl: BowlLine, fld: FieldLine, is_xi: bool = False) -> float:
-    """Calculates official fantasy points for a player across batting, bowling, and fielding.
-    Includes dot ball (+1 pt), starting XI (+4 pts), and correct non-penalizing strike rate bands.
+    """Canonical compatibility scoring, shared with gl_engine and EdgeForge.
+
+    The input is an observed or simulated scorecard; this does not certify
+    any contest rule version or the quality of upstream observations.
     """
-    p = 0.0
-    if is_xi:
-        p += 4.0
-
-    if bat.batted:
-        p += bat.runs + bat.fours + 2 * bat.sixes + sr_bonus(bat.runs, bat.balls)
-        if bat.out and bat.runs == 0:
-            p -= 2.0
-        if bat.runs >= 100:
-            p += 16.0
-        elif bat.runs >= 50:
-            p += 8.0
-        elif bat.runs >= 30:
-            p += 4.0
-
-    p += 30.0 * bowl.wickets + 8.0 * bowl.lbw_bowled + 12.0 * bowl.maidens + 1.0 * bowl.dots
-    if bowl.wickets >= 5:
-        p += 12.0
-    elif bowl.wickets >= 4:
-        p += 8.0
-    elif bowl.wickets >= 3:
-        p += 4.0
-    p += eco_bonus(bowl.runs, bowl.balls)
-
-    p += 8.0 * fld.catches + 12.0 * fld.stumpings
-    p += 12.0 * fld.runout_direct + 6.0 * fld.runout_indirect
-    if fld.catches >= 3:
-        p += 4.0
-
-    return max(p, FLOOR)
+    from gl_engine.capabilities.c11_fantasy_scoring import CricketFantasyScoring
+    result = CricketFantasyScoring().calculate_player_points(
+        runs=bat.runs if bat.batted else 0,
+        balls_faced=bat.balls if bat.batted else 0,
+        fours=bat.fours if bat.batted else 0,
+        sixes=bat.sixes if bat.batted else 0,
+        wickets=bowl.wickets, bowled_lbw=bowl.lbw_bowled,
+        overs_bowled=bowl.balls / 6.0,
+        runs_conceded=bowl.runs, maidens=bowl.maidens, dots=bowl.dots,
+        catches=fld.catches, stumpings=fld.stumpings,
+        run_outs_direct=fld.runout_direct, run_outs_indirect=fld.runout_indirect,
+        is_playing=is_xi, match_format="T20",
+    )
+    return result["total_points"]

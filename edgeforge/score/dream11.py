@@ -105,188 +105,42 @@ class Dream11Scorer:
         is_captain: bool = False,
         is_vice_captain: bool = False,
     ) -> ScoringResult:
+        # One scoring implementation for all engines; this adapter retains
+        # the EdgeForge return type and configurable point weights.
+        from gl_engine.capabilities.c11_fantasy_scoring import CricketFantasyScoring
+        from gl_engine.config import FantasyScoringConfig
         cfg = self.config
-        fmt = match_format.upper()
-        total = 0.0
-        bd: Dict[str, float] = {}
-
-        if is_playing:
-            total += cfg.in_starting_11
-            bd["starting_11"] = cfg.in_starting_11
-
-        # Batting
-        bat = (
-            runs * cfg.run
-            + fours * cfg.boundary_four
-            + sixes * cfg.boundary_six
+        rules = FantasyScoringConfig(
+            run=cfg.run, boundary_four=cfg.boundary_four,
+            boundary_six=cfg.boundary_six, duck=cfg.duck,
+            runs_30_bonus=cfg.t20_30_bonus, runs_50_bonus=cfg.t20_50_bonus,
+            runs_100_bonus=cfg.t20_100_bonus,
+            t10_30_bonus=cfg.t10_30_bonus, t10_50_bonus=cfg.t10_50_bonus,
+            odi_50_bonus=cfg.odi_50_bonus, odi_100_bonus=cfg.odi_100_bonus,
+            odi_150_bonus=cfg.odi_150_bonus,
+            wicket=cfg.wicket, odi_wicket=cfg.odi_wicket,
+            bowled_lbw_bonus=cfg.bowled_lbw_bonus,
+            maiden_over=cfg.maiden_t20, maiden_odi=cfg.maiden_odi,
+            dot_ball=cfg.dot_ball, three_wickets_bonus=cfg.three_wickets,
+            four_wickets_bonus=cfg.four_wickets,
+            five_wickets_bonus=cfg.five_wickets,
+            catch=cfg.catch, stumping=cfg.stumping,
+            run_out_direct=cfg.run_out_direct,
+            run_out_thrower_catcher=cfg.run_out_indirect,
+            three_catch_bonus=cfg.three_catch_bonus,
+            in_starting_11=cfg.in_starting_11,
         )
-
-        if fmt == "ODI":
-            if runs >= 150:
-                bat += cfg.odi_150_bonus
-            elif runs >= 100:
-                bat += cfg.odi_100_bonus
-            elif runs >= 50:
-                bat += cfg.odi_50_bonus
-        elif fmt == "T10":
-            if runs >= 50:
-                bat += getattr(cfg, "t10_50_bonus", 16.0)
-            elif runs >= 30:
-                bat += getattr(cfg, "t10_30_bonus", 8.0)
-        else:
-            if runs >= 100:
-                bat += cfg.t20_100_bonus
-            elif runs >= 50:
-                bat += cfg.t20_50_bonus
-            elif runs >= 30:
-                bat += cfg.t20_30_bonus
-
-        if runs == 0 and balls_faced > 0:
-            bat += cfg.duck
-
-        if fmt == "ODI":
-            min_balls = 20
-        elif fmt == "T10":
-            min_balls = 5
-        else:
-            min_balls = 10
-
-        if balls_faced >= min_balls:
-            sr = (runs / balls_faced) * 100.0
-            if fmt == "ODI":
-                if sr > 140:
-                    bat += 6.0
-                elif sr >= 120:
-                    bat += 4.0
-                elif sr >= 100:
-                    bat += 2.0
-                elif sr < 30:
-                    bat -= 6.0
-                elif sr < 40:
-                    bat -= 4.0
-                elif sr < 50:
-                    bat -= 2.0
-            elif fmt == "T10":
-                if sr > 250.0:
-                    bat += 6.0
-                elif sr >= 200.0:
-                    bat += 4.0
-                elif sr >= 150.0:
-                    bat += 2.0
-                elif sr < 70.0:
-                    bat -= 6.0
-                elif sr < 80.0:
-                    bat -= 4.0
-                elif sr < 90.0:
-                    bat -= 2.0
-            else:
-                if sr > 170:
-                    bat += 6.0
-                elif sr >= 150:
-                    bat += 4.0
-                elif sr >= 130:
-                    bat += 2.0
-                elif sr < 50:
-                    bat -= 6.0
-                elif sr < 60:
-                    bat -= 4.0
-                elif sr < 70:
-                    bat -= 2.0
-
-        total += bat
-        bd["batting"] = bat
-
-        # Bowling
-        wicket_val = cfg.odi_wicket if fmt == "ODI" else cfg.wicket
-        maiden_val = cfg.maiden_odi if fmt == "ODI" else cfg.maiden_t20
-
-        bowl = (
-            wickets * wicket_val
-            + bowled_lbw * cfg.bowled_lbw_bonus
-            + maidens * maiden_val
-            + dots * cfg.dot_ball
+        scored = CricketFantasyScoring(rules).calculate_player_points(
+            runs=runs, fours=fours, sixes=sixes, balls_faced=balls_faced,
+            wickets=wickets, bowled_lbw=bowled_lbw, overs_bowled=overs_bowled,
+            runs_conceded=runs_conceded, maidens=maidens, dots=dots,
+            catches=catches, stumpings=stumpings,
+            run_outs_direct=run_outs_direct, run_outs_indirect=run_outs_indirect,
+            is_playing=is_playing, match_format=match_format,
+            is_womens=is_womens, is_captain=is_captain,
+            is_vice_captain=is_vice_captain,
         )
-
-        if wickets >= 5:
-            bowl += cfg.five_wickets
-        elif wickets >= 4:
-            bowl += cfg.four_wickets
-        elif wickets >= 3:
-            bowl += cfg.three_wickets
-
-        if fmt == "ODI":
-            min_overs = 5.0
-        elif fmt == "T10":
-            min_overs = 1.0
-        else:
-            min_overs = 2.0
-
-        if overs_bowled >= min_overs:
-            econ = runs_conceded / overs_bowled
-            if fmt == "ODI":
-                if econ < 3.5:
-                    bowl += 6.0
-                elif econ <= 4.5:
-                    bowl += 4.0
-                elif econ <= 5.5:
-                    bowl += 2.0
-                elif econ > 9.0:
-                    bowl -= 6.0
-                elif econ >= 8.0:
-                    bowl -= 4.0
-                elif econ >= 7.0:
-                    bowl -= 2.0
-            elif fmt == "T10":
-                if econ < 6.0:
-                    bowl += 6.0
-                elif econ <= 7.0:
-                    bowl += 4.0
-                elif econ <= 8.0:
-                    bowl += 2.0
-                elif econ > 13.0:
-                    bowl -= 6.0
-                elif econ >= 12.0:
-                    bowl -= 4.0
-                elif econ >= 11.0:
-                    bowl -= 2.0
-            else:
-                if econ < 5.0:
-                    bowl += 6.0
-                elif econ <= 6.0:
-                    bowl += 4.0
-                elif econ <= 7.0:
-                    bowl += 2.0
-                elif econ > 12.0:
-                    bowl -= 6.0
-                elif econ >= 11.0:
-                    bowl -= 4.0
-                elif econ >= 10.0:
-                    bowl -= 2.0
-
-        total += bowl
-        bd["bowling"] = bowl
-        bd["dot_balls"] = dots * cfg.dot_ball
-
-        # Fielding
-        field = (
-            catches * cfg.catch
-            + stumpings * cfg.stumping
-            + run_outs_direct * cfg.run_out_direct
-            + run_outs_indirect * cfg.run_out_indirect
+        return ScoringResult(
+            total=scored["total_points"], breakdown=scored["breakdown"],
+            format=scored["format"]
         )
-        if catches >= 3:
-            field += cfg.three_catch_bonus
-
-        total += field
-        bd["fielding"] = field
-
-        base_total = max(round(total, 1), -6.0)
-        multiplier = 1.0
-        if is_captain:
-            multiplier = 2.0
-        elif is_vice_captain:
-            multiplier = 1.5
-
-        final_total = round(base_total * multiplier, 1)
-
-        return ScoringResult(total=final_total, breakdown=bd, format=fmt)

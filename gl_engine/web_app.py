@@ -2,7 +2,7 @@
 India vs West Indies, 4th T20I at Rajiv Gandhi Stadium, Hyderabad.
 Features full smooth scrolling, matchup & fast wicket falling simulations, and 1-click copy.
 """
-from fastapi import FastAPI, HTTPException, Query, Body, Header, Request
+from fastapi import FastAPI, HTTPException, Query, Body, Header, Request, Depends
 from fastapi.responses import HTMLResponse, FileResponse, Response
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
@@ -48,6 +48,7 @@ if os.getenv("ALLOW_ALL_ORIGINS", "false").lower() in ["true", "1"]:
 app = FastAPI(title="Cricket Mega Contest Intelligence Portal")
 from .provenance import install_provenance, annotate_payload
 from .roster_safety import validate_roster
+from .admin_auth import require_admin
 install_provenance(app)
 
 app.add_middleware(
@@ -236,15 +237,10 @@ def get_current_match(match_id: Optional[str] = None):
     }
 
 @app.post("/api/match/ingest")
-def ingest_match_endpoint(payload: Dict[str, Any] = Body(...), authorization: Optional[str] = Header(None)):
+def ingest_match_endpoint(payload: Dict[str, Any] = Body(...), _authorized: None = Depends(require_admin)):
     """Dynamically ingests ANY new match or custom playing XIs, running DuckDB ball-by-ball
     profiling and OR-Tools CP-SAT lineup optimization in real-time."""
     from .universal_engine import get_universal_engine
-    token = os.getenv("CRICKET_ADMIN_TOKEN")
-    if not token:
-        raise HTTPException(503, "Custom ingestion is disabled. Configure CRICKET_ADMIN_TOKEN on the server.")
-    if not secrets.compare_digest(authorization or "", "Bearer " + token):
-        raise HTTPException(401, "An administrator bearer token is required.")
     engine = get_universal_engine()
     try:
         state = engine.ingest_match(payload)
@@ -1100,18 +1096,20 @@ def get_unified_live_match(match_id: str = "ind-vs-wi-t20i-2026"):
 
 @app.get("/api/pitch/hawkeye")
 def get_pitch_hawkeye(bowler_type: str = "Pace"):
-    from .pitch_venue_vision import PitchVenueVisionEngine
-    return PitchVenueVisionEngine().analyze_hawkeye_lengths(bowler_type)
+    """No observed tracking feed is configured; never export model assumptions as Hawk-Eye."""
+    raise HTTPException(503, "Observed ball-tracking measurements unavailable; no substitute trajectories generated")
+
 
 @app.get("/api/pitch/boundary-geometry")
 def get_pitch_boundaries():
-    from .pitch_venue_vision import PitchVenueVisionEngine
-    return PitchVenueVisionEngine().compute_boundary_risk_zones()
+    """Boundary distances and hit probabilities require sourced venue measurements."""
+    raise HTTPException(503, "Verified boundary dimensions unavailable; simulated geometry withheld")
+
 
 @app.get("/api/pitch/degradation")
 def get_pitch_degradation(over: float = 10.0, innings: int = 2):
-    from .pitch_venue_vision import PitchVenueVisionEngine
-    return PitchVenueVisionEngine().evaluate_pitch_degradation(over, innings)
+    """Do not market heuristic pitch wear and dew values as observations."""
+    raise HTTPException(503, "Observed pitch-wear telemetry unavailable; model-only estimates withheld")
 
 @app.get("/api/matchups/h2h")
 def get_matchup_h2h(batter: str = "Pooran", bowler: str = "Kuldeep"):
@@ -1835,33 +1833,14 @@ def get_gl_match_odds(match_id: str):
     home_name = match_data.get("teams", {}).get("home", {}).get("name", "Home Team")
     away_name = match_data.get("teams", {}).get("away", {}).get("name", "Away Team")
     
-    # 80+ sportsbooks feeds devigged
-    market = devig.analyze_market(1.42, 2.85, home_name, away_name)
-    
-    # Dynamically resolve real players from match roster
-    match_players = state.get("players", [])
-    p_bat = next((p["name"] for p in match_players if p.get("role") in ["BAT", "WK"]), home_name + " Batter")
-    p_bowl = next((p["name"] for p in match_players if p.get("role") in ["BOWL"]), away_name + " Bowler")
-    p_ar = next((p["name"] for p in match_players if p.get("role") in ["AR"]), "Key All-Rounder")
-    
-    player_props = [
-        {"player": p_bat, "prop": "Over 28.5 Runs", "odds_decimal": 1.85, "implied_prob_pct": 54.1},
-        {"player": p_bowl, "prop": "Over 1.5 Wickets", "odds_decimal": 2.10, "implied_prob_pct": 47.6},
-        {"player": p_ar, "prop": "Over 42.5 Fantasy Pts", "odds_decimal": 1.78, "implied_prob_pct": 56.2}
-    ]
-    
-    return {
-        "status": "success",
-        "match_id": match_id,
-        "match_odds": market,
-        "player_props": player_props,
-        "books_surveyed": 82,
-        "source": "SportsGameOdds + EntitySport Aggregator"
-    }
+    # No sportsbook odds have been fetched or independently verified.
+    # Never return constant prices and assert they are live market data.
+    raise HTTPException(503, "Live market odds unavailable: no verified provider response")
+
 
 @app.post("/teams/save")
 @app.post("/api/teams/save")
-def save_gl_team_entry(entry: Dict[str, Any] = Body(...)):
+def save_gl_team_entry(entry: Dict[str, Any] = Body(...), _authorized: None = Depends(require_admin)):
     """Saves a generated unique team entry to persistence."""
     current = _load_saved_teams()
     entry_id = entry.get("team_id") or f"ENTRY_{int(time.time() * 1000)}"
@@ -1932,7 +1911,7 @@ def get_data_fusion_status():
     }
 
 @app.post("/api/fusion/run-pipeline")
-def run_data_fusion_pipeline_endpoint():
+def run_data_fusion_pipeline_endpoint(_authorized: None = Depends(require_admin)):
     """Manually triggers the full data fusion ingestion and feature engineering pipeline."""
     from .data_fusion import data_fusion_pipeline
     result = data_fusion_pipeline.run_full_pipeline()
@@ -1942,11 +1921,11 @@ def run_data_fusion_pipeline_endpoint():
 def get_live_trigger_status(match_id: str):
     """Retrieves the current state machine status (SCHEDULED, TOSS_PENDING, TOSS_DONE, LINEUP_LOCKED, LIVE)."""
     from .live_toss_trigger import live_toss_trigger
-    state = live_toss_trigger.poll_match_status(match_id)
+    state = live_toss_trigger.get_state(match_id)
     return {"status": "success", "trigger_state": state}
 
 @app.post("/api/trigger/simulate-toss/{match_id}")
-def trigger_simulate_toss(match_id: str, payload: Dict[str, Any] = Body(...)):
+def trigger_simulate_toss(match_id: str, payload: Dict[str, Any] = Body(...), _authorized: None = Depends(require_admin)):
     """Simulates live toss detection, sets TOSS_DONE, and applies tactical score adjustments."""
     from .live_toss_trigger import live_toss_trigger
     toss_winner = payload.get("toss_winner", "India")
@@ -1955,10 +1934,12 @@ def trigger_simulate_toss(match_id: str, payload: Dict[str, Any] = Body(...)):
     return {"status": "success", "message": "Toss registered. Projections updated.", "trigger_state": state}
 
 @app.post("/api/trigger/simulate-lineup/{match_id}")
-def trigger_simulate_lineup(match_id: str, payload: Optional[Dict[str, Any]] = Body(None)):
+def trigger_simulate_lineup(match_id: str, payload: Optional[Dict[str, Any]] = Body(None), _authorized: None = Depends(require_admin)):
     """Simulates confirmed 22-player lineup, locks roster, regenerates unique teams, and updates artifacts."""
     from .live_toss_trigger import live_toss_trigger
     confirmed_players = payload.get("confirmed_players") if payload else None
+    if not confirmed_players:
+        raise HTTPException(422, "Provide 22 explicit confirmed players; a squad is not an XI")
     state = live_toss_trigger.handle_lineup_confirmed(match_id, confirmed_players)
     return {
         "status": "success",
@@ -1967,7 +1948,7 @@ def trigger_simulate_lineup(match_id: str, payload: Optional[Dict[str, Any]] = B
     }
 
 @app.post("/api/trigger/advance-cutoff/{match_id}")
-def trigger_advance_cutoff(match_id: str):
+def trigger_advance_cutoff(match_id: str, _authorized: None = Depends(require_admin)):
     """Advances match to T-5 min final cutoff (LIVE_SOON -> LIVE)."""
     from .live_toss_trigger import live_toss_trigger
     live_toss_trigger.advance_to_live_soon(match_id)
@@ -2000,6 +1981,9 @@ def get_h2h_matchup_detail(batter_id: str, bowler_id: str):
         
     return {"status": "success", "matchup": row.iloc[0].to_dict()}
 
+
+from .api_v1 import router as stable_api_router
+app.include_router(stable_api_router)
 
 if FRONTEND_DIST.exists():
     app.mount("/assets", StaticFiles(directory=str(FRONTEND_DIST / "assets")), name="assets")

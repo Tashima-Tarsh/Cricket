@@ -13,10 +13,10 @@ def test_duck_penalty():
 
 
 def test_wicket_haul():
-    # 4w*30=120 ; 2 lbw*8=16 ; w4 bonus=8 ; eco 20/4ov=5.0 -> +6
+    # 4w*30=120 ; 2 lbw*8=16 ; w4 bonus=8 ; eco 20/4ov=5.0 -> +4 (5-5.99 band)
     p = points(BatLine(batted=False),
                BowlLine(balls=24, runs=20, wickets=4, lbw_bowled=2), FieldLine())
-    assert p == 120 + 16 + 8 + 6
+    assert p == 120 + 16 + 8 + 4
 
 
 def test_floor_holds():

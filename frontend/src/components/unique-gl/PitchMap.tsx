@@ -13,6 +13,7 @@ export interface PitchPlayer {
   differential_score: number;
   is_captain?: boolean;
   is_vice_captain?: boolean;
+  is_confirmed_xi?: boolean;
 }
 
 interface PitchMapProps {

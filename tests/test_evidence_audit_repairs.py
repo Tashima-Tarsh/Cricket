@@ -157,9 +157,12 @@ class TestEvidenceAuditRepairs(unittest.TestCase):
     def test_backtesting_no_0946_scaling(self):
         """Verify CricketBacktesting does not use artificial 0.946 scaling."""
         bt = CricketBacktesting()
-        # Verify curated benchmarks have realistic, non-sensational rank labels
-        for bm in bt.curated_benchmarks:
-            self.assertNotIn("Rank 1 Contender", bm.get("rank_in_grand_league", ""))
+        # Post-match curated portfolios have been removed entirely: they
+        # cannot be scored as independent historical prediction evidence.
+        self.assertFalse(hasattr(bt, "curated_benchmarks"))
+        result = bt.execute()
+        self.assertIsNone(result["average_efficiency_pct"])
+        self.assertFalse(result.get("contest_ranks_available", False))
 
     def test_field_simulator_calibration_status(self):
         """Verify SyntheticFieldSimulator marks its output as MODEL_ESTIMATE_UNCALIBRATED."""
@@ -200,13 +203,14 @@ class TestEvidenceAuditRepairs(unittest.TestCase):
         self.assertTrue(len(results) > 0)
         self.assertEqual(results[0]["calibration_status"], "MODEL_ESTIMATE_UNCALIBRATED")
 
-    def test_vite_config_proxies_to_port_8001(self):
-        """Verify frontend/vite.config.ts defaults proxy target to port 8001."""
+    def test_vite_config_proxies_to_backend_port_8000(self):
+        """Frontend default proxy must match the actual backend on port 8000."""
         vite_conf_path = Path(__file__).parent.parent / "frontend" / "vite.config.ts"
         self.assertTrue(vite_conf_path.exists())
         content = vite_conf_path.read_text(encoding="utf-8")
-        self.assertIn("8001", content)
-        self.assertNotIn("target: 'http://127.0.0.1:8000'", content)
+        self.assertIn("8000", content)
+        self.assertIn("'/api'", content)
+        self.assertIn("'/matches'", content)
 
 
 if __name__ == "__main__":

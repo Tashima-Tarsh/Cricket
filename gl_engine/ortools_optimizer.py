@@ -152,8 +152,7 @@ class ORToolsCricketOptimizer:
         for i, p in enumerate(self.players):
             role_indices.setdefault(p.role, []).append(i)
         for role, idxs in role_indices.items():
-            if not idxs:
-                continue
+            # An unavailable mandatory role is infeasible, not optional.
             lo = getattr(self.constraints, f"min_{role.lower()}", 1)
             hi = getattr(self.constraints, f"max_{role.lower()}", 8)
             model.Add(sum(x[i] for i in idxs) >= lo)
@@ -167,11 +166,10 @@ class ORToolsCricketOptimizer:
             model.Add(sum(x[i] for i in idxs) >= self.constraints.min_players_per_team)
             model.Add(sum(x[i] for i in idxs) <= self.constraints.max_players_per_team)
 
-        ownership_available = any(getattr(p, "ownership_available", True) for p in self.players)
+        ownership_available = all(getattr(p, "ownership_available", True) for p in self.players)
         if ownership_available and min_diffs > 0:
             diff_idx = [i for i, p in enumerate(self.players) if (p.projected_ownership or 100.0) < 35.0]
-            if diff_idx:
-                model.Add(sum(x[i] for i in diff_idx) >= min(min_diffs, len(diff_idx)))
+            model.Add(sum(x[i] for i in diff_idx) >= min_diffs)
 
         for prev in previous_selections:
             model.Add(sum(x[i] for i in prev) <= max_overlap)
@@ -229,6 +227,27 @@ class ORToolsCricketOptimizer:
         cap_i = next(i for i in range(n) if solver.Value(c[i]) == 1)
         vc_i = next(i for i in range(n) if solver.Value(v[i]) == 1)
         selected_players = [self.players[i] for i in selected]
+        # Defense in depth: check solver outputs against the active contract.
+        if len(selected) != 11 or len({p.id for p in selected_players}) != 11:
+            return None
+        if any(p.id in excluded_player_ids for p in selected_players):
+            return None
+        if not locked_player_ids.issubset({p.id for p in selected_players}):
+            return None
+        if any(not (getattr(self.constraints, f"min_{role.lower()}") <=
+                    sum(p.role == role for p in selected_players) <=
+                    getattr(self.constraints, f"max_{role.lower()}"))
+               for role in ("WK", "BAT", "AR", "BOWL")):
+            return None
+        if any(not (self.constraints.min_players_per_team <=
+                    sum(p.team == team for p in selected_players) <=
+                    self.constraints.max_players_per_team)
+               for team in team_indices):
+            return None
+        if not (min_credits <= sum(p.credits for p in selected_players) <= max_credits):
+            return None
+        if cap_i == vc_i or cap_i not in selected or vc_i not in selected:
+            return None
         captain = self.players[cap_i]
         vice_captain = self.players[vc_i]
         total_credits = round(sum(p.credits for p in selected_players), 1)
