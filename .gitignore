@@ -60,3 +60,6 @@ data/processed/venue_profiles.parquet
 # User-entered post-toss rosters and short-lived contest research never belong in Git
 data/snapshots/
 data/processed/*manual_xi*.json
+
+# Compiled UI artifacts are built from source during deployment
+frontend/dist/
