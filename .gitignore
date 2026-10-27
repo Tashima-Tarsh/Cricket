@@ -56,3 +56,7 @@ data/raw/
 # Generated analysis products (regenerate only from verified inputs)
 data/processed/player_matchups.parquet
 data/processed/venue_profiles.parquet
+
+# User-entered post-toss rosters and short-lived contest research never belong in Git
+data/snapshots/
+data/processed/*manual_xi*.json
