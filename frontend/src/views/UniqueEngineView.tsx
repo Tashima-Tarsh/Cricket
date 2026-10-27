@@ -81,7 +81,7 @@ interface VenueDetails {
 interface GeneratedTeam {
   team_id: string;
   name: string;
-  rank_1_probability_pct: number;
+  rank_1_probability_pct: number | null;
   rank_10_probability_pct: number;
   median_rank: number;
   projected_points: number;
@@ -304,7 +304,7 @@ export const UniqueEngineView: React.FC = () => {
         setActiveSubTab("cards");
 
         // Trigger confetti burst if rank 1 probability > 5%
-        const hasHighRank1 = teams.some((t: GeneratedTeam) => t.rank_1_probability_pct > 5.0);
+        const hasHighRank1 = teams.some((t: GeneratedTeam) => typeof t.rank_1_probability_pct === "number" && t.rank_1_probability_pct > 5.0);
         if (hasHighRank1) {
           setShowConfetti(true);
         }
@@ -346,7 +346,7 @@ export const UniqueEngineView: React.FC = () => {
       `Match: ${selectedMatch?.name || "T20 Match"}`,
       `Captain (2x): ${team.captain} [Diff Score: ${team.captain_differential_score || "Top Edge"}]`,
       `Vice-Captain (1.5x): ${team.vice_captain}`,
-      `Crowd Overlap: ${team.crowd_overlap_pct}% | Rank-1 Prob: ${team.rank_1_probability_pct}%`,
+      `Crowd Overlap: ${team.crowd_overlap_pct}% | Rank-1 Prob: Not calibrated`,
       `Total Credits: ${team.total_credits} / 100 Cr`,
       `---------------------------------`,
       ...team.players.map(
@@ -818,7 +818,7 @@ export const UniqueEngineView: React.FC = () => {
                       >
                         <span>Team #{idx + 1}</span>
                         <span className="px-1.5 py-0.5 rounded bg-[#0B0F14] text-[10px] text-[#FFB300]">
-                          {team.rank_1_probability_pct}% R1
+                          {team.rank_1_probability_pct == null ? "Uncalibrated" : `${team.rank_1_probability_pct}%`} R1
                         </span>
                       </button>
                     );
@@ -865,7 +865,7 @@ export const UniqueEngineView: React.FC = () => {
                           </div>
                           <div className="text-right">
                             <span className="text-2xl font-black font-mono text-[#FFB300]">
-                              {currentTeam.rank_1_probability_pct}%
+                              {currentTeam.rank_1_probability_pct == null ? "N/A" : `${currentTeam.rank_1_probability_pct}%`}
                             </span>
                             <span className="text-[10px] font-mono text-[#00C853] block">
                               Top 10: {currentTeam.rank_10_probability_pct}%
@@ -1151,7 +1151,7 @@ export const UniqueEngineView: React.FC = () => {
                     <div className="flex items-center justify-between border-b border-white/5 pb-2">
                       <span className="text-xs font-mono font-bold text-white">{team.name}</span>
                       <span className="text-xs font-mono text-[#FFB300] font-black">
-                        {team.rank_1_probability_pct}% Rank-1
+                        {team.rank_1_probability_pct == null ? "Uncalibrated" : `${team.rank_1_probability_pct}%`} Rank-1
                       </span>
                     </div>
 
@@ -1182,7 +1182,7 @@ export const UniqueEngineView: React.FC = () => {
                       <div className="w-full bg-white/10 h-2 rounded-full overflow-hidden flex">
                         <div
                           className="bg-[#00C853] h-full"
-                          style={{ width: `${Math.min(100, team.rank_1_probability_pct * 8)}%` }}
+                          style={{ width: `${Math.min(100, (team.rank_1_probability_pct ?? 0) * 8)}%` }}
                         />
                         <div
                           className="bg-[#FFB300] h-full"
@@ -1247,7 +1247,7 @@ export const UniqueEngineView: React.FC = () => {
                     </div>
 
                     <div className="flex items-center justify-between text-xs font-mono">
-                      <span className="text-[#00C853] font-bold">R1: {entry.rank_1_probability_pct}%</span>
+                      <span className="text-[#00C853] font-bold">R1: {entry.rank_1_probability_pct == null ? "N/A" : `${entry.rank_1_probability_pct}%`}</span>
                       <span className="text-[#8A96A3]">Overlap: {entry.crowd_overlap_pct}%</span>
                       <button
                         onClick={() => copyTeamText(entry, idx)}

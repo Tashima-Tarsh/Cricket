@@ -24,6 +24,7 @@ import time
 from pathlib import Path
 from datetime import datetime, timezone, timedelta
 from typing import Dict, Any, List, Optional
+from fastapi import HTTPException
 
 import pandas as pd
 import numpy as np
@@ -193,15 +194,15 @@ class LiveTossLineupTrigger:
         # Only an explicit, fully confirmed XI can advance the live state.
         # Never infer confirmation from roster ordering or a scheduled squad.
         if confirmed_players is None or len(confirmed_players) != 22:
-            raise ValueError("Exactly 22 explicitly confirmed players are required")
+            raise HTTPException(422, "Exactly 22 explicitly confirmed players are required")
         if any(p.get("is_confirmed_xi") is not True for p in confirmed_players):
-            raise ValueError("Every player must have explicit confirmed-XI status")
+            raise HTTPException(422, "Every player must have explicit confirmed-XI status")
         from .roster_safety import validate_confirmed_xi
         validate_confirmed_xi(confirmed_players)
         expected = {p.get("id") for p in all_players}
         supplied = {p.get("id") for p in confirmed_players}
         if expected != supplied:
-            raise ValueError("Confirmed XI must match the selected fixture's player pool")
+            raise HTTPException(422, "Confirmed XI must match the selected fixture's player pool")
 
         # 1. Export locked player pool to parquet
         pool_df = data_fusion_pipeline.score_player_pool(

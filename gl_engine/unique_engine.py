@@ -78,7 +78,6 @@ class UniqueTeamEngine:
         
         # Sort players by ownership and differential score
         by_ownership = sorted(enriched_players, key=lambda x: x["predicted_ownership"], reverse=True)
-        by_diff = sorted(enriched_players, key=lambda x: x["differential_score"], reverse=True)
         
         top5_chalk_ids = set(p["id"] for p in by_ownership[:5])
         
@@ -90,6 +89,10 @@ class UniqueTeamEngine:
         n_pool = len(pool)
         # Exclusions are hard constraints. Never restore excluded players.
         if n_pool < 11:
+            return []
+        from .roster_safety import validate_roster
+        validate_roster(players)
+        if toss_completed and any(p.get("is_confirmed_xi") is not True for p in players):
             return []
         if locked_set & excluded_set:
             return []
@@ -174,8 +177,7 @@ class UniqueTeamEngine:
                 
             # Constraint 6: Force minimum differential gems (< 35% ownership)
             gem_vars = [x[i] for i, p in enumerate(pool) if p.get("predicted_ownership", 30.0) < 35.0]
-            if len(gem_vars) >= min_gems_required:
-                model.Add(sum(gem_vars) >= min_gems_required)
+            model.Add(sum(gem_vars) >= min_gems_required)
                 
             # User locks
             for l_id in locked_set:
