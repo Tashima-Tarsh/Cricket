@@ -8,7 +8,11 @@ import json
 import time
 import requests
 from typing import List, Dict, Any, Optional
-from bs4 import BeautifulSoup
+
+try:
+    from bs4 import BeautifulSoup
+except ImportError:
+    BeautifulSoup = None
 
 HEADERS = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
@@ -33,10 +37,23 @@ def fetch_cricbuzz_live_matches() -> List[Dict[str, Any]]:
         r = requests.get(url, headers=HEADERS, timeout=8)
         if r.status_code != 200:
             return _LIVE_CACHE
-        soup = BeautifulSoup(r.text, "html.parser")
         seen = set()
+        if BeautifulSoup is not None:
+            soup = BeautifulSoup(r.text, "html.parser")
+            anchors = soup.find_all("a", href=re.compile(r"/live-cricket-scores/(\d+)/"))
+        else:
+            anchors = []
+            for m in re.finditer(r'<a[^>]*href=["\'](/live-cricket-scores/(\d+)/([^/"\']+))["\'][^>]*>(.*?)</a>', r.text, re.DOTALL):
+                class FakeA:
+                    def __init__(self, href, text):
+                        self._href = href
+                        self.text = text
+                        self.parent = None
+                    def get(self, k, d=""):
+                        return self._href if k == "href" else d
+                anchors.append(FakeA(m.group(1), re.sub(r'<[^>]+>', '', m.group(4))))
 
-        for a in soup.find_all("a", href=re.compile(r"/live-cricket-scores/(\d+)/")):
+        for a in anchors:
             href = a.get("href", "")
             m = re.search(r"/live-cricket-scores/(\d+)/([^/]+)", href)
             if not m:
