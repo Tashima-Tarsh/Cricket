@@ -568,32 +568,21 @@ def load_cricsheet_match_endpoint(match_id: str):
     }
 
 from .live_feed import fetch_espn_cricinfo_live_matches, get_fixture_toss_feed
-from .cricbuzz_feed import fetch_cricbuzz_live_matches, ingest_cricbuzz_live_match
 
 @app.get("/api/live/matches")
 def get_live_matches():
-    """Fetches real-time live matches from Cricbuzz (tarun7r integration) with ESPN Cricinfo fallback."""
-    matches = fetch_cricbuzz_live_matches()
-    if not matches:
-        matches = fetch_espn_cricinfo_live_matches()
-    return {
-        "status": "success" if matches else "unavailable",
-        "data_provenance": "CRICBUZZ_LIVE_FEED" if matches else "UNAVAILABLE",
-        "count": len(matches),
-        "matches": matches
-    }
+    """Provider match references are not attested playing XIs."""
+    matches = fetch_espn_cricinfo_live_matches()
+    return {"status": "success" if matches else "unavailable",
+            "data_provenance": "ESPN_REFERENCE_UNVERIFIED" if matches else "UNAVAILABLE",
+            "count": len(matches), "matches": matches,
+            "roster_confirmation": "INDEPENDENT_SOURCE_REQUIRED"}
+
 
 @app.post("/api/live/load/{match_id}")
-def load_live_match_endpoint(match_id: str):
-    """Directly ingests a live Cricbuzz match with confirmed 22-player lineups and live scores."""
-    raw_id = match_id.replace("cricbuzz_", "").strip()
-    try:
-        res = ingest_cricbuzz_live_match(raw_id)
-        _STATE_CACHES.clear()
-        _STATE_CACHE_TIMES.clear()
-        return res
-    except Exception as e:
-        raise HTTPException(422, f"Failed to ingest live match '{match_id}': {str(e)}")
+def load_live_match_endpoint(match_id: str, _authorized: None = Depends(require_admin)):
+    raise HTTPException(503, "Automatic XI ingestion disabled: provider evidence does not include verified playing XIs, fantasy roles and credits. Submit a complete real fixture through authorized Match Setup.")
+
 
 @app.get("/api/live/toss-feed")
 def get_live_toss_feed(match_id: str):
@@ -686,7 +675,7 @@ def get_ortools_lineups(
         raise HTTPException(422, "Both custom credit bounds are required.")
     if min_credits is not None and not (math.isfinite(min_credits) and math.isfinite(max_credits) and 0 <= min_credits <= max_credits <= 100):
         raise HTTPException(422, "Credit bounds must be finite and ordered within 0-100.")
-    effective_spots = max(spots, 700000)
+    effective_spots = spots
     from .universal_engine import get_universal_engine
     selected_id = match_id or get_universal_engine()._active_match_id
     if not selected_id:
@@ -712,8 +701,11 @@ def get_ortools_lineups(
     # 30-Minute Toss Lock: if confirmed_xi is provided, all other players are automatically benched/excluded!
     if confirmed_xi:
         confirmed_set = set(x.strip() for x in confirmed_xi.split(",") if x.strip())
-        if not confirmed_set <= known_ids or len(confirmed_set) < 11:
-            raise HTTPException(422, "Confirmed XI must contain at least 11 known player IDs.")
+        if not confirmed_set <= known_ids or len(confirmed_set) != 22:
+            raise HTTPException(422, "Confirmed XI must contain exactly 22 known player IDs.")
+        teams_in_xi = {p.team for p in players if p.id in confirmed_set}
+        if len(teams_in_xi) != 2 or any(sum(p.team == t and p.id in confirmed_set for p in players) != 11 for t in teams_in_xi):
+            raise HTTPException(422, "Confirmed XI must include 11 players per team.")
         for p in players:
             if p.id not in confirmed_set:
                 excluded_list.append(p.id)
@@ -732,31 +724,29 @@ def get_ortools_lineups(
             raise HTTPException(422, "Exposure must be known_player_id:percentage (0-100).") from exc
 
     scenario_weights = {
-        "IND_BOWLS_FIRST": {"ind_bias": 1.12, "wi_bias": 1.0},
-        "WI_BOWLS_FIRST": {"ind_bias": 1.0, "wi_bias": 1.12},
+        "BALANCED": {},
         "PACE_DOMINANCE": {"pace_boost": 1.3},
         "RAIN_SHORTENED_10OV": {"short_match": True},
         "HIGH_SCORE_SHOOTOUT": {"batting_boost": 1.25},
         "ANTI_CHALK_79_85": {"ownership_boost": 1.3},
     }
     if scenario and scenario not in scenario_weights:
-        raise HTTPException(422, "Unknown scenario.")
-    captain_names = {"TILAK": "Tilak", "MAYANK": "Mayank", "JOSEPH": "Shamar", "HOPE": "Hope", "ABHISHEK": "Abhishek", "RUTHERFORD": "Rutherford"}
+        raise HTTPException(422, "Unknown scenario")
     custom_scenarios = None
     if scenario or captain != "AUTO" or vice_captain != "AUTO":
-        template = {"name": scenario or "Custom lineup", "tag": scenario or "CUSTOM", "rationale": "User-selected scenario weights; not verified match conditions.", **scenario_weights.get(scenario, {})}
+        template = {
+            "name": scenario or "Custom lineup", "tag": scenario or "CUSTOM",
+            "rationale": "User scenario assumptions, not verified match observations.",
+            **scenario_weights.get(scenario, {}),
+        }
         if captain != "AUTO":
-            name = captain_names.get(captain)
-            selected = next((p for p in players if p.id == captain or (name and name.lower() in p.name.lower())), None)
-            if selected is None:
-                selected = next((p for p in players if captain.lower() in p.id.lower() or captain.lower() in p.name.lower()), None)
-            if selected is None:
-                raise HTTPException(422, "Requested captain is not in the connected player pool.")
-            template["preferred_c"] = selected.id
+            if captain not in known_ids:
+                raise HTTPException(422, "Captain must be a player ID from the connected fixture")
+            template["preferred_c"] = captain
         if vice_captain != "AUTO":
-            selected_vc = next((p for p in players if p.id == vice_captain or (vice_captain.lower() in p.id.lower() or vice_captain.lower() in p.name.lower())), None)
-            if selected_vc:
-                template["preferred_vc"] = selected_vc.id
+            if vice_captain not in known_ids or vice_captain == captain:
+                raise HTTPException(422, "Vice-captain must be a distinct player ID from the fixture")
+            template["preferred_vc"] = vice_captain
         custom_scenarios = [template]
 
     opt = ORToolsCricketOptimizer(players)
@@ -1239,7 +1229,7 @@ def get_pitch_degradation(over: float = 10.0, innings: int = 2):
     raise HTTPException(503, "Observed pitch-wear telemetry unavailable; model-only estimates withheld")
 
 @app.get("/api/matchups/h2h")
-def get_matchup_h2h(batter: str = "Pooran", bowler: str = "Kuldeep"):
+def get_matchup_h2h(batter: str = Query(..., min_length=1), bowler: str = Query(..., min_length=1)):
     from .player_battles_mcp import PlayerBattlesMCPEngine
     res = PlayerBattlesMCPEngine().query_h2h_battle(batter, bowler)
     return res.model_dump() if res else {"status": "no_data"}
@@ -1261,78 +1251,41 @@ def get_projected_score(current_runs: int = 118, overs: float = 11.4, wickets_lo
 
 @app.get("/api/oracle/value-bets")
 def get_oracle_value_bets(match_id: Optional[str] = None):
-    """
-    THENITISHKR-SPORTS // Wicket Oracle Value Bets
-    DraftKings-backed moneyline and totals bets with 25% Fractional Kelly Criterion sizing.
-    """
-    from .wicket_oracle import WicketOracleEngine
-    match_meta = None
-    if match_id:
-        try:
-            match_meta, _ = resolve_match_players(match_id)
-        except Exception:
-            pass
-    bets = WicketOracleEngine.get_value_bets(match_meta)
     return {
-        "status": "success",
-        "platform": "THENITISHKR-SPORTS",
-        "count": len(bets),
-        "elite_count": sum(1 for b in bets if b["tier"] == "Elite Pick"),
-        "strong_count": sum(1 for b in bets if b["tier"] == "Strong"),
-        "avg_edge_pct": round(sum(b["edge"] for b in bets) / len(bets) * 100, 1) if bets else 0.0,
-        "bets": bets
+        "status": "unavailable", "platform": "THENITISHKR-SPORTS",
+        "reason": "No licensed bookmaker lines or independently validated market probabilities",
+        "count": 0, "elite_count": 0, "strong_count": 0,
+        "avg_edge_pct": None, "bets": [],
     }
+
 
 @app.get("/api/oracle/player-props")
 def get_oracle_player_props(match_id: Optional[str] = None):
-    """
-    THENITISHKR-SPORTS // Wicket Oracle Player Props
-    Batter runs and bowler wickets projections vs DraftKings lines with edge and recommendations.
-    """
-    from .wicket_oracle import WicketOracleEngine
-    raw_players = []
-    try:
-        _, players = resolve_match_players(match_id)
-        raw_players = [p.model_dump() for p in players]
-    except Exception:
-        try:
-            from .universal_engine import get_universal_engine
-            engine = get_universal_engine()
-            for mid in engine._matches:
-                meta = engine._matches[mid]
-                raw = engine._profile_match_players(meta)
-                if raw:
-                    raw_players = raw
-                    break
-        except Exception:
-            pass
-
-    props = WicketOracleEngine.get_player_props(raw_players, match_id=match_id)
+    if match_id:
+        resolve_match_players(match_id)
     return {
-        "status": "success",
-        "platform": "THENITISHKR-SPORTS",
-        "count": len(props),
-        "props": props
+        "status": "unavailable", "platform": "THENITISHKR-SPORTS",
+        "reason": "No real player-prop lines or independently calibrated projections",
+        "count": 0, "props": [],
     }
+
 
 @app.get("/api/oracle/teams")
 def get_oracle_teams():
-    """Return list of supported teams for deep dive analysis."""
-    from .wicket_oracle import WicketOracleEngine
-    return {"teams": WicketOracleEngine.IPL_TEAMS}
+    from .universal_engine import get_universal_engine
+    engine = get_universal_engine()
+    teams = {
+        side.get("name") for match in engine._matches.values()
+        for side in match.get("teams", {}).values()
+        if isinstance(side, dict) and side.get("name")
+    }
+    return {"teams": sorted(teams)}
+
 
 @app.get("/api/oracle/team-phase/{team_name}")
 def get_oracle_team_phase(team_name: str):
-    """
-    THENITISHKR-SPORTS // Team Phase Deep Dive
-    Powerplay (1-6), Middle (7-15), and Death (16-20) breakdown with venue records.
-    """
-    from .wicket_oracle import WicketOracleEngine
-    return {
-        "status": "success",
-        "platform": "THENITISHKR-SPORTS",
-        "deep_dive": WicketOracleEngine.get_team_phase_deep_dive(team_name)
-    }
+    raise HTTPException(503, "Verified historical phase statistics unavailable for this team")
+
 
 @app.get("/api/datasets/2026-schedule")
 def get_2026_schedule():
