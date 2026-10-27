@@ -36,213 +36,23 @@ class UniversalMatchEngine:
     """Master engine orchestrating match ingestion, player profiling, matchups, and GL solving."""
     
     def __init__(self, store_path=None):
-        self._active_match_id = "ind_w_vs_zim_w_2026_02"
+        # Production starts without a fixture. Never select an archived opponent.
+        from .fixture_store import FixtureStore, CustomFixture
+        self._active_match_id = None
         self._matches: Dict[str, Dict[str, Any]] = {}
         self._cached_states: Dict[str, Dict[str, Any]] = {}
-        self._init_default_fixtures()
-        if "ind_w_vs_zim_w_2026_02" in self._matches:
-            self._matches["icc_270973"] = self._matches["ind_w_vs_zim_w_2026_02"]
-            self._matches["270973"] = self._matches["ind_w_vs_zim_w_2026_02"]
-        for fixture in self._matches.values():
-            fixture["data_provenance"] = "UNVERIFIED_BUNDLED_FIXTURE"
-            fixture["status"] = "BUNDLED FIXTURE | [VERIFY REQUIRED]"
-        from .fixture_store import FixtureStore
         self._store = FixtureStore(store_path)
-        for fixture in self._store.load():
-            self._matches[fixture["id"]] = fixture
-
-    def _init_default_fixtures(self):
-        """Loads canonical baseline fixtures into the engine."""
-        # 1. India Women vs Zimbabwe Women 2nd ODI (Vadodara - 25-10-2026, ICC 270973)
-        self._matches["ind_w_vs_zim_w_2026_02"] = {
-            "id": "ind_w_vs_zim_w_2026_02",
-            "name": "India Women vs Zimbabwe Women, 2nd ODI (Vadodara)",
-            "format": "Women's One Day International",
-            "status": "PRE-TOSS PROVISIONAL | Toss Scheduled 13:30 IST | Match 14:00 IST",
-            "icc_id": "270973",
-            "venue": {
-                "id": "bca_stadium_vadodara",
-                "name": "BCA Stadium, Kotambi, Vadodara",
-                "city": "Vadodara",
-                "soil_type": "Abrasive Gujarat black soil with high clay content",
-                "avg_first_innings": 258.0,
-                "avg_second_innings": 178.0,
-                "chasing_win_pct": 50.0,
-                "pace_wicket_pct": 35.1,
-                "spin_wicket_pct": 64.9,
-                "dew_factor": 0.18,
-                "pitch_nature": "Spin-dominant surface (37/57 wickets by spin, 64.9%). Slow left-arm orthodox (S Charani) and off-spin (D Sharma, S Verma) extract 3.8 to 4.4 degrees of grip and turn.",
-                "boundaries": {"square_leg": 64, "midwicket": 68, "long_on": 74, "straight": 75, "long_off": 74, "cover": 68, "point": 62}
-            },
-            "teams": {
-                "home": {"name": "India Women", "code": "IND-W", "score": "Yet to Bat", "overs": "50.0"},
-                "away": {"name": "Zimbabwe Women", "code": "ZIM-W", "score": "Yet to Bat", "overs": "50.0"}
-            },
-            "toss": {
-                "winner": "TBD",
-                "choice": "bowl",
-                "statement": "Toss scheduled at 13:30 IST at BCA Stadium, Kotambi, Vadodara. Official XI to follow."
-            },
-            "current_crr": 0.0,
-            "projected_total": 258,
-            "chasing_win_prob": 50.0,
-            "playing_xi_home": [
-                {"name": "Smriti Mandhana", "role": "BAT", "credits": 10.0, "order": 1, "bat_hand": "LHB", "bowl_style": "Right-arm medium", "is_c": True},
-                {"name": "Shafali Verma", "role": "BAT", "credits": 9.0, "order": 2, "bat_hand": "RHB", "bowl_style": "Right-arm offbreak"},
-                {"name": "Anushka Sharma", "role": "AR", "credits": 7.0, "order": 3, "bat_hand": "RHB", "bowl_style": "Right-arm offbreak"},
-                {"name": "Harmanpreet Kaur", "role": "BAT", "credits": 9.0, "order": 4, "bat_hand": "RHB", "bowl_style": "Right-arm offbreak"},
-                {"name": "Niki Prasad", "role": "BAT", "credits": 7.0, "order": 5, "bat_hand": "RHB", "bowl_style": "Right-arm offbreak"},
-                {"name": "Deepti Sharma", "role": "AR", "credits": 9.5, "order": 6, "bat_hand": "LHB", "bowl_style": "Right-arm offbreak"},
-                {"name": "Richa Ghosh", "role": "WK", "credits": 8.5, "order": 7, "bat_hand": "RHB", "bowl_style": "Wicketkeeper", "is_wk": True},
-                {"name": "Arundhati Reddy", "role": "BOWL", "credits": 8.5, "order": 8, "bat_hand": "RHB", "bowl_style": "Right-arm medium-fast"},
-                {"name": "Shree Charani", "role": "BOWL", "credits": 7.5, "order": 9, "bat_hand": "LHB", "bowl_style": "Slow left-arm orthodox"},
-                {"name": "Nandani Sharma", "role": "BOWL", "credits": 7.5, "order": 10, "bat_hand": "RHB", "bowl_style": "Right-arm fast-medium"},
-                {"name": "Kranti Gaud", "role": "BOWL", "credits": 7.0, "order": 11, "bat_hand": "RHB", "bowl_style": "Right-arm medium-fast"}
-            ],
-            "playing_xi_away": [
-                {"name": "Kelis Ndhlovu", "role": "AR", "credits": 8.5, "order": 1, "bat_hand": "LHB", "bowl_style": "Slow left-arm orthodox"},
-                {"name": "Beloved Biza", "role": "AR", "credits": 7.5, "order": 2, "bat_hand": "RHB", "bowl_style": "Right-arm offbreak"},
-                {"name": "Modester Mupachikwa", "role": "WK", "credits": 8.0, "order": 3, "bat_hand": "RHB", "bowl_style": "Wicketkeeper", "is_wk": True},
-                {"name": "Sharne Mayers", "role": "BAT", "credits": 8.5, "order": 4, "bat_hand": "RHB", "bowl_style": "Right-arm offbreak"},
-                {"name": "Nyasha Gwanzura", "role": "AR", "credits": 7.5, "order": 5, "bat_hand": "RHB", "bowl_style": "Right-arm offbreak"},
-                {"name": "Michelle Mavunga", "role": "AR", "credits": 7.0, "order": 6, "bat_hand": "RHB", "bowl_style": "Right-arm medium-fast"},
-                {"name": "Chipo Mugeri-Tiripano", "role": "BAT", "credits": 8.0, "order": 7, "bat_hand": "LHB", "bowl_style": "Right-arm medium"},
-                {"name": "Francisca Chipare", "role": "BOWL", "credits": 7.0, "order": 8, "bat_hand": "RHB", "bowl_style": "Right-arm medium"},
-                {"name": "Josephine Nkomo", "role": "AR", "credits": 9.0, "order": 9, "bat_hand": "RHB", "bowl_style": "Right-arm medium-fast", "is_c": True},
-                {"name": "Olinder Chare", "role": "BOWL", "credits": 7.0, "order": 10, "bat_hand": "RHB", "bowl_style": "Legbreak"},
-                {"name": "Tendai Makusha", "role": "BOWL", "credits": 7.0, "order": 11, "bat_hand": "RHB", "bowl_style": "Right-arm medium"}
-            ]
-        }
-
-        # Aliases
-        # 2. India Women vs Zimbabwe Women 3rd T20I (Raipur - 20-10-2026)
-        self._matches["ind_w_vs_zim_w_2026_03"] = {
-            "id": "ind_w_vs_zim_w_2026_03",
-            "name": "India Women vs Zimbabwe Women, 3rd T20I (Raipur)",
-            "format": "Women's T20 International",
-            "status": "MATCH COMPLETED | India Won by 92 Runs | 3-0 Series Sweep",
-            "archetype": "ASYMMETRIC_MISMATCH",
-            "venue": {
-                "id": "raipur_svns_stadium",
-                "name": "Shaheed Veer Narayan Singh International Stadium, Raipur",
-                "city": "Raipur",
-                "soil_type": "Hard dry rolled surface with true bounce and fast outfield",
-                "avg_first_innings": 185.0,
-                "avg_second_innings": 130.0,
-                "chasing_win_pct": 45.0,
-                "pace_wicket_pct": 55.0,
-                "spin_wicket_pct": 45.0,
-                "dew_factor": 0.22,
-                "pitch_nature": "Hard-rolled true bounce track (Mithali Raj & Ed Rainsford pitch report). Par 200+ for India batting first. Kranti Gaud shoulder bounce effective; Nandani Sharma back-of-the-hand slower balls unreadable under lights. 2nd innings skids on.",
-                "boundaries": {"square_leg": 65, "midwicket": 68, "long_on": 72, "straight": 74, "long_off": 72, "cover": 66, "point": 63}
-            },
-            "teams": {
-                "home": {"name": "India Women", "code": "IND-W", "score": "216/7 (20.0)", "overs": "20.0"},
-                "away": {"name": "Zimbabwe Women", "code": "ZIM-W", "score": "124/7 (20.0)", "overs": "20.0"}
-            },
-            "toss": {
-                "winner": "India Women",
-                "choice": "bat",
-                "statement": "India Women won toss and elected to bat first. Smriti: 'We will bat first today as we want more game time for the middle order. Sree Charani is resting and Prema comes in.'"
-            },
-            "current_crr": 10.80,
-            "projected_total": 216,
-            "chasing_win_prob": 12.0,
-            "playing_xi_home": [
-                {"name": "Shafali Verma", "role": "AR", "credits": 9.0, "order": 1, "bat_hand": "RHB", "bowl_style": "Right-arm offbreak"},
-                {"name": "Smriti Mandhana", "role": "BAT", "credits": 8.5, "order": 2, "bat_hand": "LHB", "bowl_style": "Right-arm medium", "is_c": True},
-                {"name": "Anushka Sharma", "role": "AR", "credits": 8.5, "order": 3, "bat_hand": "RHB", "bowl_style": "Right-arm offbreak"},
-                {"name": "Harmanpreet Kaur", "role": "BAT", "credits": 8.0, "order": 4, "bat_hand": "RHB", "bowl_style": "Right-arm offbreak"},
-                {"name": "Niki Prasad", "role": "BAT", "credits": 8.0, "order": 5, "bat_hand": "RHB", "bowl_style": "Right-arm offbreak"},
-                {"name": "Richa Ghosh", "role": "WK", "credits": 8.0, "order": 6, "bat_hand": "RHB", "bowl_style": "Wicketkeeper", "is_wk": True},
-                {"name": "Deepti Sharma", "role": "AR", "credits": 8.5, "order": 7, "bat_hand": "LHB", "bowl_style": "Right-arm offbreak"},
-                {"name": "Arundhati Reddy", "role": "BOWL", "credits": 7.0, "order": 8, "bat_hand": "RHB", "bowl_style": "Right-arm medium-fast"},
-                {"name": "Nandani Sharma", "role": "BOWL", "credits": 6.5, "order": 9, "bat_hand": "RHB", "bowl_style": "Right-arm fast-medium"},
-                {"name": "Kranti Gaud", "role": "BOWL", "credits": 6.5, "order": 10, "bat_hand": "RHB", "bowl_style": "Right-arm medium-fast"},
-                {"name": "Prema Rawat", "role": "BOWL", "credits": 8.0, "order": 11, "bat_hand": "RHB", "bowl_style": "Right-arm offbreak"}
-            ],
-            "playing_xi_away": [
-                {"name": "Kelis Ndhlovu", "role": "BAT", "credits": 8.0, "order": 1, "bat_hand": "LHB", "bowl_style": "Slow left-arm orthodox"},
-                {"name": "Beloved Biza", "role": "AR", "credits": 7.5, "order": 2, "bat_hand": "RHB", "bowl_style": "Right-arm medium-fast"},
-                {"name": "Modester Mupachikwa", "role": "WK", "credits": 7.5, "order": 3, "bat_hand": "RHB", "bowl_style": "Wicketkeeper", "is_wk": True},
-                {"name": "Sharne Mayers", "role": "BAT", "credits": 8.0, "order": 4, "bat_hand": "RHB", "bowl_style": "Right-arm offbreak"},
-                {"name": "Nyasha Gwanzura", "role": "AR", "credits": 7.5, "order": 5, "bat_hand": "RHB", "bowl_style": "Right-arm offbreak"},
-                {"name": "Michelle Mavunga", "role": "AR", "credits": 8.0, "order": 6, "bat_hand": "RHB", "bowl_style": "Right-arm medium-fast"},
-                {"name": "Chipo Mugeri-Tiripano", "role": "BAT", "credits": 6.5, "order": 7, "bat_hand": "LHB", "bowl_style": "Right-arm medium"},
-                {"name": "Josephine Nkomo", "role": "AR", "credits": 7.0, "order": 8, "bat_hand": "RHB", "bowl_style": "Right-arm medium-fast", "is_c": True},
-                {"name": "Francisca Chipare", "role": "BOWL", "credits": 8.0, "order": 9, "bat_hand": "RHB", "bowl_style": "Right-arm medium"},
-                {"name": "Tendai Makusha", "role": "BOWL", "credits": 6.0, "order": 10, "bat_hand": "RHB", "bowl_style": "Right-arm medium"},
-                {"name": "Nomvelo Sibanda", "role": "BOWL", "credits": 6.0, "order": 11, "bat_hand": "RHB", "bowl_style": "Left-arm medium-fast"}
-            ]
-        }
-
-        # 3. Afghanistan vs Bangladesh, 3rd ODI (Sharjah Cricket Stadium - 2026)
-        self._matches["afg_vs_ban_odi_sharjah"] = {
-            "id": "afg_vs_ban_odi_sharjah",
-            "name": "Afghanistan vs Bangladesh, 3rd ODI (Sharjah)",
-            "format": "One Day International",
-            "status": "LIVE & SCHEDULED | Tri-Nation Series in UAE",
-            "archetype": "SPIN_CHOKE_MINEFIELD",
-            "venue": {
-                "id": "sharjah_cricket_stadium",
-                "name": "Sharjah Cricket Stadium",
-                "city": "Sharjah, UAE",
-                "soil_type": "Dry baked desert clay with low bounce and abrasive degradation",
-                "avg_first_innings": 242.0,
-                "avg_second_innings": 225.0,
-                "chasing_win_pct": 46.0,
-                "pace_wicket_pct": 52.0,
-                "spin_wicket_pct": 48.0,
-                "dew_factor": 0.15,
-                "pitch_nature": "Abrasive, two-paced desert surface. Initial 15 overs offer true carry for top-order boundary hitting due to short 58m square boundaries. From over 20-50, surface degrades into a heavy spin choke for Rashid Khan, Ghazanfar & Mehidy Miraz, with reverse swing in death overs.",
-                "boundaries": {"square_leg": 58, "midwicket": 62, "long_on": 66, "straight": 64, "long_off": 66, "cover": 62, "point": 59}
-            },
-            "teams": {
-                "home": {"name": "Afghanistan", "code": "AFG", "score": "Yet to Bat", "overs": "50.0"},
-                "away": {"name": "Bangladesh", "code": "BAN", "score": "Yet to Bat", "overs": "50.0"}
-            },
-            "toss": {
-                "winner": "Afghanistan",
-                "choice": "bat",
-                "statement": "Afghanistan won the toss and elected to bat first. Hashmatullah: Pitch looks dry and abrasive, we want 250+ runs and let Rashid Khan, AM Ghazanfar defend."
-            },
-            "current_crr": 0.0,
-            "projected_total": 248,
-            "chasing_win_prob": 46.0,
-            "playing_xi_home": [
-                {"name": "Rahmanullah Gurbaz", "role": "WK", "credits": 8.5, "order": 1, "bat_hand": "RHB", "bowl_style": "Right-arm offbreak"},
-                {"name": "Sediqullah Atal", "role": "BAT", "credits": 7.5, "order": 2, "bat_hand": "LHB", "bowl_style": "Right-arm offbreak"},
-                {"name": "Rahmat Shah", "role": "BAT", "credits": 8.0, "order": 3, "bat_hand": "RHB", "bowl_style": "Right-arm legbreak"},
-                {"name": "Hashmatullah Shahidi", "role": "BAT", "credits": 8.0, "order": 4, "bat_hand": "LHB", "bowl_style": "Right-arm offbreak", "is_c": True},
-                {"name": "Azmatullah Omarzai", "role": "AR", "credits": 9.0, "order": 5, "bat_hand": "RHB", "bowl_style": "Right-arm medium-fast"},
-                {"name": "Mohammad Nabi", "role": "AR", "credits": 8.0, "order": 6, "bat_hand": "RHB", "bowl_style": "Right-arm offbreak"},
-                {"name": "Gulbadin Naib", "role": "AR", "credits": 7.5, "order": 7, "bat_hand": "RHB", "bowl_style": "Right-arm medium-fast"},
-                {"name": "Rashid Khan", "role": "BOWL", "credits": 9.0, "order": 8, "bat_hand": "RHB", "bowl_style": "Right-arm legbreak"},
-                {"name": "AM Ghazanfar", "role": "BOWL", "credits": 7.5, "order": 9, "bat_hand": "RHB", "bowl_style": "Right-arm offbreak"},
-                {"name": "Fazalhaq Farooqi", "role": "BOWL", "credits": 8.5, "order": 10, "bat_hand": "RHB", "bowl_style": "Left-arm medium-fast"},
-                {"name": "Naveed Zadran", "role": "BOWL", "credits": 7.0, "order": 11, "bat_hand": "RHB", "bowl_style": "Right-arm fast-medium"}
-            ],
-            "playing_xi_away": [
-                {"name": "Tanzid Hasan", "role": "BAT", "credits": 7.5, "order": 1, "bat_hand": "LHB", "bowl_style": "Right-arm offbreak"},
-                {"name": "Soumya Sarkar", "role": "BAT", "credits": 8.0, "order": 2, "bat_hand": "LHB", "bowl_style": "Right-arm medium"},
-                {"name": "Najmul Hossain Shanto", "role": "BAT", "credits": 8.5, "order": 3, "bat_hand": "LHB", "bowl_style": "Right-arm offbreak", "is_c": True},
-                {"name": "Towhid Hridoy", "role": "BAT", "credits": 8.0, "order": 4, "bat_hand": "RHB", "bowl_style": "Right-arm offbreak"},
-                {"name": "Mahmudullah", "role": "BAT", "credits": 7.5, "order": 5, "bat_hand": "RHB", "bowl_style": "Right-arm offbreak"},
-                {"name": "Jaker Ali", "role": "WK", "credits": 7.0, "order": 6, "bat_hand": "RHB", "bowl_style": "Right-arm offbreak"},
-                {"name": "Mehidy Hasan Miraz", "role": "AR", "credits": 8.5, "order": 7, "bat_hand": "RHB", "bowl_style": "Right-arm offbreak"},
-                {"name": "Nasum Ahmed", "role": "BOWL", "credits": 7.5, "order": 8, "bat_hand": "LHB", "bowl_style": "Slow left-arm orthodox"},
-                {"name": "Taskin Ahmed", "role": "BOWL", "credits": 8.5, "order": 9, "bat_hand": "RHB", "bowl_style": "Right-arm fast"},
-                {"name": "Shoriful Islam", "role": "BOWL", "credits": 8.0, "order": 10, "bat_hand": "LHB", "bowl_style": "Left-arm medium-fast"},
-                {"name": "Mustafizur Rahman", "role": "BOWL", "credits": 8.5, "order": 11, "bat_hand": "LHB", "bowl_style": "Left-arm fast-medium"}
-            ]
-        }
-        self._matches["afg_ban"] = self._matches["afg_vs_ban_odi_sharjah"]
-
-        # Aliases
-        self._matches["indw_zimw"] = self._matches["ind_w_vs_zim_w_2026_03"]
-        self._matches["ind_w_vs_zim_w"] = self._matches["ind_w_vs_zim_w_2026_03"]
-        self._active_match_id = "ind_w_vs_zim_w_2026_03"
-
+        for saved in self._store.load():
+            fixture = CustomFixture.model_validate(saved).model_dump()
+            match_id = fixture["match_id"]
+            if fixture.get("id") not in (None, match_id):
+                raise ValueError("Persisted fixture ID mismatch")
+            fixture["id"] = match_id
+            fixture["data_provenance"] = "USER_SUPPLIED_UNVERIFIED"
+            fixture["status"] = "USER SUPPLIED | [VERIFY REQUIRED]"
+            self._matches[match_id] = fixture
+        # Do not auto-choose a fixture, even when one has been saved.
+        # All production requests must identify the requested match explicitly.
 
     def list_available_matches(self) -> List[Dict[str, Any]]:
         """Returns catalog of available matches."""
@@ -423,59 +233,8 @@ class UniversalMatchEngine:
         home_code = match_meta["teams"]["home"]["code"]
         away_code = match_meta["teams"]["away"]["code"]
 
-        # If pre-defined WT20 registry is available and this is IND-W vs ZIM-W, use canonical records
-        if match_meta["id"] == "ind_w_vs_zim_w_2026_02":
-            from .wt20_registry import get_wt20_registry
-            from .bayesian_model import get_bayesian_model
-            reg = get_wt20_registry()
-            bm = get_bayesian_model()
-            all_reg = reg.get_all_players()
-            projs = {p["player_id"]: p for p in bm.generate_all_player_projections()}
-
-            for p in all_reg:
-                proj = projs.get(p["id"], {})
-                p_dict = {
-                    "id": p["id"],
-                    "name": p["name"],
-                    "team": p["team"],
-                    "role": p["role"],
-                    "credits": p["credits"],
-                    "batting_style": p["batting_style"],
-                    "bowling_style": p.get("bowling_style", "Right-arm medium"),
-                    "batting_order": p.get("batting_order_projected", 7),
-                    "batting_order_projected": p.get("batting_order_projected", 7),
-                    "expected_overs": p.get("expected_overs", 0.0),
-                    "is_confirmed_xi": p.get("is_confirmed_xi", False),
-                    "projected_ownership": p.get("projected_ownership", 30.0),
-                    "projected_points": proj.get("expected_fantasy_pts", 35.0),
-                    "ceiling_score": proj.get("p95_ceiling", 55.0),
-                    "floor_score": proj.get("median", 28.0),
-                    "captain_percentage": round(proj.get("top_fantasy_scorer_prob", 0.05) * 100, 1),
-                    "differential_tag": proj.get("captaincy_potential", "DIFFERENTIAL"),
-                    "stats": {
-                        "matches": p.get("stats", {}).get("career_matches", 10),
-                        "runs": p.get("stats", {}).get("career_runs", 150),
-                        "balls_faced": int(round(p.get("stats", {}).get("career_runs", 150) / max(0.5, p.get("stats", {}).get("strike_rate", 115.0) / 100.0))),
-                        "strike_rate": p.get("stats", {}).get("strike_rate", 115.0),
-                        "batting_avg": p.get("stats", {}).get("career_avg", 22.0),
-                        "wickets": p.get("stats", {}).get("career_wkts", 5),
-                        "overs_bowled": int(p.get("stats", {}).get("career_wkts", 5) * 3.5),
-                        "economy": p.get("stats", {}).get("economy", 6.8),
-                        "bowling_sr": 18.5,
-                        "dot_ball_pct": 42.0,
-                        "boundary_pct": 14.5,
-                        "recent_scores": [28, 42, 14, 36, 52],
-                        "recent_wickets": [1, 2, 0, 1, 3],
-                        "recent_fantasy_pts": p.get("stats", {}).get("recent_fantasy_pts", [35.0, 45.0, 50.0]),
-                        "avg_fantasy_pts": p.get("stats", {}).get("avg_fantasy_pts", 38.0),
-                        "ceiling_pts": proj.get("p95_ceiling", 55.0),
-                        "floor_pts": proj.get("median", 28.0)
-                    }
-                }
-                raw_pool.append(p_dict)
-            if conn:
-                conn.close()
-            return raw_pool
+        # Only profile the validated playing XIs supplied for this fixture.
+        # No historical registry for a different match can override the XI.
 
         # Generic auto-profiling from DuckDB
         for xi, team_code in [(match_meta["playing_xi_home"], home_code), (match_meta["playing_xi_away"], away_code)]:
@@ -501,8 +260,8 @@ class UniversalMatchEngine:
                     except Exception:
                         pass
 
-                sr = round((runs / max(1, balls)) * 100, 1) if balls > 10 else 122.5
-                econ = round((runs_conceded / max(1, balls_bowled)) * 6.0, 2) if balls_bowled > 12 else 7.20
+                sr = round((runs / balls) * 100, 1) if balls > 0 else 0.0
+                econ = round((runs_conceded / balls_bowled) * 6.0, 2) if balls_bowled > 0 else 0.0
                 exp_pts = round(32.0 + (runs * 0.05) + (wkts * 3.5), 1)
                 ceiling = round(exp_pts * 1.85, 1)
 
@@ -516,30 +275,30 @@ class UniversalMatchEngine:
                     "bowling_style": p.get("bowl_style", "Right-arm medium"),
                     "batting_order": p.get("order", 6),
                     "batting_order_projected": p.get("order", 6),
-                    "expected_overs": 4.0 if p.get("role") in ("BOWL", "AR") else 0.0,
+                    "expected_overs": float(p.get("expected_overs") or 0.0),
                     "is_confirmed_xi": True,
                     "projected_ownership": p["projected_ownership"] if p.get("projected_ownership") is not None else 50.0,
                     "ownership_available": p.get("projected_ownership") is not None,
                     "projected_points": exp_pts,
                     "ceiling_score": ceiling,
                     "floor_score": round(exp_pts * 0.5, 1),
-                    "captain_percentage": 15.0 if p.get("credits", 8.0) >= 9.0 else 4.0,
+                    "captain_percentage": 0.0,  # Captaining rate cannot be derived from credits.
                     "differential_tag": "High-Ceiling Strike Weapon" if p.get("role")=="BOWL" else "Top-Order Anchor",
                     "stats": {
-                        "matches": max(5, int((balls + balls_bowled) / 15)),
+                        "matches": 0,  # A delivery count cannot establish the match count.
                         "runs": runs,
                         "balls_faced": balls,
                         "strike_rate": sr,
-                        "batting_avg": 24.5,
+                        "batting_avg": 0.0,  # unavailable without actual dismissals
                         "wickets": wkts,
                         "overs_bowled": int(balls_bowled / 6),
                         "economy": econ,
-                        "bowling_sr": 18.0,
-                        "dot_ball_pct": 44.0,
-                        "boundary_pct": 14.0,
-                        "recent_scores": [24, 38, 12, 45, 18],
-                        "recent_wickets": [1, 2, 0, 1, 2],
-                        "recent_fantasy_pts": [exp_pts - 10, exp_pts + 15, exp_pts],
+                        "bowling_sr": 0.0,  # unavailable without wicket-event history
+                        "dot_ball_pct": 0.0,  # unavailable without delivery outcomes
+                        "boundary_pct": 0.0,  # unavailable without delivery outcomes
+                        "recent_scores": [],
+                        "recent_wickets": [],
+                        "recent_fantasy_pts": [],
                         "avg_fantasy_pts": exp_pts,
                         "ceiling_pts": ceiling,
                         "floor_pts": round(exp_pts * 0.5, 1)
@@ -636,143 +395,64 @@ class UniversalMatchEngine:
         home_code = match_meta["teams"]["home"]["code"]
         away_code = match_meta["teams"]["away"]["code"]
 
-        # Scenarios aligned with venue & toss
-        if match_meta["id"] == "ind_w_vs_zim_w_2026_03":
-            scenarios = [
-                {
-                    "id": "scenario_1",
-                    "name": "Team 1 — Harmanpreet 200+ Blowout & Underdog 2-Way Allrounder VC",
-                    "tag": "HARMAN_EXPLOSION_UNDERDOG_ALLROUNDER_VC",
-                    "script": "India bat first on hard Raipur deck to reach 215+. Harmanpreet Kaur (21% owned) captains middle-order surge (91* off 41). Beloved Biza (VC) takes 3 wickets in death overs and scores 44 runs (252 pts). 15.0 Cr unspent.",
-                    "target_c": next((p["id"] for p in pool if "harman" in p["id"]), pool[3]["id"]),
-                    "target_vc": next((p["id"] for p in pool if "biza" in p["id"]), pool[1]["id"]),
-                    "credit_min": 81.0, "credit_max": 85.5
-                },
-                {
-                    "id": "scenario_2",
-                    "name": "Team 2 — Raipur Pace & Shoulder Bounce Demolition",
-                    "tag": "RAIPUR_PACE_BOUNCE_BLITZ",
-                    "script": "Kranti Gaud utilizes steep shoulder bounce to remove top order early. Arundhati Reddy and Nandani Sharma slower balls dismantle the chase under lights.",
-                    "target_c": next((p["id"] for p in pool if "deepti" in p["id"]), pool[6]["id"]),
-                    "target_vc": next((p["id"] for p in pool if "gaud" in p["id"]), pool[9]["id"]),
-                    "credit_min": 81.0, "credit_max": 85.0
-                },
-                {
-                    "id": "scenario_3",
-                    "name": "Team 3 — Early Swing Stunner & Anchor Rebuild",
-                    "tag": "EARLY_SWING_STUNNER_REBUILD",
-                    "script": "Francisca Chipare (6.5% owned) takes early swing powerplay wicket. Harmanpreet Kaur anchors counter-attack before Indian bowlers sweep the lower order.",
-                    "target_c": next((p["id"] for p in pool if "harman" in p["id"]), pool[3]["id"]),
-                    "target_vc": next((p["id"] for p in pool if "chipare" in p["id"]), pool[8]["id"]),
-                    "credit_min": 81.0, "credit_max": 85.0
-                },
-                {
-                    "id": "scenario_4",
-                    "name": "Team 4 — Nandani Back-of-the-Hand Slower Ball Choke",
-                    "tag": "NANDANI_SLOWER_BALL_CHOKE",
-                    "script": "Nandani Sharma (3 wkts, 4.5 econ) deceives Zimbabwe lower order with off-pace balls. Shafali Verma (69 off 37) sets up unassailable 216 total.",
-                    "target_c": next((p["id"] for p in pool if "nandani" in p["id"]), pool[8]["id"]),
-                    "target_vc": next((p["id"] for p in pool if "shafali" in p["id"]), pool[0]["id"]),
-                    "credit_min": 81.0, "credit_max": 84.5
-                }
-            ]
-        elif match_meta["id"] == "ind_w_vs_zim_w_2026_02":
-            scenarios = [
-                {
-                    "id": "scenario_1",
-                    "name": "Team 1 — Raipur Pace-Off Strangle & Clinical Chase",
-                    "tag": "IND_PACE_OFF_CUTTERS_CHASE",
-                    "script": "Zimbabwe bat first on black soil; Arundhati Reddy & Nandani Sharma utilize back-of-the-hand cutters to engineer a middle collapse. Mandhana anchors the chase straight down the ground.",
-                    "target_c": next((p["id"] for p in pool if "arundhati" in p["id"]), pool[7]["id"]),
-                    "target_vc": next((p["id"] for p in pool if "mandhana" in p["id"]), pool[0]["id"]),
-                    "credit_min": 80.5, "credit_max": 84.5
-                },
-                {
-                    "id": "scenario_2",
-                    "name": "Team 2 — Deepti Raipur All-Round Strangle",
-                    "tag": "DEEPTI_ALLROUND_STRANGLE",
-                    "script": "Deepti Sharma exploits gripping black-soil cracks to strangle the middle order. In the chase, Shafali Verma goes aggressive in the powerplay, followed by Deepti finishing straight down the ground.",
-                    "target_c": next((p["id"] for p in pool if "deepti" in p["id"]), pool[5]["id"]),
-                    "target_vc": next((p["id"] for p in pool if "shafali" in p["id"]), pool[1]["id"]),
-                    "credit_min": 81.0, "credit_max": 85.0
-                },
-                {
-                    "id": "scenario_3",
-                    "name": "Team 3 — Zimbabwe Powerplay Resistance & Counter-Punch",
-                    "tag": "ZIM_RESISTANCE_MIDDLE_REBUILD",
-                    "script": "Josephine Nkomo & Kelis Ndhlovu rotate strike effectively and steer Zimbabwe to 135+. Zimbabwe seamers strike in the chase before Richa Ghosh and Niki Prasad counter on the back foot.",
-                    "target_c": next((p["id"] for p in pool if "nkomo" in p["id"]), pool[18]["id"] if len(pool)>18 else pool[3]["id"]),
-                    "target_vc": next((p["id"] for p in pool if "richa" in p["id"]), pool[6]["id"]),
-                    "credit_min": 80.0, "credit_max": 84.0
-                },
-                {
-                    "id": "scenario_4",
-                    "name": "Team 4 — Raipur Bowling Syndicate & Back-Foot Punch",
-                    "tag": "RAIPUR_BOWLING_COLLAPSE_PUNCH",
-                    "script": "Nandani Sharma and Shree Charani dismantle opposition batting under 115. Zimbabwe strikes early, setting up Niki Prasad (back-foot punch) to close out the match.",
-                    "target_c": next((p["id"] for p in pool if "nandani" in p["id"]), pool[9]["id"] if len(pool)>9 else pool[4]["id"]),
-                    "target_vc": next((p["id"] for p in pool if "prasad" in p["id"]), pool[4]["id"]),
-                    "credit_min": 80.0, "credit_max": 83.5
-                }
-            ]
-        else:
-            # Dynamically discover best candidates by role and nationality
-            home_bats = [p for p in pool if p["team"] == home_code and p["role"] in ("BAT", "WK")]
-            away_bats = [p for p in pool if p["team"] == away_code and p["role"] in ("BAT", "WK")]
-            home_ars = [p for p in pool if p["team"] == home_code and p["role"] == "AR"]
-            away_ars = [p for p in pool if p["team"] == away_code and p["role"] == "AR"]
-            home_bowls = [p for p in pool if p["team"] == home_code and p["role"] == "BOWL"]
-            away_bowls = [p for p in pool if p["team"] == away_code and p["role"] == "BOWL"]
+        # Generate fixture-neutral scenarios from the requested roster and toss.
+        # Dynamically discover best candidates by role and nationality
+        home_bats = [p for p in pool if p["team"] == home_code and p["role"] in ("BAT", "WK")]
+        away_bats = [p for p in pool if p["team"] == away_code and p["role"] in ("BAT", "WK")]
+        home_ars = [p for p in pool if p["team"] == home_code and p["role"] == "AR"]
+        away_ars = [p for p in pool if p["team"] == away_code and p["role"] == "AR"]
+        home_bowls = [p for p in pool if p["team"] == home_code and p["role"] == "BOWL"]
+        away_bowls = [p for p in pool if p["team"] == away_code and p["role"] == "BOWL"]
 
-            c1 = (home_bowls[0]["id"] if home_bowls else pool[0]["id"])
-            vc1 = (home_bats[0]["id"] if home_bats else pool[1]["id"])
+        c1 = (home_bowls[0]["id"] if home_bowls else pool[0]["id"])
+        vc1 = (home_bats[0]["id"] if home_bats else pool[1]["id"])
 
-            c2 = (home_ars[0]["id"] if home_ars else (home_bats[1]["id"] if len(home_bats)>1 else pool[2]["id"]))
-            vc2 = (home_bats[0]["id"] if home_bats and home_bats[0]["id"] != c2 else pool[3]["id"])
+        c2 = (home_ars[0]["id"] if home_ars else (home_bats[1]["id"] if len(home_bats)>1 else pool[2]["id"]))
+        vc2 = (home_bats[0]["id"] if home_bats and home_bats[0]["id"] != c2 else pool[3]["id"])
 
-            c3 = (away_ars[0]["id"] if away_ars else (away_bats[0]["id"] if away_bats else pool[4]["id"]))
-            vc3 = (home_bats[-1]["id"] if home_bats else pool[5]["id"])
+        c3 = (away_ars[0]["id"] if away_ars else (away_bats[0]["id"] if away_bats else pool[4]["id"]))
+        vc3 = (home_bats[-1]["id"] if home_bats else pool[5]["id"])
 
-            c4 = (home_bowls[-1]["id"] if home_bowls else pool[6]["id"])
-            vc4 = (home_bats[1]["id"] if len(home_bats)>1 else pool[7]["id"])
+        c4 = (home_bowls[-1]["id"] if home_bowls else pool[6]["id"])
+        vc4 = (home_bats[1]["id"] if len(home_bats)>1 else pool[7]["id"])
 
-            h_name = match_meta["teams"]["home"]["name"]
-            a_name = match_meta["teams"]["away"]["name"]
+        h_name = match_meta["teams"]["home"]["name"]
+        a_name = match_meta["teams"]["away"]["name"]
 
-            scenarios = [
-                {
-                    "id": "scenario_1",
-                    "name": f"Team 1 — {h_name} Pace Strangle & Clinical Chase",
-                    "tag": f"{home_code}_PACE_STRANGLE_CHASE",
-                    "script": f"{a_name} bats first; {h_name} pace unit triggers powerplay and death collapse. Top order chases comfortably.",
-                    "target_c": c1, "target_vc": vc1,
-                    "credit_min": 80.5, "credit_max": 84.5
-                },
-                {
-                    "id": "scenario_2",
-                    "name": f"Team 2 — {h_name} All-Round Domination",
-                    "tag": f"{home_code}_ALLROUND_DOMINATION",
-                    "script": f"Multi-threat all-rounders bat in top 5 and bowl death overs, capitalizing on surface variations.",
-                    "target_c": c2, "target_vc": vc2,
-                    "credit_min": 81.0, "credit_max": 85.0
-                },
-                {
-                    "id": "scenario_3",
-                    "name": f"Team 3 — {a_name} Counter-Punch & Middle Rebuild",
-                    "tag": f"{away_code}_COUNTER_REBUILD",
-                    "script": f"{a_name} counter-punches in middle overs. Key bowlers pick early chase wickets before middle order recovers.",
-                    "target_c": c3, "target_vc": vc3,
-                    "credit_min": 80.0, "credit_max": 84.0
-                },
-                {
-                    "id": "scenario_4",
-                    "name": f"Team 4 — Low-Scoring Bowling Syndicate & Anchor Punch",
-                    "tag": "BOWLING_SYNDICATE_ANCHOR",
-                    "script": "Both bowling attacks dominate with cutters and spin. Disciplined anchors punch out a low-scoring thriller.",
-                    "target_c": c4, "target_vc": vc4,
-                    "credit_min": 80.0, "credit_max": 83.5
-                }
-            ]
+        scenarios = [
+            {
+                "id": "scenario_1",
+                "name": f"Team 1 — {h_name} Pace Strangle & Clinical Chase",
+                "tag": f"{home_code}_PACE_STRANGLE_CHASE",
+                "script": f"{h_name} bowlers are selected for a powerplay-wicket scenario, with batting cover. Actual innings order comes from toss data.",
+                "target_c": c1, "target_vc": vc1,
+                "credit_min": 80.5, "credit_max": 84.5
+            },
+            {
+                "id": "scenario_2",
+                "name": f"Team 2 — {h_name} All-Round Domination",
+                "tag": f"{home_code}_ALLROUND_DOMINATION",
+                "script": f"Multi-threat all-rounders bat in top 5 and bowl death overs, capitalizing on surface variations.",
+                "target_c": c2, "target_vc": vc2,
+                "credit_min": 81.0, "credit_max": 85.0
+            },
+            {
+                "id": "scenario_3",
+                "name": f"Team 3 — {a_name} Counter-Punch & Middle Rebuild",
+                "tag": f"{away_code}_COUNTER_REBUILD",
+                "script": f"{a_name} counter-punches in middle overs. Key bowlers pick early chase wickets before middle order recovers.",
+                "target_c": c3, "target_vc": vc3,
+                "credit_min": 80.0, "credit_max": 84.0
+            },
+            {
+                "id": "scenario_4",
+                "name": f"Team 4 — Low-Scoring Bowling Syndicate & Anchor Punch",
+                "tag": "BOWLING_SYNDICATE_ANCHOR",
+                "script": "Both bowling attacks dominate with cutters and spin. Disciplined anchors punch out a low-scoring thriller.",
+                "target_c": c4, "target_vc": vc4,
+                "credit_min": 80.0, "credit_max": 83.5
+            }
+        ]
 
         solved_lineups = []
         previous_selections = []
@@ -799,8 +479,8 @@ class UniversalMatchEngine:
             "portfolio_metrics": {
                 "overlap_matrix": overlap,
                 "max_pairwise_overlap": max((overlap[i][j] for i in range(count) for j in range(count) if i != j), default=0),
-                "contest_field_size": 500000,
-                "credit_strategy": "15-20 Credits Unspent"
+                "contest_field_size": None,
+                "credit_strategy": "SCENARIO_BAND_UNCALIBRATED"
             }
         }
 

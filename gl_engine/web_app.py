@@ -1,6 +1,5 @@
-"""Comprehensive Interactive Web Portal for 430,000 Spot Mega Contest.
-India vs West Indies, 4th T20I at Rajiv Gandhi Stadium, Hyderabad.
-Features full smooth scrolling, matchup & fast wicket falling simulations, and 1-click copy.
+"""Fixture-agnostic cricket intelligence API and optional analysis portal.
+Only actively connected rosters may be optimized. Research output is uncalibrated.
 """
 from fastapi import FastAPI, HTTPException, Query, Body, Header, Request, Depends
 from fastapi.responses import HTMLResponse, FileResponse, Response
@@ -19,7 +18,7 @@ from .xgboost_model import XGBoostFantasyPredictor
 from .ortools_optimizer import ORToolsCricketOptimizer
 from .rain_model import RainReducedOversEngine
 from .csv_exporter import BulkPlatformExporter
-from .match_catalog import get_match_data, SERIES_FIXTURES, MATCH_FILE_5TH, UnknownMatchError
+from .match_catalog import get_match_data, MATCH_FILE_5TH, UnknownMatchError
 import time
 import os
 import math
@@ -115,7 +114,7 @@ def load_data():
     return {}
 
 # ==============================================================================
-# IND-W VS ZIM-W CRICKET INTELLIGENCE & GRAND LEAGUE OPTIMIZER API ENDPOINTS
+# DYNAMIC CRICKET INTELLIGENCE & GRAND LEAGUE API ENDPOINTS
 # ==============================================================================
 
 @app.get("/api/sync/daily-matches")
@@ -179,7 +178,10 @@ def resolve_match_players(match_id=None):
     """One fixture resolver for state, optimization and exports; no default on unknown IDs."""
     from .universal_engine import get_universal_engine
     engine = get_universal_engine()
-    clean_id = (match_id or engine._active_match_id).removeprefix("display_")
+    selected_id = match_id or engine._active_match_id
+    if not selected_id:
+        raise UnknownMatchError("Select a connected fixture before requesting a roster")
+    clean_id = selected_id.removeprefix("display_")
     if clean_id in engine._matches:
         meta = engine._matches[clean_id]
         raw = engine._profile_match_players(meta)
@@ -254,16 +256,9 @@ def ingest_match_endpoint(payload: Dict[str, Any] = Body(...), _authorized: None
 @app.get("/api/catalog")
 def get_matches_catalog():
     from .universal_engine import get_universal_engine
-    from .match_catalog import SERIES_FIXTURES
     matches = get_universal_engine().list_available_matches()
-    ids = {m["id"] for m in matches}
-    for item in SERIES_FIXTURES.values():
-        if item["id"] not in ids:
-            ids.add(item["id"])
-            matches.append({"id": item["id"], "name": item["name"], "format": item["format"],
-                            "status": "BUNDLED FIXTURE | [VERIFY REQUIRED]",
-                            "venue_name": item["venue"]["name"], "data_provenance": "UNVERIFIED_BUNDLED_FIXTURE"})
-    return {"matches": matches}
+    return {"matches": matches, "count": len(matches)}
+
 
 @app.get("/api/players")
 def get_all_players_intelligence(match_id: Optional[str] = None):
@@ -403,10 +398,14 @@ def get_data():
     return load_data()
 
 @app.get("/api/state")
-def get_full_state(match_id: Optional[str] = "ind_w_vs_zim_w_2026_02",
+def get_full_state(match_id: Optional[str] = None,
                    overs: int = Query(20, ge=5, le=20), force_refresh: bool = False):
     """Selected fixture with overs-dependent heuristic projections and constrained lineups."""
-    clean_id = (match_id or "ind_w_vs_zim_w_2026_02").removeprefix("display_")
+    from .universal_engine import get_universal_engine
+    selected_id = match_id or get_universal_engine()._active_match_id
+    if not selected_id:
+        raise UnknownMatchError("Select a connected fixture before requesting state")
+    clean_id = selected_id.removeprefix("display_")
     cache_key = f"{clean_id}_{overs}"
     now = time.time()
     if not force_refresh and cache_key in _STATE_CACHES and now - _STATE_CACHE_TIMES.get(cache_key, 0) < _STATE_CACHE_TTL:
@@ -448,13 +447,9 @@ def get_venue_player_stats(venue: str = "chinnaswamy"):
 @app.get("/api/series/fixtures")
 def get_series_fixtures():
     """Returns all unique fixtures in the bilateral series with real venue and match metadata."""
-    seen = set()
-    unique_fixtures = []
-    for f in SERIES_FIXTURES.values():
-        if f["id"] not in seen:
-            seen.add(f["id"])
-            unique_fixtures.append(dict(f, status="BUNDLED FIXTURE | [VERIFY REQUIRED]", data_provenance="UNVERIFIED_BUNDLED_FIXTURE"))
-    return {"fixtures": unique_fixtures}
+    from .universal_engine import get_universal_engine
+    return {"fixtures": get_universal_engine().list_available_matches()}
+
 
 @app.get("/api/cricsheet/matches")
 def get_cricsheet_matches():
@@ -492,8 +487,10 @@ def get_cricketdata_live():
     }
 
 @app.get("/api/xgboost/forecast")
-def get_xgboost_forecast(match_id: Optional[str] = "ind_vs_wi_5th_t20_2026"):
-    clean_id = (match_id or "ind_vs_wi_5th_t20_2026").replace("display_", "")
+def get_xgboost_forecast(match_id: Optional[str] = None):
+    if not match_id:
+        raise UnknownMatchError("Explicit match_id required for forecast")
+    clean_id = match_id.removeprefix("display_")
     match_data = get_match_data(clean_id)
     predictor = get_predictor()
     players = [Player(**p) for p in match_data["players"]]
@@ -564,7 +561,11 @@ def get_ortools_lineups(
     if min_credits is not None and not (math.isfinite(min_credits) and math.isfinite(max_credits) and 0 <= min_credits <= max_credits <= 100):
         raise HTTPException(422, "Credit bounds must be finite and ordered within 0-100.")
     effective_spots = max(spots, 700000)
-    clean_id = (match_id or "ind_w_vs_zim_w_2026_02").removeprefix("display_")
+    from .universal_engine import get_universal_engine
+    selected_id = match_id or get_universal_engine()._active_match_id
+    if not selected_id:
+        raise UnknownMatchError("Select a connected fixture before optimization")
+    clean_id = selected_id.removeprefix("display_")
     meta, players = resolve_match_players(clean_id)
     venue_info = meta.get("venue", {})
     ownership_available = all(p.ownership_available for p in players)
@@ -726,13 +727,13 @@ def export_lineups_csv(
 
 @app.get("/api/rain/simulate")
 def simulate_rain_overs(
-    match_id: Optional[str] = "ind_vs_wi_5th_t20_2026",
+    match_id: str,
     overs: int = 12
 ):
     """Simulates rain-interrupted match conditions, DLS targets, bowler quotas,
     and player fantasy point impacts for 5 to 20 overs.
     """
-    clean_id = (match_id or "ind_vs_wi_5th_t20_2026").replace("display_", "")
+    clean_id = match_id.removeprefix("display_")
     match_data = get_match_data(clean_id)
     players_objs, _ = get_enriched_players(match_data["players"])
     venue_info = match_data.get("match_info", {}).get("venue", {})
@@ -772,12 +773,12 @@ def simulate_rain_overs(
     }
 
 @app.get("/api/analyst/query")
-def query_ai_analyst(q: str = Query(..., min_length=1, max_length=2000, description="Tactical query for the cricket intelligence engine"), match_id: Optional[str] = "ind_vs_wi_5th_t20_2026"):
+def query_ai_analyst(q: str = Query(..., min_length=1, max_length=2000, description="Tactical query for the cricket intelligence engine"), match_id: str = Query(..., min_length=1)):
     """Grounded cricket intelligence query engine querying t20.duckdb and XGBoost models."""
     import duckdb
     from pathlib import Path
 
-    clean_id = (match_id or "ind_vs_wi_5th_t20_2026").replace("display_", "")
+    clean_id = match_id.removeprefix("display_")
     meta, players = resolve_match_players(clean_id)
     enriched = [p.model_dump() for p in players]
     venue_info = meta.get("venue", {})
@@ -1153,7 +1154,7 @@ def get_portal_match_roster(match_id: Optional[str] = None):
 @app.get("/api/portal/solve-lineup")
 @app.post("/api/portal/solve-lineup")
 def solve_portal_lineup(
-    match_id: str = "afg_vs_zim_sharjah_odi",
+    match_id: str,
     scenario: str = "zim_bat_1st",
     target_unspent: float = 14.0,
     min_diffs: int = 2
@@ -1527,12 +1528,15 @@ def synthesize_bilateral_matchups(title: str, v_name: str):
 
 
 @app.get("/api/portal/match-data")
-def get_portal_match_data(match_id: str = "161190"):
+def get_portal_match_data(match_id: str):
     """Returns real-time dynamic pitch, boundary radar, 4-scenario lineups, and NLP data for ANY selected match."""
     from .portal_fixtures import MASTER_FIXTURES
     from .venue_pitch_intelligence import VenuePitchIntelligenceEngine
     from .daily_match_sync import get_daily_match_sync_engine
-    
+    from .universal_engine import get_universal_engine
+    if match_id not in get_universal_engine()._matches:
+        raise UnknownMatchError(f"Unknown or disconnected match: {match_id}")
+
     venue_eng = VenuePitchIntelligenceEngine()
     sync_eng = get_daily_match_sync_engine()
 
@@ -1746,7 +1750,9 @@ def generate_gl_teams_endpoint(payload: Dict[str, Any] = Body(...)):
     from .universal_engine import get_universal_engine
     from .unique_engine import unique_team_engine
     
-    match_id = payload.get("match_id", "ind_w_vs_zim_w_2026_02")
+    match_id = payload.get("match_id")
+    if not isinstance(match_id, str) or not match_id.strip():
+        raise HTTPException(422, "Explicit match_id required")
     num_teams = int(payload.get("num_teams", 7))
     num_teams = max(1, min(20, num_teams))
     uniqueness = int(payload.get("uniqueness", 8))
@@ -1788,7 +1794,9 @@ def simulate_gl_teams_endpoint(payload: Dict[str, Any] = Body(...)):
     from .universal_engine import get_universal_engine
     from .unique_engine import unique_team_engine
     
-    match_id = payload.get("match_id", "ind_w_vs_zim_w_2026_02")
+    match_id = payload.get("match_id")
+    if not isinstance(match_id, str) or not match_id.strip():
+        raise HTTPException(422, "Explicit match_id required")
     teams = payload.get("teams", [])
     contest_size = int(payload.get("contest_size", 1000))
     n_sims = int(payload.get("n_sims", 2500))
