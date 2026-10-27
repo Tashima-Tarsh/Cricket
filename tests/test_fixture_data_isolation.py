@@ -27,6 +27,18 @@ class MatchDataIsolationTests(unittest.TestCase):
                 status = c.get("/api/v1/readiness").json()
                 self.assertFalse(status["model_calibrated_rank1_probabilities"])
 
+    def test_toss_feed_does_not_invent_weather_or_another_match(self):
+        from fastapi.testclient import TestClient
+        from tempfile import TemporaryDirectory
+        from gl_engine import universal_engine as ue
+        from unittest.mock import patch
+        with TemporaryDirectory() as d:
+            engine=ue.UniversalMatchEngine(Path(d) / "fresh.sqlite3")
+            with patch.object(ue, "_ENGINE_INSTANCE", engine):
+                api=TestClient(app)
+                self.assertEqual(api.get("/api/live/toss-feed").status_code, 422)
+                self.assertEqual(api.get("/api/live/toss-feed?match_id=not-supplied").status_code, 409)
+
     def test_no_hardcoded_production_fixture_sources(self):
         root = Path(__file__).resolve().parents[1]
         forbidden = [

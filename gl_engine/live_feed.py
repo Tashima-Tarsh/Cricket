@@ -427,157 +427,48 @@ def fetch_espn_cricinfo_live_matches(force_refresh: bool = False) -> List[Dict[s
     _CACHE_TIMESTAMP = now
     return matches
 
-_LIVE_TOSS_CACHE: Optional[Dict[str, Any]] = None
-_LIVE_TOSS_TIMESTAMP: float = 0.0
+def get_fixture_toss_feed(match_id: Optional[str] = None) -> Dict[str, Any]:
+    """Only actual source metadata for the requested saved fixture.
 
-def get_ind_wi_live_toss_feed(match_id: Optional[str] = None) -> Dict[str, Any]:
-    """Fetches real-time match state, toss declaration, ground inspection, and weather telemetry
-    directly from ESPNcricinfo via cricdata SDK, or dynamically resolves fixture metadata.
+    This is a manual-user-attested feed until independent source verification
+    succeeds. No hard-coded fixtures, weather, commentary, captains or delays.
     """
-    global _LIVE_TOSS_CACHE, _LIVE_TOSS_TIMESTAMP
-    now = time.time()
-    
-    clean_id = (match_id or "ind_vs_wi_5th_t20_2026").lower().replace("display_", "")
-    is_ind_wi = "ind" in clean_id and "wi" in clean_id
-
-    if is_ind_wi and _LIVE_TOSS_CACHE and (now - _LIVE_TOSS_TIMESTAMP < 20.0):
-        return _LIVE_TOSS_CACHE
-
-    # Attempt to resolve match metadata from match catalog first
+    if not isinstance(match_id, str) or not match_id.strip():
+        raise ValueError("Explicit connected match_id required")
     from .match_catalog import get_match_data
-    cat_data = get_match_data(clean_id)
-    if cat_data and "match_info" in cat_data:
-        mi = cat_data["match_info"]
-        venue_obj = mi.get("venue", {})
-        venue_str = venue_obj.get("name", "BCA Stadium, Vadodara") if isinstance(venue_obj, dict) else str(venue_obj)
-        toss_obj = mi.get("toss", {})
-        toss_winner = toss_obj.get("winner")
-        toss_choice = toss_obj.get("choice")
-        toss_stmt = toss_obj.get("statement", f"Toss scheduled 30 minutes prior to match start at {venue_str}.")
-        
-        return {
-            "status": mi.get("status", "SCHEDULED"),
-            "data_provenance": "ICC_270973_OFFICIAL_MATCH_CENTER",
-            "match_id": clean_id,
-            "match_name": mi.get("name", "India Women vs Zimbabwe Women, 2nd ODI (Vadodara)"),
-            "format": mi.get("format", "Women's One Day International"),
-            "venue": venue_str,
-            "is_toss_done": bool(toss_winner),
-            "toss_winner": toss_winner,
-            "toss_choice": toss_choice,
-            "toss_statement": toss_stmt,
-            "pitch_nature": venue_obj.get("pitch_nature", "Bowling surface favoring spinners (64.9% wickets by spinners).") if isinstance(venue_obj, dict) else "",
-            "avg_first_innings": venue_obj.get("avg_first_innings", 258.0) if isinstance(venue_obj, dict) else 258.0,
-            "avg_second_innings": venue_obj.get("avg_second_innings", 178.0) if isinstance(venue_obj, dict) else 178.0,
-            "captains": {"India Women": "Harmanpreet Kaur", "Zimbabwe Women": "Chipo Mugeri-Tiripano"},
-            "rain_probability_pct": 5,
-            "weather_condition": "Cloudy, dry surface",
-            "temperature_f": 86,
-            "ground_condition": f"BCA Stadium, Kotambi, Vadodara pitch dry and firm. Spin favorable conditions.",
-            "overs_curtailed": False,
-            "projected_overs": 50,
-            "cutoff_time_ist": "Scheduled 50-over match window",
-            "latest_commentary": "Match 2 of ODI series at BCA Stadium, Kotambi, Vadodara. Official match ICC ID 270973.",
-            "last_updated": time.strftime("%Y-%m-%d %H:%M:%S IST", time.localtime())
-        }
-
-    # Fallback to portal fixtures
-    from .portal_fixtures import MASTER_FIXTURES
-    fixture_meta = None
-    fixtures_iterable = MASTER_FIXTURES.values() if isinstance(MASTER_FIXTURES, dict) else MASTER_FIXTURES
-    for f in fixtures_iterable:
-        if isinstance(f, dict) and (f.get("id") == clean_id or f.get("id") == match_id):
-            fixture_meta = f
-            break
-
-    match_name = fixture_meta.get("name") if fixture_meta else ("India vs West Indies, 5th T20I" if is_ind_wi else f"Match {clean_id}")
-    venue_name = fixture_meta.get("venue") if fixture_meta else "Chinnaswamy Stadium, Bengaluru"
-
-    result: Dict[str, Any] = {
-        "status": "SCHEDULED", "data_provenance": "FIXTURE_SCHEDULED_METADATA",
-        "match_id": clean_id,
-        "match_name": match_name,
-        "venue": venue_name,
-        "is_toss_done": False, "toss_winner": None, "toss_choice": None,
-        "toss_statement": f"Toss scheduled 30 minutes prior to match start at {venue_name}.",
+    doc = get_match_data(match_id)
+    meta = doc["match_info"]
+    toss = meta.get("toss") or {}
+    venue = meta.get("venue") or {}
+    winner = toss.get("winner")
+    decision = toss.get("choice")
+    return {
+        "status": meta.get("status", "USER_SUPPLIED_UNVERIFIED"),
+        "data_provenance": "USER_SUPPLIED_UNVERIFIED",
+        "match_id": match_id,
+        "match_name": meta.get("name"),
+        "format": meta.get("format"),
+        "venue": venue.get("name"),
+        "is_toss_done": bool(winner and decision),
+        "toss_winner": winner,
+        "toss_choice": decision,
+        "toss_statement": toss.get("statement"),
+        "pitch_nature": venue.get("pitch_nature"),
+        "avg_first_innings": venue.get("avg_first_innings"),
+        "avg_second_innings": venue.get("avg_second_innings"),
         "captains": {},
-        "rain_probability_pct": 12, "weather_condition": "Clear Sky", "temperature_f": 78,
-        "ground_condition": f"Playing surface prepared at {venue_name}. Pitch inspection normal.",
-        "overs_curtailed": False, "projected_overs": 20,
-        "cutoff_time_ist": "Scheduled match window",
-        "latest_commentary": f"Ground staff completed outfield preparation at {venue_name}. Pitch conditions verified.",
+        "rain_probability_pct": None,
+        "weather_condition": None,
+        "temperature_f": None,
+        "ground_condition": None,
+        "overs_curtailed": None,
+        "projected_overs": None,
+        "cutoff_time_ist": None,
+        "latest_commentary": None,
+        "last_updated": None,
     }
 
-    if not is_ind_wi:
-        return result
 
-    try:
-        from cricdata import CricinfoClient
-        client = CricinfoClient()
-        series_slug = "west-indies-in-india-2026-27"
-        match_slug = "india-vs-west-indies-5th-t20i-1529234"
-
-        # 1. Match info & toss
-        info = client.match_info(series_slug, match_slug)
-        if isinstance(info, dict):
-            match_data = info.get("match", {})
-            st = match_data.get("status") or match_data.get("statusText")
-            if st:
-                result["ground_condition"] = st
-                result["status"] = "PROVIDER_RESPONSE"
-                result["data_provenance"] = "ESPNCRICINFO_RESPONSE_UNVERIFIED_FRESHNESS"
-
-            toss_info = info.get("toss", {})
-            if toss_info.get("winner_team") and toss_info.get("decision"):
-                result["is_toss_done"] = True
-                result["toss_winner"] = toss_info.get("winner_team")
-                result["toss_choice"] = "bat" if "bat" in str(toss_info.get("decision")).lower() else "bowl"
-                result["toss_statement"] = f"{result['toss_winner']} won the toss and elected to {result['toss_choice']} first."
-            else:
-                result["is_toss_done"] = False
-                result["toss_statement"] = st or "Toss information unavailable."
-
-            captains_list = info.get("captains", [])
-            for cap in captains_list:
-                team_name = cap.get("team_name")
-                c_name = cap.get("name")
-                if team_name and c_name:
-                    result["captains"][team_name] = c_name
-
-        # 2. Weather
-        w = client.match_weather(series_slug, match_slug)
-        if isinstance(w, dict):
-            curr_w = w.get("current", {}).get("weather", {})
-            temp_val = curr_w.get("temperature", {}).get("value")
-            if temp_val:
-                result["temperature_f"] = temp_val
-            cond_val = curr_w.get("conditionType")
-            if cond_val:
-                result["weather_condition"] = cond_val.replace("_", " ").title()
-
-            forecasts = w.get("forecasts", {}).get("items", [])
-            probs = [item.get("rainProbability") for item in forecasts if item.get("rainProbability") is not None]
-            if probs:
-                result["rain_probability_pct"] = max(probs)
-
-        # 3. Commentary
-        comm = client.match_commentary(series_slug, match_slug)
-        if isinstance(comm, dict):
-            recent_pre = comm.get("content", {}).get("recentBallCommentary", {}).get("preComments", [])
-            if recent_pre:
-                first_items = recent_pre[0].get("commentPreTextItems", [])
-                for item in first_items:
-                    raw_html = item.get("html", "")
-                    if raw_html:
-                        cleaned = re.sub(r"<.*?>", "", raw_html).strip()
-                        if cleaned:
-                            result["latest_commentary"] = cleaned
-                            break
-
-    except Exception as e:
-        print(f"[LiveFeed] Note on detailed live fetch: {e}")
-
-    _LIVE_TOSS_CACHE = result
-    _LIVE_TOSS_TIMESTAMP = now
-    return result
-
+def get_ind_wi_live_toss_feed(match_id: Optional[str] = None) -> Dict[str, Any]:
+    """Legacy call alias. Returns only requested fixture data, never legacy match fixtures."""
+    return get_fixture_toss_feed(match_id)

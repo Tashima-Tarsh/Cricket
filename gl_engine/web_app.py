@@ -462,7 +462,7 @@ def get_cricsheet_matches():
     db = CricsheetDatabase()
     return {"matches": db.list_matches()[:25]}
 
-from .live_feed import fetch_espn_cricinfo_live_matches, get_ind_wi_live_toss_feed
+from .live_feed import fetch_espn_cricinfo_live_matches, get_fixture_toss_feed
 
 @app.get("/api/live/matches")
 def get_live_matches():
@@ -476,11 +476,11 @@ def get_live_matches():
     }
 
 @app.get("/api/live/toss-feed")
-def get_live_toss_feed(match_id: Optional[str] = None):
-    """Returns real-time match state, toss status, pitch inspection, weather & commentary."""
-    feed = get_ind_wi_live_toss_feed(match_id=match_id)
+def get_live_toss_feed(match_id: str):
+    """Returns manually attested toss fields for the selected connected fixture."""
+    feed = get_fixture_toss_feed(match_id=match_id)
     return {
-        "status": "success",
+        "status": "user_attested_not_provider_verified",
         "feed": feed
     }
 
