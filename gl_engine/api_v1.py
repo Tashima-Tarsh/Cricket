@@ -49,6 +49,34 @@ class OptimizeRequest(BaseModel):
     max_overlap: int = Field(default=8, ge=0, le=11)
 
 
+@router.get("/readiness")
+def research_readiness():
+    """Measured local readiness, never an assertion of provider-verified XI or ROI."""
+    import os
+    from .universal_engine import get_universal_engine
+    from .providers.sportmonks_api import SportmonksCricketClient
+    from .cricketdata_api import CricketDataClient
+    engine = get_universal_engine()
+    return {
+        "service": "RESEARCH_MODE",
+        "available_connected_fixtures": len(engine.list_available_matches()),
+        "playing_xi_verification": "MANUAL_ATTESTATION_ONLY",
+        "provider_configured_not_probed": {
+            "sportmonks": bool(SportmonksCricketClient().is_live),
+            "cricketdata": bool(CricketDataClient().is_live),
+        },
+        "manual_ingestion_enabled": bool(os.getenv("CRICKET_ADMIN_TOKEN")),
+        "official_fantasy_scoring_rule_version": RULE_VERSION,
+        "model_calibrated_rank1_probabilities": False,
+        "validated_real_world_profitability": False,
+        "limitations": [
+            "No licensed live-XI agreement guarantees",
+            "No calibrated contest-field or Rank-1 distribution",
+            "Request-time heavy work requires ingress quotas in production",
+        ],
+    }
+
+
 @router.get("/engines")
 def list_engines():
     return {

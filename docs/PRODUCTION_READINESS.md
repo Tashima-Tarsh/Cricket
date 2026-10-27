@@ -39,6 +39,10 @@ TLS reverse proxy. A successful build does not establish profitable predictions.
    shared storage and distributed locking.
 7. `/api/health` is *liveness*; a `degraded` status signals missing optional
    archive or solver data, not proof a fixture is available.
+8. `/api/v1/readiness` reports the actual local fixture count and explicit
+   uncalibrated status. In production set `CRICKET_ENV=production`, use
+   `CRICKET_ALLOWED_ORIGINS` to select approved browser origins, and keep
+   wildcard CORS disabled.
 
 ### Release blockers
 - Out-of-time model calibration and credible uplift against transparent

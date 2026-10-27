@@ -29,6 +29,12 @@ from pydantic import ValidationError
 import numpy as np
 from .models import Player
 
+APP_ENV = os.getenv("CRICKET_ENV", "development").lower()
+if APP_ENV not in {"development", "production"}:
+    raise RuntimeError("CRICKET_ENV must be development or production")
+if APP_ENV == "production" and not os.getenv("CRICKET_ADMIN_TOKEN"):
+    raise RuntimeError("Production ingestion requires CRICKET_ADMIN_TOKEN")
+
 ALLOWED_ORIGINS = [
     "http://localhost:8000",
     "http://127.0.0.1:8000",
@@ -41,7 +47,14 @@ ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "http://127.0.0.1:3000"
 ]
+configured_origins = [x.strip() for x in os.getenv("CRICKET_ALLOWED_ORIGINS", "").split(",") if x.strip()]
+if configured_origins:
+    if "*" in configured_origins:
+        raise RuntimeError("Use ALLOW_ALL_ORIGINS explicitly for nonproduction wildcard CORS")
+    ALLOWED_ORIGINS = configured_origins
 if os.getenv("ALLOW_ALL_ORIGINS", "false").lower() in ["true", "1"]:
+    if APP_ENV == "production":
+        raise RuntimeError("Wildcard CORS is forbidden in production")
     ALLOWED_ORIGINS = ["*"]
 
 app = FastAPI(title="Cricket Mega Contest Intelligence Portal")
@@ -53,12 +66,11 @@ install_provenance(app)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=ALLOWED_ORIGINS,
-    allow_credentials=True,
+    allow_credentials=("*" not in ALLOWED_ORIGINS),
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-DATA_FILE = Path(__file__).parent.parent / "gl_report.json"
 MATCH_FILE = MATCH_FILE_5TH
 FRONTEND_DIST = Path(__file__).parent.parent / "frontend" / "dist"
 LEGACY_TEMPLATE_PATH = Path(__file__).parent / "templates" / "legacy_portal.html"
@@ -106,12 +118,6 @@ def get_enriched_players(players_raw: List[Dict[str, Any]]) -> Tuple[List[Player
             p_dict["stats"]["floor_pts"] = pred["floor_10th"]
         enriched_dicts.append(p_dict)
     return players_objs, enriched_dicts
-
-def load_data():
-    if DATA_FILE.exists():
-        with open(DATA_FILE, "r", encoding="utf-8") as f:
-            return json.load(f)
-    return {}
 
 # ==============================================================================
 # DYNAMIC CRICKET INTELLIGENCE & GRAND LEAGUE API ENDPOINTS
