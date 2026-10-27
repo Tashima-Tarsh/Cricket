@@ -200,13 +200,14 @@ class TestEvidenceAuditRepairs(unittest.TestCase):
         self.assertTrue(len(results) > 0)
         self.assertEqual(results[0]["calibration_status"], "MODEL_ESTIMATE_UNCALIBRATED")
 
-    def test_vite_config_proxies_to_port_8001(self):
-        """Verify frontend/vite.config.ts defaults proxy target to port 8001."""
+    def test_vite_config_proxies_to_backend_port_8000(self):
+        """Frontend default proxy must match the actual backend on port 8000."""
         vite_conf_path = Path(__file__).parent.parent / "frontend" / "vite.config.ts"
         self.assertTrue(vite_conf_path.exists())
         content = vite_conf_path.read_text(encoding="utf-8")
-        self.assertIn("8001", content)
-        self.assertNotIn("target: 'http://127.0.0.1:8000'", content)
+        self.assertIn("8000", content)
+        self.assertIn("'/api'", content)
+        self.assertIn("'/matches'", content)
 
 
 if __name__ == "__main__":
