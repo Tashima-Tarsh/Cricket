@@ -25,7 +25,7 @@ export const MatchStudio: React.FC = () => {
   const { currentMatch, currentPlayers, activeOvers, setActiveOvers } = useMatchContext();
 
   // Match Information State
-  const [matchTitle, setMatchTitle] = useState(currentMatch.name || "India Women vs Zimbabwe Women, 2nd ODI (Vadodara)");
+  const [matchTitle, setMatchTitle] = useState(currentMatch.name || "");
   const [matchFormat, setMatchFormat] = useState(
     currentMatch.format?.toLowerCase().includes("odi") || currentMatch.format?.toLowerCase().includes("one day")
       ? "ODI"
@@ -62,7 +62,7 @@ export const MatchStudio: React.FC = () => {
 
   useEffect(() => {
     if (currentMatch) {
-      setMatchTitle(currentMatch.name || "India Women vs Zimbabwe Women, 2nd ODI (Vadodara)");
+      setMatchTitle(currentMatch.name || "");
       const fmt =
         currentMatch.format?.toLowerCase().includes("odi") || currentMatch.format?.toLowerCase().includes("one day")
           ? "ODI"
@@ -72,11 +72,11 @@ export const MatchStudio: React.FC = () => {
           ? "Test"
           : "ODI";
       setMatchFormat(fmt);
-      setHomeTeam(currentMatch.teams.home.code || "IND-W");
-      setAwayTeam(currentMatch.teams.away.code || "ZIM-W");
-      setVenueName(currentMatch.venue.name || "BCA Stadium, Kotambi, Vadodara");
-      setPitchNature(currentMatch.venue.pitch_nature || "Dry Turner");
-      setTossWinner(currentMatch.toss.winner || "ZIM-W");
+      setHomeTeam(currentMatch.teams.home.code || "");
+      setAwayTeam(currentMatch.teams.away.code || "");
+      setVenueName(currentMatch.venue.name || "");
+      setPitchNature(currentMatch.venue.pitch_nature || "");
+      setTossWinner(currentMatch.toss.winner || "");
       setTossDecision(currentMatch.toss.choice || "bat");
       if (fmt === "ODI" && (!activeOvers || activeOvers === 20)) {
         setOvers(50);
@@ -120,55 +120,23 @@ export const MatchStudio: React.FC = () => {
   };
 
   const applyScenarioA = () => {
-    // Scenario A: Zimbabwe Bats First -> India bowls first & chases
-    setTossWinner("ZIM-W");
-    setTossDecision("bat");
-    const deepti = roster.find((p) => p.name.toLowerCase().includes("deepti") || p.id.includes("deepti"));
-    const mandhana = roster.find((p) => p.name.toLowerCase().includes("mandhana") || p.id.includes("mandhana"));
-    const charani = roster.find((p) => p.name.toLowerCase().includes("charani") || p.id.includes("charani"));
-    const verma = roster.find((p) => p.name.toLowerCase().includes("verma") || p.id.includes("verma"));
-
-    if (deepti) setPreferredC(deepti.id);
-    else if (mandhana) setPreferredC(mandhana.id);
-
-    if (charani) setPreferredVC(charani.id);
-    else if (verma) setPreferredVC(verma.id);
-
-    const newLocks = new Set<string>();
-    if (deepti) newLocks.add(deepti.id);
-    if (charani) newLocks.add(charani.id);
-    if (mandhana) newLocks.add(mandhana.id);
-    setLockedIds(newLocks);
-    setExcludedIds(new Set());
-    setSolveStatusMessage("Loaded Scenario A: ZIM Bats 1st, IND Bowls/Chases (Spin choke + Top 3 chase).");
+    setSolveStatusMessage("Hypothetical scenario A selected. Actual toss and player selections remain unchanged.");
   };
 
   const applyScenarioB = () => {
-    // Scenario B: India Bats First -> Sets 280-320 total
-    setTossWinner("IND-W");
-    setTossDecision("bat");
-    const mandhana = roster.find((p) => p.name.toLowerCase().includes("mandhana") || p.id.includes("mandhana"));
-    const rawal = roster.find((p) => p.name.toLowerCase().includes("rawal") || p.id.includes("rawal"));
-    const verma = roster.find((p) => p.name.toLowerCase().includes("verma") || p.id.includes("verma"));
-
-    if (mandhana) setPreferredC(mandhana.id);
-    if (rawal) setPreferredVC(rawal.id);
-    else if (verma) setPreferredVC(verma.id);
-
-    const newLocks = new Set<string>();
-    if (mandhana) newLocks.add(mandhana.id);
-    if (rawal) newLocks.add(rawal.id);
-    if (verma) newLocks.add(verma.id);
-    setLockedIds(newLocks);
-    setExcludedIds(new Set());
-    setSolveStatusMessage("Loaded Scenario B: IND Bats 1st (Setting 280-320+ Total, Mandhana/Rawal anchor).");
+    setSolveStatusMessage("Hypothetical scenario B selected. Actual toss and player selections remain unchanged.");
   };
 
   const applyLiveToss = () => {
     if (liveTossData) {
       if (liveTossData.toss_winner) {
-        const tw = liveTossData.toss_winner.toLowerCase().includes("india") ? "IND-W" : "ZIM-W";
-        setTossWinner(tw);
+        const winner = String(liveTossData.toss_winner);
+        const expected = [homeTeam, awayTeam, currentMatch.teams.home.name, currentMatch.teams.away.name];
+        if (!expected.some(t => t && t.toLowerCase() === winner.toLowerCase())) {
+          setSolveStatusMessage("Toss winner does not match the selected fixture.");
+          return;
+        }
+        setTossWinner(winner);
       }
       if (liveTossData.toss_choice) {
         setTossDecision(liveTossData.toss_choice.toLowerCase().includes("bat") ? "bat" : "bowl");
@@ -243,44 +211,7 @@ export const MatchStudio: React.FC = () => {
   };
 
   const addCustomPlayer = () => {
-    if (!newPlayerName.trim()) return;
-    const newId = `custom_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
-    const created: Player = {
-      id: newId,
-      name: newPlayerName.trim(),
-      team: newPlayerTeam,
-      role: newPlayerRole,
-      credits: Number(newPlayerCredits),
-      batting_style: "RHB",
-      batting_order: 5,
-      expected_overs: newPlayerRole === "BOWL" || newPlayerRole === "AR" ? 3.0 : 0.0,
-      projected_ownership: Number(newPlayerOwn),
-      projected_points: Number(newPlayerCredits) * 5.0,
-      ceiling_score: Number(newPlayerCredits) * 9.0,
-      floor_score: 10.0,
-      is_confirmed_xi: true,
-      stats: {
-        matches: 10,
-        runs: 200,
-        balls_faced: 140,
-        strike_rate: 142.8,
-        batting_avg: 28.5,
-        wickets: newPlayerRole === "BOWL" ? 12 : 0,
-        overs_bowled: newPlayerRole === "BOWL" ? 35 : 0,
-        economy: 7.4,
-        bowling_sr: 17.5,
-        dot_ball_pct: 42.0,
-        boundary_pct: 18.0,
-        recent_scores: [35, 42, 18, 55],
-        recent_wickets: [2, 1, 3, 0],
-        recent_fantasy_pts: [45, 60, 30, 75],
-        avg_fantasy_pts: Number(newPlayerCredits) * 5.0,
-        ceiling_pts: Number(newPlayerCredits) * 9.0,
-        floor_pts: 10.0
-      }
-    };
-    setRoster((prev) => [...prev, created]);
-    setNewPlayerName("");
+    setSolveStatusMessage("Use authenticated Match Setup to supply a full real 22-player XI. This local draft editor will not invent player stats or confirmed-XI flags.");
   };
 
   const deletePlayer = (id: string) => {
@@ -358,7 +289,7 @@ export const MatchStudio: React.FC = () => {
             </div>
             <div>
               <div className="text-xs font-mono text-stone-500 font-bold uppercase tracking-wider">
-                TACTICAL CONTROL STUDIO &bull; ICC 270973 MATCH CENTER
+                TACTICAL CONTROL STUDIO &bull; SELECTED MATCH
               </div>
               <h1 className="text-2xl font-bold text-stone-900 tracking-tight">
                 Match Setup, Roster & C/VC Strategy Center
@@ -387,7 +318,7 @@ export const MatchStudio: React.FC = () => {
                 {liveTossData?.is_toss_done ? "TOSS CONCLUDED" : "PRE-TOSS PROVISIONAL"}
               </span>
               <span className="text-stone-700 font-bold">
-                {liveTossData?.toss_statement || "Toss scheduled 30 min before match start (13:30 IST)."}
+                {liveTossData?.toss_statement || "No independently confirmed toss is available."}
               </span>
             </div>
             <div className="flex items-center gap-2">
@@ -422,16 +353,16 @@ export const MatchStudio: React.FC = () => {
               <button
                 onClick={applyScenarioA}
                 className="px-2.5 py-1 rounded bg-emerald-100 hover:bg-emerald-200 text-emerald-900 border border-emerald-300 font-bold text-[11px] transition-colors"
-                title="Zimbabwe Bats 1st, India Bowls First & Chases"
+                title="Hypothetical scenario, not an observed toss"
               >
-                🟢 Scenario A (ZIM Bats 1st)
+                Scenario A (hypothetical)
               </button>
               <button
                 onClick={applyScenarioB}
                 className="px-2.5 py-1 rounded bg-blue-100 hover:bg-blue-200 text-blue-900 border border-blue-300 font-bold text-[11px] transition-colors"
-                title="India Bats 1st, Sets 280-320 Total"
+                title="Alternative hypothetical scenario, not an observed toss"
               >
-                🔵 Scenario B (IND Bats 1st)
+                Scenario B (hypothetical)
               </button>
             </div>
           </div>
@@ -506,7 +437,8 @@ export const MatchStudio: React.FC = () => {
                   onChange={(e) => setPitchNature(e.target.value)}
                   className="w-full bg-stone-50 border border-stone-300 rounded-lg px-3 py-1.5 text-stone-900"
                 >
-                  <option value="Dry Turner">Dry Turner (Spin Choke - BCA Vadodara)</option>
+                  <option value="">Unspecified / no observed report</option>
+                  <option value="Dry Turner">Dry Turner (operator-supplied)</option>
                   <option value="Balanced">Balanced Deck</option>
                   <option value="Flat Highway">Flat Highway (Batting Par 280+)</option>
                   <option value="Green Seam">Green Seam (Pace & Bounce)</option>
@@ -846,7 +778,7 @@ export const MatchStudio: React.FC = () => {
               onClick={addCustomPlayer}
               className="w-full px-3 py-1.5 rounded bg-stone-900 text-white font-bold flex items-center justify-center gap-1 hover:bg-stone-800"
             >
-              <Plus size={14} /> ADD
+              <Plus size={14} /> USE MATCH SETUP
             </button>
           </div>
         </div>
