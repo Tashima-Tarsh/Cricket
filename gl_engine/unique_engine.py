@@ -88,11 +88,17 @@ class UniqueTeamEngine:
         pool = [p for p in enriched_players if p["id"] not in excluded_set]
         n_pool = len(pool)
         # Exclusions are hard constraints. Never restore excluded players.
+        from .roster_safety import validate_roster, validate_confirmed_xi
+        validate_roster(players)
+        if len(players) != 22:
+            return []
+        if toss_completed:
+            validate_confirmed_xi(players)
         if n_pool < 11:
             return []
-        from .roster_safety import validate_roster
-        validate_roster(players)
-        if toss_completed and any(p.get("is_confirmed_xi") is not True for p in players):
+        if any(p.get("role") not in ("WK", "BAT", "AR", "BOWL") or
+               not isinstance(p.get("credits"), (int, float)) or
+               not 0 < float(p["credits"]) <= 20 for p in players):
             return []
         if locked_set & excluded_set:
             return []
@@ -215,7 +221,24 @@ class UniqueTeamEngine:
             if status in (cp_model.OPTIMAL, cp_model.FEASIBLE):
                 selected_indices = [i for i in range(n_pool) if solver.Value(x[i]) == 1]
                 if len(selected_indices) == 11:
-                    candidate_combos.append(selected_indices)
+                    selected_rows = [pool[i] for i in selected_indices]
+                    role_counts = {
+                        role: sum(p["role"] == role for p in selected_rows)
+                        for role in ("WK", "BAT", "AR", "BOWL")
+                    }
+                    team_counts = {t: sum(p["team"] == t for p in selected_rows)
+                                   for t in teams_present}
+                    credit_spend = sum(float(p["credits"]) for p in selected_rows)
+                    ids = {p["id"] for p in selected_rows}
+                    if (len(ids) == 11 and locked_set.issubset(ids) and
+                        not (ids & excluded_set) and
+                        1 <= role_counts["WK"] <= 4 and
+                        3 <= role_counts["BAT"] <= 6 and
+                        1 <= role_counts["AR"] <= 4 and
+                        3 <= role_counts["BOWL"] <= 6 and
+                        all(4 <= count <= 7 for count in team_counts.values()) and
+                        min_credits <= credit_spend <= max_credits):
+                        candidate_combos.append(selected_indices)
                     
         # Solver failure is an infeasible or partial portfolio; never
         # manufacture unchecked combinations to fill the requested count.
