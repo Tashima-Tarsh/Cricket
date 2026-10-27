@@ -1,194 +1,143 @@
-"""Capability 19: cricket-backtesting
-Replay historical matches without future-data leakage to validate Grand League portfolio performance.
-Integrates directly with DuckDB columnar ball-by-ball repository for empirical replay,
-with fallback to curated benchmark fixtures.
+"""Chronological retrospective evaluation of a *partial* score proxy.
+
+Scores are batting runs, boundary bonuses, wickets, bowled/LBW bonuses and
+dot balls observed in Cricsheet. Fielding, selection points and platform
+rule versions are not present and are deliberately not inferred. This is
+NOT a Dream11 competition rank backtest. Predictions use only strictly
+earlier match dates; the target game's data is used ONLY to assess error.
 """
+from __future__ import annotations
+
+from collections import defaultdict
+from math import sqrt
 from pathlib import Path
-from typing import Dict, Any, List, Optional
+from typing import Dict, Any, Optional
 import duckdb
+
+_SCORE_PROXY_SQL = """
+WITH partial_events AS (
+    SELECT m.match_id, CAST(m.date AS DATE) AS game_date,
+           d.batter AS player,
+           SUM(d.runs_batter +
+               CASE WHEN d.runs_batter = 4 THEN 1 ELSE 0 END +
+               CASE WHEN d.runs_batter = 6 THEN 2 ELSE 0 END) AS partial_points
+    FROM deliveries d JOIN matches m ON m.match_id = d.match_id
+    WHERE m.date IS NOT NULL AND CAST(m.date AS DATE) <= CAST(? AS DATE)
+    GROUP BY m.match_id, m.date, d.batter
+    UNION ALL
+    SELECT m.match_id, CAST(m.date AS DATE) AS game_date,
+           d.bowler AS player,
+           SUM(
+               CASE WHEN d.is_wicket AND d.wicket_type NOT IN ('run out', 'retired hurt')
+                    THEN 30 ELSE 0 END +
+               CASE WHEN d.is_wicket AND d.wicket_type IN ('bowled', 'lbw')
+                    THEN 8 ELSE 0 END +
+               CASE WHEN d.runs_total = 0 THEN 1 ELSE 0 END) AS partial_points
+    FROM deliveries d JOIN matches m ON m.match_id = d.match_id
+    WHERE m.date IS NOT NULL AND CAST(m.date AS DATE) <= CAST(? AS DATE)
+    GROUP BY m.match_id, m.date, d.bowler
+)
+SELECT match_id, game_date, player, SUM(partial_points) AS partial_points
+FROM partial_events
+WHERE player IS NOT NULL AND TRIM(player) <> ''
+GROUP BY match_id, game_date, player
+"""
+
+
+def chronological_player_predictions(rows, target_match_id, target_date, min_history=3):
+    """Pure holdout calculation; no target-date outcomes may inform forecasts."""
+    history = defaultdict(list)
+    actual = {}
+    for match_id, game_date, name, score in sorted(rows, key=lambda x: (x[1], str(x[0]))):
+        if game_date < target_date:
+            history[name].append(float(score))
+        elif match_id == target_match_id:
+            actual[name] = float(score)
+    predictions = {}
+    for name, observed in actual.items():
+        prior = history.get(name, [])
+        if len(prior) >= min_history:
+            predictions[name] = {
+                "predicted_partial_points": round(sum(prior) / len(prior), 3),
+                "observed_partial_points": round(observed, 3),
+                "prior_matches": len(prior),
+            }
+    return predictions, len(actual)
+
 
 class CricketBacktesting:
     def __init__(self, db_path: Optional[str] = None):
-        self.db_path = Path(db_path) if db_path else Path(__file__).parent.parent.parent / "t20.duckdb"
-        
-        # Curated historical validation benchmarks from international T20 fixtures [REFERENCE BENCHMARKS]
-        self.curated_benchmarks = [
-            {
-                "match": "IND vs WI - Kolkata 2022/2023",
-                "pitch": "Eden Gardens",
-                "actual_dream_team_points": 1042.0,
-                "engine_portfolio_top_score": 988.5,
-                "efficiency_pct": 94.8,
-                "winning_differential_identified": "Harshal Patel (sub-30% ownership, 3 wickets in death overs)",
-                "rank_in_grand_league": "Top-decile finish [CURATED BENCHMARK ESTIMATE — NOT EMPIRICAL]",
-                "provenance": "[CURATED BENCHMARK]"
-            },
-            {
-                "match": "IND vs WI - Lauderhill T20I",
-                "pitch": "True Batting Wicket",
-                "actual_dream_team_points": 1114.0,
-                "engine_portfolio_top_score": 1072.0,
-                "efficiency_pct": 96.2,
-                "winning_differential_identified": "Axar Patel (quickfire 20* + 2 PP wickets)",
-                "rank_in_grand_league": "Top-decile finish [CURATED BENCHMARK ESTIMATE — NOT EMPIRICAL]",
-                "provenance": "[CURATED BENCHMARK]"
-            },
-            {
-                "match": "IND vs WI - Tarouba T20I",
-                "pitch": "Slow, gripping wicket",
-                "actual_dream_team_points": 965.0,
-                "engine_portfolio_top_score": 921.0,
-                "efficiency_pct": 95.4,
-                "winning_differential_identified": "Kuldeep Yadav (3-fer in middle overs)",
-                "rank_in_grand_league": "Top-decile finish [CURATED BENCHMARK ESTIMATE — NOT EMPIRICAL]",
-                "provenance": "[CURATED BENCHMARK]"
-            }
-        ]
+        self.db_path = Path(db_path) if db_path else Path(__file__).resolve().parents[2] / "t20.duckdb"
 
     def replay_match_from_duckdb(self, match_id: str) -> Optional[Dict[str, Any]]:
-        """Empirically replays a historical match from DuckDB deliveries, calculating actual fantasy scores."""
         if not self.db_path.exists():
             return None
-        
         try:
-            con = duckdb.connect(str(self.db_path), read_only=True)
-            match_meta = con.execute(
-                "SELECT match_id, date, team_a, team_b, venue_name, winner FROM matches WHERE match_id = ?",
-                [match_id]
-            ).fetchone()
-            if not match_meta:
-                con.close()
-                return None
-            
-            batters_data = con.execute("""
-                SELECT batter, 
-                       SUM(runs_batter) as runs, 
-                       COUNT(*) as balls, 
-                       SUM(CASE WHEN runs_batter = 4 THEN 1 ELSE 0 END) as fours,
-                       SUM(CASE WHEN runs_batter = 6 THEN 1 ELSE 0 END) as sixes
-                FROM deliveries
-                WHERE match_id = ?
-                GROUP BY batter
-            """, [match_id]).fetchall()
-            
-            bowlers_data = con.execute("""
-                SELECT bowler, 
-                       COUNT(*) as balls, 
-                       SUM(runs_total) as runs_conceded, 
-                       SUM(CASE WHEN is_wicket = true AND wicket_type NOT IN ('run out', 'retired hurt') THEN 1 ELSE 0 END) as wickets,
-                       SUM(CASE WHEN is_wicket = true AND wicket_type IN ('bowled', 'lbw') THEN 1 ELSE 0 END) as bowled_lbw
-                FROM deliveries
-                WHERE match_id = ?
-                GROUP BY bowler
-            """, [match_id]).fetchall()
-
-            dots_data = dict(con.execute("""
-                SELECT bowler, COUNT(*) as dots
-                FROM deliveries
-                WHERE match_id = ? AND runs_total = 0 AND NOT is_extra_wide
-                GROUP BY bowler
-            """, [match_id]).fetchall())
-
-            con.close()
-
-            player_scores = {}
-            for row in batters_data:
-                p_name, runs, balls, fours, sixes = row
-                pts = 4.0 + float(runs) + float(fours * 1) + float(sixes * 2)
-                if runs >= 100:
-                    pts += 16.0
-                elif runs >= 50:
-                    pts += 8.0
-                elif runs >= 30:
-                    pts += 4.0
-                if balls >= 10:
-                    sr = (runs / balls) * 100.0
-                    if sr > 170:
-                        pts += 6.0
-                    elif sr > 150:
-                        pts += 4.0
-                    elif sr >= 130:
-                        pts += 2.0
-                    elif sr < 50:
-                        pts -= 6.0
-                    elif sr < 60:
-                        pts -= 4.0
-                    elif sr < 70:
-                        pts -= 2.0
-                player_scores[p_name] = player_scores.get(p_name, 0.0) + pts
-
-            for row in bowlers_data:
-                p_name, balls, runs_c, w_count, bowled_lbw = row
-                dots = dots_data.get(p_name, 0)
-                pts = float(w_count) * 30.0 + float(bowled_lbw) * 8.0 + float(dots) * 1.0
-                overs = balls / 6.0
-                if w_count >= 5:
-                    pts += 16.0
-                elif w_count >= 4:
-                    pts += 8.0
-                elif w_count >= 3:
-                    pts += 4.0
-                if overs >= 2.0:
-                    econ = runs_c / overs
-                    if econ < 5.0:
-                        pts += 6.0
-                    elif econ <= 6.0:
-                        pts += 4.0
-                    elif econ <= 7.0:
-                        pts += 2.0
-                    elif econ > 12.0:
-                        pts -= 6.0
-                    elif econ >= 11.0:
-                        pts -= 4.0
-                    elif econ >= 10.0:
-                        pts -= 2.0
-                player_scores[p_name] = player_scores.get(p_name, 0.0) + pts
-
-            sorted_scores = sorted(player_scores.items(), key=lambda x: x[1], reverse=True)
-            dream_team = sorted_scores[:11]
-            actual_dream_team_points = sum(s for _, s in dream_team)
-            # Hold-out style: take next tier as portfolio proxy (not artificial scaling)
-            portfolio = sorted_scores[1:12] if len(sorted_scores) > 11 else sorted_scores[:11]
-            simulated_portfolio_top = round(sum(s for _, s in portfolio), 1)
-            efficiency = round(100.0 * simulated_portfolio_top / max(1.0, actual_dream_team_points), 1)
-            diff_player, diff_score = sorted_scores[10] if len(sorted_scores) > 10 else ("n/a", 0.0)
-
-            return {
-                "match": f"{match_meta[2]} vs {match_meta[3]}",
-                "pitch": match_meta[4] or "unknown",
-                "actual_dream_team_points": round(actual_dream_team_points, 1),
-                "engine_portfolio_top_score": simulated_portfolio_top,
-                "efficiency_pct": efficiency,
-                "winning_differential_identified": f"{diff_player} ({round(diff_score, 1)} pts)",
-                "rank_in_grand_league": "Top decile finish [EMPIRICAL DUCKDB REPLAY]",
-                "provenance": "[EMPIRICAL DUCKDB REPLAY - COMPUTED HOLD-OUT SELECTION]"
-            }
-        except Exception:
+            with duckdb.connect(str(self.db_path), read_only=True) as con:
+                meta = con.execute(
+                    "SELECT match_id, CAST(date AS DATE), team_a, team_b, venue_name "
+                    "FROM matches WHERE match_id = ?", [match_id]
+                ).fetchone()
+                if not meta or meta[1] is None:
+                    return None
+                rows = con.execute(_SCORE_PROXY_SQL, [meta[1], meta[1]]).fetchall()
+        except (duckdb.Error, OSError, TypeError, ValueError):
             return None
 
-    def execute(self) -> Dict[str, Any]:
-        """Runs validation combining empirical DuckDB replays with curated benchmarks."""
-        replays = []
-        if self.db_path.exists():
-            try:
-                con = duckdb.connect(str(self.db_path), read_only=True)
-                sample_chinnaswamy = con.execute(
-                    "SELECT match_id FROM matches WHERE venue_name LIKE '%Chinnaswamy%' ORDER BY date DESC LIMIT 4"
-                ).fetchall()
-                con.close()
-                for row in sample_chinnaswamy:
-                    res = self.replay_match_from_duckdb(row[0])
-                    if res:
-                        replays.append(res)
-            except Exception:
-                pass
+        forecasts, actual_count = chronological_player_predictions(rows, match_id, meta[1])
+        errors = [entry["predicted_partial_points"] - entry["observed_partial_points"]
+                  for entry in forecasts.values()]
+        coverage = len(forecasts) / actual_count if actual_count else 0.0
+        return {
+            "match_id": match_id,
+            "match": f"{meta[2]} vs {meta[3]}",
+            "venue": meta[4],
+            "holdout_date": meta[1].isoformat(),
+            "status": "EVALUATED_PARTIAL_PROXY" if errors else "INSUFFICIENT_PRIOR_HISTORY",
+            "evaluation_scope": "conditional_on_observed_participants; NOT verified pre-match XI",
+            "scoring_scope": "PARTIAL_PROXY_RUNS_BOUNDARIES_WICKETS_DOTS_ONLY",
+            "selection_policy": "No target-date data used for projection; >=3 prior matches required",
+            "rank_in_grand_league": None,
+            "contest_probability": None,
+            "coverage_ratio": round(coverage, 3),
+            "players_evaluated": len(errors),
+            "players_observed": actual_count,
+            "mae_partial_points": round(sum(abs(e) for e in errors) / len(errors), 3) if errors else None,
+            "rmse_partial_points": round(sqrt(sum(e * e for e in errors) / len(errors)), 3) if errors else None,
+            "predictions": forecasts,
+            "provenance": {
+                "source": "CRICSHEET_DUCKDB_PRIOR_DATE_REPLAY",
+                "verification_status": "UNVERIFIED",
+                "notes": "Historical records; scoring only partial and model not independently calibrated."
+            },
+        }
 
-        all_validation = replays + self.curated_benchmarks if replays else self.curated_benchmarks
-        avg_efficiency = sum(m["efficiency_pct"] for m in all_validation) / len(all_validation) if all_validation else 0.0
+    def execute(self) -> Dict[str, Any]:
+        if not self.db_path.exists():
+            return {"capability": "cricket-backtesting", "status": "DATA_UNAVAILABLE",
+                    "validation_matches": [], "average_efficiency_pct": None}
+        try:
+            with duckdb.connect(str(self.db_path), read_only=True) as con:
+                ids = [row[0] for row in con.execute(
+                    "SELECT match_id FROM matches WHERE date IS NOT NULL "
+                    "ORDER BY date DESC, match_id DESC LIMIT 10"
+                ).fetchall()]
+        except (duckdb.Error, OSError):
+            ids = []
+
+        evaluations = [self.replay_match_from_duckdb(mid) for mid in ids]
+        evaluations = [r for r in evaluations if r is not None]
+        eligible = [r for r in evaluations if r["mae_partial_points"] is not None]
         return {
             "capability": "cricket-backtesting",
-            "validation_matches": all_validation,
-            "average_efficiency_pct": round(avg_efficiency, 1),
-            "note": "Curated benchmarks are estimates only. Empirical replays use hold-out selection, not scaled optima.",
-            "data_provenance": "MIXED_CURATED_AND_EMPIRICAL"
+            "status": "PARTIAL_HOLDOUT_EVALUATION" if eligible else "INSUFFICIENT_PRIOR_HISTORY",
+            "validation_matches": evaluations,
+            "mean_mae_partial_points": (
+                round(sum(r["mae_partial_points"] for r in eligible) / len(eligible), 3)
+                if eligible else None
+            ),
+            "average_efficiency_pct": None,
+            "contest_ranks_available": False,
+            "data_provenance": "HISTORICAL_PARTIAL_PROXY_UNVERIFIED",
+            "note": "No post-match lineup selection, artificial efficiency percentage, or curated benchmark ranks.",
         }

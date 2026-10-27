@@ -29,24 +29,9 @@ class CricketAIAnalyst:
             exp = self._generate_lineup_explanation(l, pitch_info, weather_info)
             explanations.append(exp)
 
-        citations = [
-            {
-                "source": "Cricsheet Historical Delivery Archive",
-                "finding": "In T20 matches at Eden Gardens, pacers take 64% of wickets, with overs 18-20 yielding a dismissal every 8.4 deliveries."
-            },
-            {
-                "source": "H2H Matchup Registry",
-                "finding": "Rovman Powell and Sherfane Rutherford average 11.2 and strike at 91.5 against Kuldeep Yadav's wrist spin (5 dismissals in 44 balls)."
-            },
-            {
-                "source": "BCCI & Venue Weather Observation",
-                "finding": "Kolkata humidity at 74% generates heavy dew after 8:30 PM IST, diminishing finger-spin turn by 1.8 degrees."
-            },
-            {
-                "source": "Grand League Game Theory & Monte Carlo Simulation",
-                "finding": "Roster construction with 2 to 3 differentials under 35% ownership reduces field duplication by 98.4%."
-            }
-        ]
+        # No match-specific numerical facts may be passed off as source
+        # citations unless they were retrieved from observed records.
+        citations = []
 
         ollama_response = None
         if ollama_active:

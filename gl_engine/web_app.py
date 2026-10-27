@@ -1831,29 +1831,10 @@ def get_gl_match_odds(match_id: str):
     home_name = match_data.get("teams", {}).get("home", {}).get("name", "Home Team")
     away_name = match_data.get("teams", {}).get("away", {}).get("name", "Away Team")
     
-    # 80+ sportsbooks feeds devigged
-    market = devig.analyze_market(1.42, 2.85, home_name, away_name)
-    
-    # Dynamically resolve real players from match roster
-    match_players = state.get("players", [])
-    p_bat = next((p["name"] for p in match_players if p.get("role") in ["BAT", "WK"]), home_name + " Batter")
-    p_bowl = next((p["name"] for p in match_players if p.get("role") in ["BOWL"]), away_name + " Bowler")
-    p_ar = next((p["name"] for p in match_players if p.get("role") in ["AR"]), "Key All-Rounder")
-    
-    player_props = [
-        {"player": p_bat, "prop": "Over 28.5 Runs", "odds_decimal": 1.85, "implied_prob_pct": 54.1},
-        {"player": p_bowl, "prop": "Over 1.5 Wickets", "odds_decimal": 2.10, "implied_prob_pct": 47.6},
-        {"player": p_ar, "prop": "Over 42.5 Fantasy Pts", "odds_decimal": 1.78, "implied_prob_pct": 56.2}
-    ]
-    
-    return {
-        "status": "success",
-        "match_id": match_id,
-        "match_odds": market,
-        "player_props": player_props,
-        "books_surveyed": 82,
-        "source": "SportsGameOdds + EntitySport Aggregator"
-    }
+    # No sportsbook odds have been fetched or independently verified.
+    # Never return constant prices and assert they are live market data.
+    raise HTTPException(503, "Live market odds unavailable: no verified provider response")
+
 
 @app.post("/teams/save")
 @app.post("/api/teams/save")
