@@ -383,7 +383,7 @@ export const FieldStrategy: React.FC = () => {
               </div>
 
               <div className="p-2.5 rounded-lg bg-white/[0.02] border border-stone-300">
-                <span className="text-stone-800">Chinnaswamy Boundary Risk:</span>
+                <span className="text-stone-800">Venue Boundary Risk:</span>
                 <p className="text-stone-800 font-bold mt-0.5">58m Square Fence vulnerable to pull shot</p>
               </div>
 

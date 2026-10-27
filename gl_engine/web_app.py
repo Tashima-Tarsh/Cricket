@@ -1161,7 +1161,7 @@ def get_portal_match_roster(match_id: Optional[str] = None):
 @app.post("/api/portal/solve-lineup")
 def solve_portal_lineup(
     match_id: str,
-    scenario: str = "zim_bat_1st",
+    scenario: str = "balanced",
     target_unspent: float = 14.0,
     min_diffs: int = 2
 ):
@@ -1223,16 +1223,24 @@ def solve_portal_lineup(
         model.Add(c[i] + v[i] <= 1)
 
     weights = [float(p.get("projected_points", 40.0)) for p in players_data]
-    id_map = {p.get("id"): i for i, p in enumerate(players_data) if p.get("id")}
-    if scenario == "afg_seam_spin_strangle":
-        if "AFG_FAROOQI" in id_map: weights[id_map["AFG_FAROOQI"]] = 95.0
-        if "AFG_OMARZAI" in id_map: weights[id_map["AFG_OMARZAI"]] = 90.0
-    elif scenario == "pacer_blitz":
-        if "ZIM_MUZARABANI" in id_map: weights[id_map["ZIM_MUZARABANI"]] = 95.0
-        if "AFG_FAROOQI" in id_map: weights[id_map["AFG_FAROOQI"]] = 90.0
-    elif scenario in ["zim_bat_1st", "resistance"]:
-        if "ZIM_RAZA" in id_map: weights[id_map["ZIM_RAZA"]] = 92.0
-        if "ZIM_MUZARABANI" in id_map: weights[id_map["ZIM_MUZARABANI"]] = 88.0
+    # Fixture-independent scenario multipliers based on active roles
+    sc_lower = (scenario or "").lower()
+    if any(k in sc_lower for k in ["pacer", "seam", "fast"]):
+        for i, p in enumerate(players_data):
+            if p.get("role") == "BOWL":
+                weights[i] *= 1.25
+    elif any(k in sc_lower for k in ["spin", "strangle", "slow"]):
+        for i, p in enumerate(players_data):
+            if p.get("role") in ["BOWL", "AR"]:
+                weights[i] *= 1.20
+    elif any(k in sc_lower for k in ["bat", "top_order", "chase", "high_score"]):
+        for i, p in enumerate(players_data):
+            if p.get("role") in ["BAT", "WK"]:
+                weights[i] *= 1.20
+    elif any(k in sc_lower for k in ["resistance", "collapse", "middle_order"]):
+        for i, p in enumerate(players_data):
+            if p.get("role") == "AR":
+                weights[i] *= 1.25
 
     obj = [int(weights[i]*100)*x[i] + int(weights[i]*130)*c[i] + int(weights[i]*70)*v[i] + int((100.0 - players_data[i]["sel"])*15)*x[i] for i in range(n)]
     model.Maximize(sum(obj))
@@ -1274,8 +1282,9 @@ def solve_portal_lineup(
             "actual_unspent": unspent,
             "total_credits": round(tot_cr, 1),
             "csp": round(tot_csp, 1),
-            "uniqueness_percentile": 99.98,
-            "collision_probability": "<0.01%",
+            "uniqueness_percentile": None,
+            "collision_probability": None,
+            "calibration_status": "UNCALIBRATED_SIMULATION",
             "captain": cap_player["name"] if cap_player else "Unknown",
             "vice_captain": vc_player["name"] if vc_player else "Unknown",
             "players": sel_players,

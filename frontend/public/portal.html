@@ -1566,7 +1566,7 @@
         percentile = "99.999%";
       } else if (numScore >= 1050) {
         estRank = "Rank 2 - 5";
-        percentile = "99.980%";
+        percentile = data.uniqueness_percentile ? data.uniqueness_percentile + "%" : "Simulation (Uncalibrated)";
       } else if (numScore >= 950) {
         estRank = "Top 50";
         percentile = "99.850%";
