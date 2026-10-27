@@ -433,13 +433,13 @@ def get_full_state(match_id: Optional[str] = None,
               "lineups": [l.model_dump() for l in lineups],
               "solver_status": "success" if len(lineups) == 5 else ("partial" if lineups else "infeasible"),
               "battles": battles, "venue_players": [], "providers": providers, "live_matches": [],
-              "data_provenance": {"fixture": meta.get("data_provenance", "UNVERIFIED_BUNDLED_FIXTURE"),
+              "data_provenance": {"fixture": meta.get("data_provenance", "USER_SUPPLIED_UNVERIFIED"),
                                   "projections": "UNCALIBRATED_HEURISTIC", "battles": "LOCAL_ARCHIVE" if battles else "UNAVAILABLE"}}
     _STATE_CACHES[cache_key], _STATE_CACHE_TIMES[cache_key] = result, now
     return result
 
 @app.get("/api/venue/player-stats")
-def get_venue_player_stats(venue: str = "chinnaswamy"):
+def get_venue_player_stats(venue: str = Query(..., min_length=2, max_length=160)):
     """Returns verified historical player statistics at the specified venue from DuckDB."""
     battles_engine = get_battles_engine()
     records = battles_engine.get_venue_player_telemetry(venue)
@@ -805,9 +805,9 @@ def query_ai_analyst(q: str = Query(..., min_length=1, max_length=2000, descript
     citations = ["Local fixture context [VERIFY REQUIRED]"]
     metrics = []
 
-    if (batter_cand and bowler_cand) or ("vs" in q_lower and ("pooran" in q_lower or "kuldeep" in q_lower or "samson" in q_lower or "bumrah" in q_lower)):
-        b_name = batter_cand.name if batter_cand else ("Nicholas Pooran" if "pooran" in q_lower else "Sanju Samson")
-        bw_name = bowler_cand.name if bowler_cand else ("Kuldeep Yadav" if "kuldeep" in q_lower else "Jasprit Bumrah")
+    if batter_cand and bowler_cand and batter_cand.team != bowler_cand.team:
+        b_name = batter_cand.name
+        bw_name = bowler_cand.name
 
         h2h_row = None
         if con:
