@@ -14,6 +14,7 @@ import unittest
 from pathlib import Path
 from fastapi.testclient import TestClient
 from gl_engine.web_app import app, extract_match_roster
+from support_runtime_fixture import FIXTURE_ID, connected_fixture
 from gl_engine.models import Player, MatchupDetail, PlayerStats, Lineup
 from gl_engine.capabilities.c15_captain_engine import CricketCaptainEngine
 from gl_engine.capabilities.c07_batter_matchups import CricketBatterMatchups
@@ -24,11 +25,14 @@ from gl_engine.field_simulator import SyntheticFieldSimulator
 
 class TestEvidenceAuditRepairs(unittest.TestCase):
     def setUp(self):
+        self._fixture_context = connected_fixture()
+        self._fixture_context.__enter__()
+        self.addCleanup(self._fixture_context.__exit__, None, None, None)
         self.client = TestClient(app)
 
     def test_analyst_query_no_unbound_error(self):
         """Verify /api/analyst/query executes without UnboundLocalError when no H2H or venue is triggered."""
-        resp = self.client.get("/api/analyst/query?q=general%20cricket%20tactics")
+        resp = self.client.get(f"/api/analyst/query?q=general%20cricket%20tactics&match_id={FIXTURE_ID}")
         self.assertEqual(resp.status_code, 200)
         data = resp.json()
         self.assertEqual(data["status"], "success")

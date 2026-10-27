@@ -12,11 +12,15 @@ from fastapi.testclient import TestClient
 
 from gl_engine.models import Player, Lineup, VenueConditions, MatchupDetail, DataProvenance
 from gl_engine.web_app import app
+from support_runtime_fixture import FIXTURE_ID, connected_fixture
 import gl_engine
 
 
 class TestMasterRepairInvariants(unittest.TestCase):
     def setUp(self):
+        self._fixture_context = connected_fixture()
+        self._fixture_context.__enter__()
+        self.addCleanup(self._fixture_context.__exit__, None, None, None)
         self.client = TestClient(app)
         self.root_dir = Path(__file__).parent.parent
 
@@ -110,7 +114,7 @@ class TestMasterRepairInvariants(unittest.TestCase):
 
     def test_portal_roster_carries_provenance(self):
         """Invariant 3: /api/portal/roster response contains provenance metadata."""
-        resp = self.client.get("/api/portal/roster?match_id=ind_vs_wi_5th_t20_2026")
+        resp = self.client.get(f"/api/portal/roster?match_id={FIXTURE_ID}")
         self.assertEqual(resp.status_code, 200)
         data = resp.json()
         self.assertIn("provenance", data)
@@ -119,7 +123,7 @@ class TestMasterRepairInvariants(unittest.TestCase):
 
     def test_api_state_carries_provenance_metadata(self):
         """Invariant 3: /api/state response carries provenance metadata."""
-        resp = self.client.get("/api/state?force_refresh=true&overs=20")
+        resp = self.client.get(f"/api/state?match_id={FIXTURE_ID}&force_refresh=true&overs=20")
         self.assertEqual(resp.status_code, 200)
         data = resp.json()
         self.assertTrue("data_provenance" in data or "provenance" in data)
