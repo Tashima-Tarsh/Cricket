@@ -9,7 +9,7 @@ class NoMockDefaults(unittest.TestCase):
     def test_no_hardcoded_archetype_by_country(self):
         engine = UniversalMatchEngine()
         meta = {"venue": {}, "teams": {"home": {"code": "ZIM-W"}, "away": {"code": "IND-W"}}, "toss": {}}
-        self.assertEqual(engine._classify_match_archetype(meta), "UNCLASSIFIED_INSUFFICIENT_VENUE_EVIDENCE")
+        self.assertEqual(engine.classify_match_archetype(meta), "UNCLASSIFIED_INSUFFICIENT_VENUE_EVIDENCE")
 
     def test_odds_endpoint_requires_actual_market_inputs(self):
         client = TestClient(app)
