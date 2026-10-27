@@ -134,6 +134,12 @@ export const UniqueEngineView: React.FC = () => {
   const [savedSuccessMsg, setSavedSuccessMsg] = useState<string | null>(null);
   const [savedEntries, setSavedEntries] = useState<any[]>([]);
   const [showConfetti, setShowConfetti] = useState<boolean>(false);
+  // In-memory only; never persist this token or ship it in a bundle.
+  const [adminToken, setAdminToken] = useState<string>("");
+  const adminHeaders = () => ({
+    "Content-Type": "application/json",
+    Authorization: `Bearer ${adminToken}`,
+  });
 
   // Live Trigger & Fusion States
   const [triggerState, setTriggerState] = useState<any>(null);
@@ -188,7 +194,7 @@ export const UniqueEngineView: React.FC = () => {
     try {
       const res = await fetch(`/api/trigger/simulate-toss/${selectedMatchId}`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: adminHeaders(),
         body: JSON.stringify({ toss_winner: "India", toss_decision: "bat" })
       });
       if (res.ok) {
@@ -206,7 +212,8 @@ export const UniqueEngineView: React.FC = () => {
     try {
       const res = await fetch(`/api/trigger/simulate-lineup/${selectedMatchId}`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" }
+        headers: adminHeaders(),
+        body: JSON.stringify({ confirmed_players: players })
       });
       if (res.ok) {
         const data = await res.json();
@@ -223,7 +230,7 @@ export const UniqueEngineView: React.FC = () => {
   const handleRunFusionPipeline = async () => {
     setIsTriggering(true);
     try {
-      const res = await fetch("/api/fusion/run-pipeline", { method: "POST" });
+      const res = await fetch("/api/fusion/run-pipeline", { method: "POST", headers: adminHeaders() });
       if (res.ok) {
         fetchFusionStatus();
         fetchMatchData(selectedMatchId);
@@ -321,7 +328,7 @@ export const UniqueEngineView: React.FC = () => {
     try {
       const res = await fetch("/teams/save", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: adminHeaders(),
         body: JSON.stringify({
           ...team,
           match_id: selectedMatchId,
@@ -511,10 +518,19 @@ export const UniqueEngineView: React.FC = () => {
               </div>
             </div>
 
-            {/* Quick Action Simulation Buttons */}
+            {/* Admin token is required for state-changing operations. */}
             <div className="flex items-center gap-2 flex-wrap">
+              <input
+                type="password"
+                autoComplete="off"
+                aria-label="Administrator token for restricted operations"
+                placeholder="Admin token (not stored)"
+                value={adminToken}
+                onChange={(event) => setAdminToken(event.target.value)}
+                className="px-3 py-1.5 text-xs rounded-lg bg-[#0B0F14] border border-white/20 text-white w-48"
+              />
               <button
-                disabled={isTriggering}
+                disabled={isTriggering || !adminToken}
                 onClick={handleSimulateToss}
                 className="px-3 py-1.5 rounded-xl bg-[#0B0F14] border border-amber-500/40 hover:bg-amber-500/10 text-amber-400 text-xs font-mono font-bold flex items-center gap-1.5 transition-all cursor-pointer disabled:opacity-50"
                 title="Simulate toss outcome"
@@ -524,7 +540,7 @@ export const UniqueEngineView: React.FC = () => {
               </button>
 
               <button
-                disabled={isTriggering}
+                disabled={isTriggering || !adminToken || players.length !== 22 || players.some((p) => p.is_confirmed_xi !== true)}
                 onClick={handleSimulateLineup}
                 className="px-3 py-1.5 rounded-xl bg-[#00C853]/20 border border-[#00C853]/60 hover:bg-[#00C853]/30 text-[#00C853] text-xs font-mono font-bold flex items-center gap-1.5 transition-all cursor-pointer disabled:opacity-50"
                 title="Simulate confirmed playing XI and re-optimize unique portfolios"
@@ -534,7 +550,7 @@ export const UniqueEngineView: React.FC = () => {
               </button>
 
               <button
-                disabled={isTriggering}
+                disabled={isTriggering || !adminToken}
                 onClick={handleRunFusionPipeline}
                 className="px-3 py-1.5 rounded-xl bg-[#0B0F14] border border-white/10 hover:border-white/30 text-white text-xs font-mono font-bold flex items-center gap-1.5 transition-all cursor-pointer disabled:opacity-50"
                 title="Re-run openIPL + Pitchnama data fusion"

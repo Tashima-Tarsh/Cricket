@@ -2,7 +2,7 @@
 India vs West Indies, 4th T20I at Rajiv Gandhi Stadium, Hyderabad.
 Features full smooth scrolling, matchup & fast wicket falling simulations, and 1-click copy.
 """
-from fastapi import FastAPI, HTTPException, Query, Body, Header, Request
+from fastapi import FastAPI, HTTPException, Query, Body, Header, Request, Depends
 from fastapi.responses import HTMLResponse, FileResponse, Response
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
@@ -48,6 +48,7 @@ if os.getenv("ALLOW_ALL_ORIGINS", "false").lower() in ["true", "1"]:
 app = FastAPI(title="Cricket Mega Contest Intelligence Portal")
 from .provenance import install_provenance, annotate_payload
 from .roster_safety import validate_roster
+from .admin_auth import require_admin
 install_provenance(app)
 
 app.add_middleware(
@@ -236,16 +237,11 @@ def get_current_match(match_id: Optional[str] = None):
     }
 
 @app.post("/api/match/ingest")
-def ingest_match_endpoint(payload: Dict[str, Any] = Body(...), authorization: Optional[str] = Header(None)):
+def ingest_match_endpoint(payload: Dict[str, Any] = Body(...), _authorized: None = Depends(require_admin)):
     """Dynamically ingests ANY new match or custom playing XIs, running DuckDB ball-by-ball
     profiling and OR-Tools CP-SAT lineup optimization in real-time."""
     from .universal_engine import get_universal_engine
-    token = os.getenv("CRICKET_ADMIN_TOKEN")
-    if not token:
-        raise HTTPException(503, "Custom ingestion is disabled. Configure CRICKET_ADMIN_TOKEN on the server.")
-    if not secrets.compare_digest(authorization or "", "Bearer " + token):
-        raise HTTPException(401, "An administrator bearer token is required.")
-    engine = get_universal_engine()
+     engine = get_universal_engine()
     try:
         state = engine.ingest_match(payload)
     except (ValidationError, ValueError, TypeError) as exc:
@@ -1861,7 +1857,7 @@ def get_gl_match_odds(match_id: str):
 
 @app.post("/teams/save")
 @app.post("/api/teams/save")
-def save_gl_team_entry(entry: Dict[str, Any] = Body(...)):
+def save_gl_team_entry(entry: Dict[str, Any] = Body(...), _authorized: None = Depends(require_admin)):
     """Saves a generated unique team entry to persistence."""
     current = _load_saved_teams()
     entry_id = entry.get("team_id") or f"ENTRY_{int(time.time() * 1000)}"
@@ -1932,7 +1928,7 @@ def get_data_fusion_status():
     }
 
 @app.post("/api/fusion/run-pipeline")
-def run_data_fusion_pipeline_endpoint():
+def run_data_fusion_pipeline_endpoint(_authorized: None = Depends(require_admin)):
     """Manually triggers the full data fusion ingestion and feature engineering pipeline."""
     from .data_fusion import data_fusion_pipeline
     result = data_fusion_pipeline.run_full_pipeline()
@@ -1942,11 +1938,11 @@ def run_data_fusion_pipeline_endpoint():
 def get_live_trigger_status(match_id: str):
     """Retrieves the current state machine status (SCHEDULED, TOSS_PENDING, TOSS_DONE, LINEUP_LOCKED, LIVE)."""
     from .live_toss_trigger import live_toss_trigger
-    state = live_toss_trigger.poll_match_status(match_id)
+    state = live_toss_trigger.get_state(match_id)
     return {"status": "success", "trigger_state": state}
 
 @app.post("/api/trigger/simulate-toss/{match_id}")
-def trigger_simulate_toss(match_id: str, payload: Dict[str, Any] = Body(...)):
+def trigger_simulate_toss(match_id: str, payload: Dict[str, Any] = Body(...), _authorized: None = Depends(require_admin)):
     """Simulates live toss detection, sets TOSS_DONE, and applies tactical score adjustments."""
     from .live_toss_trigger import live_toss_trigger
     toss_winner = payload.get("toss_winner", "India")
@@ -1955,10 +1951,12 @@ def trigger_simulate_toss(match_id: str, payload: Dict[str, Any] = Body(...)):
     return {"status": "success", "message": "Toss registered. Projections updated.", "trigger_state": state}
 
 @app.post("/api/trigger/simulate-lineup/{match_id}")
-def trigger_simulate_lineup(match_id: str, payload: Optional[Dict[str, Any]] = Body(None)):
+def trigger_simulate_lineup(match_id: str, payload: Optional[Dict[str, Any]] = Body(None), _authorized: None = Depends(require_admin)):
     """Simulates confirmed 22-player lineup, locks roster, regenerates unique teams, and updates artifacts."""
     from .live_toss_trigger import live_toss_trigger
     confirmed_players = payload.get("confirmed_players") if payload else None
+    if not confirmed_players:
+        raise HTTPException(422, "Provide 22 explicit confirmed players; a squad is not an XI")
     state = live_toss_trigger.handle_lineup_confirmed(match_id, confirmed_players)
     return {
         "status": "success",
@@ -1967,7 +1965,7 @@ def trigger_simulate_lineup(match_id: str, payload: Optional[Dict[str, Any]] = B
     }
 
 @app.post("/api/trigger/advance-cutoff/{match_id}")
-def trigger_advance_cutoff(match_id: str):
+def trigger_advance_cutoff(match_id: str, _authorized: None = Depends(require_admin)):
     """Advances match to T-5 min final cutoff (LIVE_SOON -> LIVE)."""
     from .live_toss_trigger import live_toss_trigger
     live_toss_trigger.advance_to_live_soon(match_id)

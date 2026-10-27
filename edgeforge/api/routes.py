@@ -5,7 +5,7 @@ Replaces hardcoded portal endpoints. Zero fabricated players.
 from __future__ import annotations
 from typing import List, Optional, Dict, Any
 from datetime import datetime, date
-from fastapi import APIRouter, HTTPException, Query, Body
+from fastapi import APIRouter, HTTPException, Query, Body, Depends
 from pydantic import BaseModel, Field
 
 from edgeforge.models.schemas import (
@@ -16,6 +16,7 @@ from edgeforge.ingest.store import InMemoryFixtureStore, InMemoryPlayerStore
 from edgeforge.score.dream11 import Dream11Scorer
 from edgeforge.optimize.rank_optimizer import RankOptimizer, OptimizerConfig
 from edgeforge.model.simulator import MatchSimulator
+from gl_engine.admin_auth import require_admin
 
 router = APIRouter(prefix="/edge", tags=["edgeforge"])
 
@@ -74,8 +75,7 @@ class FixtureIn(BaseModel):
     team_a: str
     team_b: str
     players: List[PlayerIn]
-    admin_token: Optional[str] = None
-
+ 
 
 @router.get("/health")
 def health():
@@ -189,7 +189,7 @@ def optimize_portfolio(req: OptimizeRequest):
 
 
 @router.post("/fixtures")
-def load_fixture(body: FixtureIn):
+def load_fixture(body: FixtureIn, _authorized: None = Depends(require_admin)):
     prov = DataProvenance(
         source="admin_fixture",
         confidence=0.95,
