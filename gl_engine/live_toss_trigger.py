@@ -190,14 +190,18 @@ class LiveTossLineupTrigger:
         unified = engine.get_unified_state(match_id)
         all_players = unified.get("players", [])
 
-        if not confirmed_players or len(confirmed_players) < 22:
-            # If explicit list not supplied, take top 11 per team
-            teams_present = list(set(p.get("team") for p in all_players))
-            t1 = [p for p in all_players if p.get("team") == teams_present[0]][:11]
-            t2 = [p for p in all_players if p.get("team") == (teams_present[1] if len(teams_present) > 1 else "AWY")][:11]
-            confirmed_players = t1 + t2
-            for p in confirmed_players:
-                p["is_confirmed_xi"] = True
+        # Only an explicit, fully confirmed XI can advance the live state.
+        # Never infer confirmation from roster ordering or a scheduled squad.
+        if confirmed_players is None or len(confirmed_players) != 22:
+            raise ValueError("Exactly 22 explicitly confirmed players are required")
+        if any(p.get("is_confirmed_xi") is not True for p in confirmed_players):
+            raise ValueError("Every player must have explicit confirmed-XI status")
+        from .roster_safety import validate_confirmed_xi
+        validate_confirmed_xi(confirmed_players)
+        expected = {p.get("id") for p in all_players}
+        supplied = {p.get("id") for p in confirmed_players}
+        if expected != supplied:
+            raise ValueError("Confirmed XI must match the selected fixture's player pool")
 
         # 1. Export locked player pool to parquet
         pool_df = data_fusion_pipeline.score_player_pool(

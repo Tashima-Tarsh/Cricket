@@ -88,9 +88,13 @@ class UniqueTeamEngine:
         
         pool = [p for p in enriched_players if p["id"] not in excluded_set]
         n_pool = len(pool)
-        if n_pool < 22:
-            pool = enriched_players
-            n_pool = len(pool)
+        # Exclusions are hard constraints. Never restore excluded players.
+        if n_pool < 11:
+            return []
+        if locked_set & excluded_set:
+            return []
+        if not locked_set.issubset({p["id"] for p in pool}):
+            return []
             
         p_index_map = {p["id"]: i for i, p in enumerate(pool)}
         
@@ -105,7 +109,9 @@ class UniqueTeamEngine:
         min_gems_required = max(1, int(uniqueness_level / 2.5))
         
         # Teams
-        teams_present = list(set(p.get("team", "DOM") for p in pool))
+        teams_present = sorted({p.get("team") for p in pool if p.get("team")})
+        if len(teams_present) != 2:
+            return []
         home_team = teams_present[0] if len(teams_present) > 0 else "HOM"
         away_team = teams_present[1] if len(teams_present) > 1 else "AWY"
 
@@ -139,24 +145,17 @@ class UniqueTeamEngine:
             ar_vars = [x[i] for i, p in enumerate(pool) if p.get("role") == "AR"]
             bowl_vars = [x[i] for i, p in enumerate(pool) if p.get("role") == "BOWL"]
             
-            # Fallback if roles are sparse
-            if len(wk_vars) > 0:
-                model.Add(sum(wk_vars) >= 1)
-                model.Add(sum(wk_vars) <= 4)
-            if len(bat_vars) >= 3:
-                model.Add(sum(bat_vars) >= 3)
-                model.Add(sum(bat_vars) <= 6)
-            elif len(bat_vars) > 0:
-                model.Add(sum(bat_vars) >= 1)
-            if len(ar_vars) > 0:
-                model.Add(sum(ar_vars) >= 1)
-                model.Add(sum(ar_vars) <= 4)
-            if len(bowl_vars) >= 3:
-                model.Add(sum(bowl_vars) >= 3)
-                model.Add(sum(bowl_vars) <= 6)
-            elif len(bowl_vars) > 0:
-                model.Add(sum(bowl_vars) >= 1)
-                
+            # Role bounds are mandatory: insufficient pools are infeasible,
+            # never a reason to relax official roster rules.
+            model.Add(sum(wk_vars) >= 1)
+            model.Add(sum(wk_vars) <= 4)
+            model.Add(sum(bat_vars) >= 3)
+            model.Add(sum(bat_vars) <= 6)
+            model.Add(sum(ar_vars) >= 1)
+            model.Add(sum(ar_vars) <= 4)
+            model.Add(sum(bowl_vars) >= 3)
+            model.Add(sum(bowl_vars) <= 6)
+
             # Constraint 4: Max 7 players from one team (and base 6-5 split preference)
             home_vars = [x[i] for i, p in enumerate(pool) if p.get("team") == home_team]
             away_vars = [x[i] for i, p in enumerate(pool) if p.get("team") == away_team]
@@ -216,18 +215,8 @@ class UniqueTeamEngine:
                 if len(selected_indices) == 11:
                     candidate_combos.append(selected_indices)
                     
-        # If solver produced fewer candidates than requested, relax and build
-        if len(candidate_combos) < num_teams:
-            # Fallback heuristic generator
-            core_picks = by_ownership[:4]
-            diff_pool = [p for p in by_diff if p not in core_picks]
-            for fi in range(num_teams - len(candidate_combos)):
-                combo_pool = core_picks + diff_pool[fi*5 : fi*5 + 7]
-                if len(combo_pool) < 11:
-                    combo_pool = pool[:11]
-                idx_list = [p_index_map[p["id"]] for p in combo_pool[:11] if p["id"] in p_index_map]
-                if len(idx_list) == 11:
-                    candidate_combos.append(idx_list)
+        # Solver failure is an infeasible or partial portfolio; never
+        # manufacture unchecked combinations to fill the requested count.
 
         # 6. UNIQUENESS FILTER: rank candidate combos by LOWEST crowd overlap (sum of predicted ownership %)
         scored_combos = []
@@ -290,11 +279,14 @@ class UniqueTeamEngine:
             final_teams.append({
                 "team_id": f"GL_TEAM_{idx + 1:02d}",
                 "name": f"Contrarian XI #{idx + 1}",
-                "rank_1_probability_pct": sim_stat.get("rank_1_pct", round(np.random.uniform(5.2, 9.8), 2)),
-                "rank_10_probability_pct": sim_stat.get("top_10_pct", round(np.random.uniform(14.0, 26.5), 1)),
-                "median_rank": sim_stat.get("median_rank", max(1, int(contest_spots * 0.04))),
-                "ceiling_p90": sim_stat.get("ceiling_p90", round(item["projected_points"] * 1.32, 1)),
-                "floor_p10": sim_stat.get("floor_p10", round(item["projected_points"] * 0.68, 1)),
+                # Field model lacks calibrated real opponent entries and
+                # verified selection percentages: no actual rank claim.
+                "rank_1_probability_pct": None,
+                "rank_10_probability_pct": None,
+                "median_rank": None,
+                "rank_metrics_status": "UNAVAILABLE_UNCALIBRATED_FIELD",
+                "ceiling_p90": sim_stat.get("ceiling_p90"),
+                "floor_p10": sim_stat.get("floor_p10"),
                 "projected_points": item["projected_points"],
                 "crowd_overlap_pct": item["crowd_overlap_pct"],
                 "uniqueness_rating": item["uniqueness_rating"],
@@ -363,7 +355,7 @@ class UniqueTeamEngine:
         for team in teams:
             team_indices = [p_ids[p["id"]] for p in team["players"] if p["id"] in p_ids]
             if len(team_indices) != 11:
-                stats_list.append({"rank_1_pct": 5.0, "top_10_pct": 18.0, "median_rank": 35})
+                stats_list.append({"rank_1_pct": None, "top_10_pct": None, "median_rank": None})
                 continue
                 
             c_id = team["captain"]["id"]
@@ -393,9 +385,12 @@ class UniqueTeamEngine:
             median_rank = int(np.median(sim_ranks))
             
             stats_list.append({
-                "rank_1_pct": max(1.5, rank_1_pct),
-                "top_10_pct": max(5.0, top_10_pct),
-                "median_rank": max(1, median_rank),
+                "rank_1_pct": None,
+                "top_10_pct": None,
+                "median_rank": None,
+                "uncalibrated_rank_1_pct": rank_1_pct,
+                "uncalibrated_top_10_pct": top_10_pct,
+                "uncalibrated_median_rank": median_rank,
                 "ceiling_p90": round(float(np.percentile(my_scores, 90)), 1),
                 "floor_p10": round(float(np.percentile(my_scores, 10)), 1),
                 "percentiles": [

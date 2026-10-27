@@ -161,31 +161,23 @@ class DataFusionPipeline:
         # pitch_x, pitch_y, release_speed, shot_type_tracked, shot_direction_tracked
         # Predicted labels in separate columns:
         # predicted_shot_label, shot_confidence, dismissal_context
-        rng = np.random.default_rng(42)
+        # Do not fabricate ball-tracking measurements from scorecards.
+        # A missing tracking feed is missing evidence, not a random observation.
         n_rows = len(merged)
 
-        # Realistic spatial Hawkeye pitch coordinate mapping
-        merged["pitch_x"] = np.round(rng.normal(0.0, 0.35, n_rows), 2)  # lateral line from off to leg
-        merged["pitch_y"] = np.round(rng.uniform(3.5, 9.5, n_rows), 2)  # length from batting crease
-        merged["release_speed"] = np.where(
-            merged["over"] < 6,
-            np.round(rng.normal(136.0, 5.0, n_rows), 1),
-            np.round(rng.normal(128.0, 10.0, n_rows), 1)
-        )
-
-        # Tracked shot classifications
-        shot_catalog = ["Drive", "Cut", "Pull", "Sweep", "Flick", "Defensive", "Lofted Loft", "Edge"]
-        merged["shot_type"] = [shot_catalog[i % len(shot_catalog)] for i in rng.integers(0, len(shot_catalog), n_rows)]
-        merged["shot_direction"] = np.round(rng.uniform(0.0, 360.0, n_rows), 1)
-        merged["control_flag"] = np.where(merged["is_boundary"] == 1, 1, np.where(merged["is_wicket"] == 1, 0, 1))
-
-        # Predicted AI Labels (kept in distinct columns)
-        merged["predicted_shot_label"] = merged["shot_type"]
-        merged["shot_confidence"] = np.round(rng.uniform(0.82, 0.98, n_rows), 3)
-        merged["dismissal_context"] = np.where(
-            merged["is_wicket"] == 1,
-            merged["wicket_kind"].fillna("caught"),
-            "none"
+        # Cricsheet/openIPL ball-by-ball datasets do not provide verified
+        # Hawk-Eye coordinates, release speed, shot type or control telemetry.
+        # Keep fields nullable so downstream components can distinguish absence
+        # of observations from zero or a measured value.
+        for field in (
+            "pitch_x", "pitch_y", "release_speed", "shot_type",
+            "shot_direction", "control_flag", "predicted_shot_label",
+            "shot_confidence",
+        ):
+            merged[field] = pd.Series([None] * n_rows, dtype="object")
+        merged["tracking_provenance"] = "UNAVAILABLE_NOT_OBSERVED"
+        merged["dismissal_context"] = merged["wicket_kind"].where(
+            merged["is_wicket"] == 1, None
         )
 
         return merged
@@ -206,14 +198,17 @@ class DataFusionPipeline:
             wickets = int(group["is_wicket"].sum())
             boundaries = int(group["is_boundary"].sum())
             dot_balls = int((group["total_runs"] == 0).sum())
-            controlled = int(group["control_flag"].sum())
+            observed_control = pd.to_numeric(group["control_flag"], errors="coerce")
+            observed_speeds = pd.to_numeric(group["release_speed"], errors="coerce")
 
             sr = round((runs / balls) * 100.0, 1) if balls > 0 else 0.0
             avg = round(runs / wickets, 1) if wickets > 0 else float(runs)
             boundary_rate = round((boundaries / balls) * 100.0, 1) if balls > 0 else 0.0
             dot_ball_rate = round((dot_balls / balls) * 100.0, 1) if balls > 0 else 0.0
-            control_pct = round((controlled / balls) * 100.0, 1) if balls > 0 else 100.0
-            avg_speed = round(float(group["release_speed"].mean()), 1)
+            control_pct = (round(float(observed_control.mean()) * 100.0, 1)
+                           if observed_control.notna().any() else None)
+            avg_speed = (round(float(observed_speeds.mean()), 1)
+                         if observed_speeds.notna().any() else None)
 
             # Pitchnama "Upper Hand" tilt calculation:
             # Compares matchup average to baseline average (~30.0 runs per wicket)
@@ -307,36 +302,36 @@ class DataFusionPipeline:
             inn1 = v_group[v_group["innings"] == 1]
             inn2 = v_group[v_group["innings"] == 2]
 
-            avg_inn1 = round(inn1.groupby("match_number")["total_runs"].sum().mean(), 1) if not inn1.empty else 175.0
-            avg_inn2 = round(inn2.groupby("match_number")["total_runs"].sum().mean(), 1) if not inn2.empty else 155.0
+            avg_inn1 = round(inn1.groupby("match_number")["total_runs"].sum().mean(), 1) if not inn1.empty else None
+            avg_inn2 = round(inn2.groupby("match_number")["total_runs"].sum().mean(), 1) if not inn2.empty else None
 
             # Powerplay (overs 0-5) and Death (overs 15-19)
             pp = v_group[v_group["over"] < 6]
             death = v_group[v_group["over"] >= 15]
 
-            avg_pp = round(pp.groupby(["match_number", "innings"])["total_runs"].sum().mean(), 1) if not pp.empty else 48.0
-            avg_death = round(death.groupby(["match_number", "innings"])["total_runs"].sum().mean(), 1) if not death.empty else 52.0
+            avg_pp = round(pp.groupby(["match_number", "innings"])["total_runs"].sum().mean(), 1) if not pp.empty else None
+            avg_death = round(death.groupby(["match_number", "innings"])["total_runs"].sum().mean(), 1) if not death.empty else None
 
             total_balls = len(v_group)
             total_boundaries = v_group["is_boundary"].sum()
             total_dots = (v_group["total_runs"] == 0).sum()
 
-            b_rate = round((total_boundaries / total_balls) * 100.0, 1) if total_balls > 0 else 18.0
-            d_rate = round((total_dots / total_balls) * 100.0, 1) if total_balls > 0 else 35.0
+            b_rate = round((total_boundaries / total_balls) * 100.0, 1) if total_balls > 0 else None
+            d_rate = round((total_dots / total_balls) * 100.0, 1) if total_balls > 0 else None
 
             # Wicket breakdown: pace vs spin
             wickets = v_group[v_group["is_wicket"] == 1]
             total_w = len(wickets)
-            pace_share = 58.0
-            spin_share = 42.0
-
-            # Toss & Chasing Win Rate from matches
-            chasing_win_pct = 52.0
-            toss_winner_win_pct = 54.0
+            # Ball-level data alone does not identify bowling type or
+            # establish aggregate toss/chase outcomes for this venue.
+            pace_share = None
+            spin_share = None
+            chasing_win_pct = None
+            toss_winner_win_pct = None
 
             # Dew flag: evening matches in specific cities (Mumbai, Chennai, Kolkata, Ahmedabad)
             v_lower = str(venue_name).lower()
-            dew_flag = any(city in v_lower for city in ["wankhede", "mumbai", "eden", "kolkata", "chepauk", "chennai", "ahmedabad"])
+            dew_flag = None  # Requires actual meteorological observation
 
             venues.append({
                 "venue_name": venue_name,
@@ -350,10 +345,10 @@ class DataFusionPipeline:
                 "avg_pp_score": avg_pp,
                 "avg_death_score": avg_death,
                 "toss_winner_win_pct": toss_winner_win_pct,
-                "bat_first_vs_chase_win_pct": round(100.0 - chasing_win_pct, 1),
+                "bat_first_vs_chase_win_pct": None,
                 "chasing_win_pct": chasing_win_pct,
                 "dew_flag": dew_flag,
-                "soil_type": "Red Clay / True Bounce" if "wankhede" in v_lower else "Black Soil / Balanced"
+                "soil_type": None,  # Require a sourced ground/surface report
             })
 
         venue_df = pd.DataFrame(venues)
