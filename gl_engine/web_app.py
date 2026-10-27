@@ -1980,6 +1980,9 @@ def get_h2h_matchup_detail(batter_id: str, bowler_id: str):
     return {"status": "success", "matchup": row.iloc[0].to_dict()}
 
 
+from .api_v1 import router as stable_api_router
+app.include_router(stable_api_router)
+
 if FRONTEND_DIST.exists():
     app.mount("/assets", StaticFiles(directory=str(FRONTEND_DIST / "assets")), name="assets")
 
