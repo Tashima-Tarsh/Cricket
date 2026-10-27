@@ -126,6 +126,7 @@ class TestMatchPipeline(unittest.TestCase):
             (legal[:10] + [legal[0]], legal[0], legal[1]),
             ([pool[i] for i in range(11)], pool[0], pool[1]),
             (legal, pool[3], legal[1]),
+            ([legal[0].model_copy(update={"role": "AR"})] + legal[1:], legal[0], legal[1]),
         ]:
             with self.subTest(lineup=[p.id for p in lineup]):
                 with self.assertRaises(ValueError):

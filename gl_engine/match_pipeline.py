@@ -220,8 +220,14 @@ class MatchPipeline:
             raise ValueError("Duplicate fantasy player IDs")
         if captain.id == vice_captain.id or captain.id not in ids or vice_captain.id not in ids:
             raise ValueError("Captain and vice-captain must be distinct members of the lineup")
-        if not set(ids) <= {p.id for p in self.players}:
+        confirmed = {p.id: p for p in self.players}
+        if not set(ids) <= set(confirmed):
             raise ValueError("Lineup contains players outside the confirmed match XI")
+        for player in lineup_players:
+            source = confirmed[player.id]
+            if (player.team, player.name, player.role, player.credits) != (
+                    source.team, source.name, source.role, source.credits):
+                raise ValueError("Lineup modifies verified player identity, role or fantasy credits")
         by_team = Counter(p.team for p in lineup_players)
         if len(by_team) != 2 or max(by_team.values()) > 7:
             raise ValueError("Fantasy XI must use both teams and at most seven players from either")
