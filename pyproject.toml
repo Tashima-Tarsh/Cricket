@@ -32,12 +32,13 @@ dev = [
 ]
 
 [tool.setuptools.packages.find]
-include = ["gl_engine*"]
+include = ["gl_engine*", "edgeforge*"]
 
 [tool.setuptools.package-data]
 gl_engine = ["data/*.json", "templates/*.html"]
 
 [tool.pytest.ini_options]
+pythonpath = [".", "dream11-edge"]
 testpaths = ["tests", "dream11-edge/tests", "edgeforge"]
 python_files = ["test_*.py"]
 addopts = "-q"
