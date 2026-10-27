@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { StadiumVenue } from "../types";
-import { VENUES } from "../data/mockData";
+// Venue telemetry is sourced exclusively from the selected fixture.
 import { Stadium3D } from "../components/Stadium3D";
 import {
   Layers,
@@ -130,7 +130,8 @@ const MATCHUP_PRESETS: MatchupPreset[] = [
 
 export const PitchLab: React.FC = () => {
   const { currentMatch, currentPlayers, currentBattles, navigateToWorkspace } = useMatchContext();
-  const [selectedVenue, setSelectedVenue] = useState<StadiumVenue>(VENUES[0]);
+  const [selectedVenue, setSelectedVenue] = useState<StadiumVenue>(currentMatch.venue);
+  React.useEffect(() => setSelectedVenue(currentMatch.venue), [currentMatch.id, currentMatch.venue]);
   const [selectedPhase, setSelectedPhase] = useState<"All" | "Powerplay" | "Middle" | "Death">("All");
   const [bowlerType, setBowlerType] = useState<"All" | "Pace" | "Spin">("All");
 
@@ -220,7 +221,7 @@ export const PitchLab: React.FC = () => {
 
           {/* Stadium Switcher Glass Pills */}
           <div className="flex flex-wrap items-center gap-2 p-1.5 rounded-2xl bg-white/[0.03] border border-stone-300 ">
-            {VENUES.map((v) => (
+            {[currentMatch.venue].map((v) => (
               <button
                 key={v.id}
                 onClick={() => setSelectedVenue(v)}

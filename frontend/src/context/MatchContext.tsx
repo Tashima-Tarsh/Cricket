@@ -8,37 +8,24 @@ import {
   DataProviderTelemetry,
   WorkspaceTab
 } from "../types";
+// Empty UI shell only. Never render an archived or synthetic match as current.
 const initialMatch: MatchInfo = {
-  id: "ind_w_vs_zim_w_2026_02", 
-  name: "India Women vs Zimbabwe Women, 2nd ODI (Vadodara)", 
-  format: "Women's One Day International", 
-  status: "TOSS CONCLUDED | Zimbabwe Opt to Bat | Both Teams Unchanged",
-  venue: { 
-    id: "bca_stadium_vadodara", 
-    name: "BCA Stadium, Kotambi, Vadodara", 
-    city: "Vadodara", 
-    soil_type: "Spin-friendly abrasive black soil track at BCA Kotambi", 
-    avg_first_innings: 258.0, 
-    avg_second_innings: 178.0, 
-    chasing_win_pct: 50.0, 
-    pace_wicket_pct: 35.1, 
-    spin_wicket_pct: 64.9, 
-    dew_factor: 0.20, 
-    pitch_nature: "Bowling surface favoring spinners (37 of 57 wickets = 64.9% taken by spinners). 1st innings avg 258, 2nd innings avg 178. Turn and grip for slow left-arm orthodox (S Charani) and off-spin (D Sharma, S Verma).", 
-    boundaries: { square_leg: 64, midwicket: 68, long_on: 74, straight: 75, long_off: 74, cover: 68, point: 62 } 
+  id: "",
+  name: "No match selected",
+  format: "",
+  status: "NOT_CONNECTED",
+  venue: {
+    id: "", name: "", city: "", soil_type: "", avg_first_innings: 0,
+    avg_second_innings: 0, chasing_win_pct: 0, pace_wicket_pct: 0,
+    spin_wicket_pct: 0, dew_factor: 0, pitch_nature: "",
+    boundaries: {square_leg:0,midwicket:0,long_on:0,straight:0,long_off:0,cover:0,point:0}
   },
-  teams: { 
-    home: { name: "India Women", code: "IND-W", score: "Bowling First", overs: "50.0" }, 
-    away: { name: "Zimbabwe Women", code: "ZIM-W", score: "Batting First", overs: "50.0" } 
+  teams: {
+    home: {name:"", code:"", score:"", overs:""},
+    away: {name:"", code:"", score:"", overs:""}
   },
-  toss: { 
-    winner: "Zimbabwe Women", 
-    choice: "bat", 
-    statement: "Zimbabwe Women won the toss and opted to bat first. India Women bowl first." 
-  }, 
-  current_crr: 4.15, 
-  projected_total: 218, 
-  chasing_win_prob: 88.0
+  toss: {winner:"", choice:"bat", statement:""},
+  current_crr: 0, projected_total: 0, chasing_win_prob: 0
 };
 
 interface MatchContextType {
@@ -164,8 +151,15 @@ export const MatchContextProvider: React.FC<{ children: React.ReactNode }> = ({ 
     const timeout = window.setTimeout(() => controller.abort(), 60000);
     const oversToFetch = targetOvers !== undefined ? targetOvers : activeOversRef.current;
     try {
-      const matchParam = `match_id=${encodeURIComponent(targetMatchId || activeMatchRef.current)}&`;
-      const res = await fetch(`/api/state?${matchParam}overs=${oversToFetch}`, { signal: controller.signal });
+      let selectedId = targetMatchId || activeMatchRef.current;
+      if (!selectedId) {
+        const catalogResponse = await fetch("/api/matches", { signal: controller.signal });
+        if (!catalogResponse.ok) throw new Error("Match catalog unavailable.");
+        const catalog = await catalogResponse.json();
+        selectedId = (catalog.matches || [])[0]?.id || "";
+      }
+      if (!selectedId) throw new Error("No fixture is connected. Open Match Setup and supply a validated playing XI.");
+      const res = await fetch(`/api/state?match_id=${encodeURIComponent(selectedId)}&overs=${oversToFetch}`, { signal: controller.signal });
       if (!res.ok) throw new Error(`State request failed (${res.status}).`);
       const data = await res.json();
       if (data.status !== "success" || !data.match || !Array.isArray(data.players) || !Array.isArray(data.lineups)) throw new Error("The server returned an incomplete snapshot.");

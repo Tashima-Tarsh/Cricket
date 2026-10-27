@@ -20,12 +20,13 @@ const UniqueEngineView = lazy(() => import("./views/UniqueEngineView").then(modu
 const AIAnalyst = lazy(() => import("./views/AIAnalyst").then(module => ({ default: module.AIAnalyst })));
 const SettingsProviders = lazy(() => import("./views/SettingsProviders").then(module => ({ default: module.SettingsProviders })));
 
-import { mockTrajectories } from "./data/mockData";
+
 import { MatchInfo, WorkspaceTab } from "./types";
 
 const MainAppContent: React.FC = () => {
   const {
     stateStatus,
+    stateError,
     activeTab,
     setActiveTab,
     currentMatch,
@@ -48,7 +49,7 @@ const MainAppContent: React.FC = () => {
     <AppShell onOpenMatchSetup={() => setIsMatchSetupOpen(true)}>
       <WorkspaceBoundary workspace={activeTab}>
       <Suspense fallback={<p role="status">Loading workspace...</p>}>
-      {stateStatus !== "ready" ? <p>Load the local snapshot to open analysis workspaces.</p> : <>
+      {stateStatus !== "ready" ? <div role="status" className="p-6 space-y-3"><p>{stateStatus === "loading" ? "Loading selected fixture..." : (stateError || "No connected fixture is available.")}</p><button type="button" onClick={() => setIsMatchSetupOpen(true)} className="px-4 py-2 rounded border border-stone-500">Open Match Setup</button></div> : <>
       {/* 1. Command Center */}
       {activeTab === "command-center" && (
         <CommandCenter
@@ -83,7 +84,7 @@ const MainAppContent: React.FC = () => {
       {activeTab === "battle-arena" && (
         <BattleArena
           battles={currentBattles}
-          trajectories={mockTrajectories}
+          trajectories={[]}
         />
       )}
 
