@@ -157,9 +157,12 @@ class TestEvidenceAuditRepairs(unittest.TestCase):
     def test_backtesting_no_0946_scaling(self):
         """Verify CricketBacktesting does not use artificial 0.946 scaling."""
         bt = CricketBacktesting()
-        # Verify curated benchmarks have realistic, non-sensational rank labels
-        for bm in bt.curated_benchmarks:
-            self.assertNotIn("Rank 1 Contender", bm.get("rank_in_grand_league", ""))
+        # Post-match curated portfolios have been removed entirely: they
+        # cannot be scored as independent historical prediction evidence.
+        self.assertFalse(hasattr(bt, "curated_benchmarks"))
+        result = bt.execute()
+        self.assertIsNone(result["average_efficiency_pct"])
+        self.assertFalse(result.get("contest_ranks_available", False))
 
     def test_field_simulator_calibration_status(self):
         """Verify SyntheticFieldSimulator marks its output as MODEL_ESTIMATE_UNCALIBRATED."""
