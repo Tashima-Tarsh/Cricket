@@ -3,10 +3,12 @@
 Source (manually reviewed 2026-10-27):
 https://www.dream11.com/fantasy-cricket/point-system
 Do NOT rewrite past archived leagues with these rules. Select exact format.
+Bowling overs use scorecard X.Y notation (e.g. 4.2 = 26 legal balls).
 Supplied runs, fours, sixes, dismissed and playing status are inputs; the
 scorer does not infer observed fielding or valid replacement eligibility.
 """
-from math import floor
+from decimal import Decimal, InvalidOperation
+from math import isfinite
 from typing import Dict, Any
 
 RULE_VERSION = "dream11_published_2026_10_27"
@@ -44,10 +46,31 @@ def _strike_rate(fmt: str, runs: int, balls: int) -> float:
     )
 
 
+def _overs_as_balls(overs: float) -> int:
+    """Convert cricket scorecard notation X.Y to legitimate balls bowled.
+
+    4.2 is 4 completed overs + 2 balls (26 legal deliveries), NOT 4.2
+    decimal overs. Inputs such as 4.6 and 4.25 are not cricket notation.
+    """
+    if isinstance(overs, bool) or not isinstance(overs, (int, float)) or not isfinite(overs) or overs < 0:
+        raise ValueError("Overs must be a nonnegative finite number in cricket X.Y notation")
+    try:
+        value = Decimal(str(overs))
+    except InvalidOperation as exc:
+        raise ValueError("Invalid cricket-notation overs") from exc
+    completed = int(value)
+    partial = (value - Decimal(completed)) * 10
+    if partial != partial.to_integral_value() or not 0 <= partial <= 5:
+        raise ValueError("Cricket overs must have 0-5 balls after the decimal point")
+    return completed * 6 + int(partial)
+
+
 def _economy(fmt: str, runs: int, overs: float) -> float:
-    if overs < {"T20": 2.0, "ODI": 5.0, "T10": 1.0}[fmt]:
+    balls = _overs_as_balls(overs)
+    minimum_balls = {"T20": 12, "ODI": 30, "T10": 6}[fmt]
+    if balls < minimum_balls:
         return 0.0
-    er = runs / overs
+    er = runs * 6.0 / balls
     if fmt == "T20":
         return 6 if er < 5 else 4 if er < 6 else 2 if er <= 7 else (
             -6 if er > 12 else -4 if er > 11 else -2 if er >= 10 else 0
@@ -80,6 +103,7 @@ def score_official(*, match_format: str, runs: int = 0, fours: int = 0,
                   stumpings, run_outs_direct, run_outs_indirect)
     if any(isinstance(x, bool) or x < 0 for x in quantities):
         raise ValueError("Negative or nonnumeric scorecard statistics are not allowed")
+    legal_balls_bowled = _overs_as_balls(overs_bowled)
     if fours * 4 + sixes * 6 > runs or fours + sixes > balls_faced:
         raise ValueError("Boundary counts exceed observed runs or balls")
     if bowled_lbw > wickets:
@@ -112,7 +136,8 @@ def score_official(*, match_format: str, runs: int = 0, fours: int = 0,
         "breakdown": {"batting": bat, "bowling": bowl, "fielding": field,
                       "starting_xi": xi, "dot_balls": dot_pts,
                       "wicket_haul_bonus": wicket_bonus,
-                      "batting_milestone_bonus": milestones},
+                      "batting_milestone_bonus": milestones,
+                      "legal_balls_bowled": legal_balls_bowled},
         "provenance": {
             "source": SOURCE_URL,
             "verification_status": "VERIFIED",
