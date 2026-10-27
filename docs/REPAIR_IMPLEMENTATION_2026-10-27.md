@@ -83,3 +83,21 @@ two-through-five wicket thresholds. The scorer does not guess dismissals
 from a zero-run scorecard; `was_dismissed` must be explicit. Full match
 substitute handling still needs fielding participation evidence.
 
+
+## Licensed live-data corroboration
+
+`POST /api/v1/live/verify-xi` requires an admin bearer token plus explicit
+Sportmonks fixture ID and CricAPI match ID, and it requires both authorized
+live feeds to independently declare exactly 11 named players for each of the
+same two teams. Conflicts and squad-only data return errors. Provider config
+is visible at `GET /api/v1/live/providers`. No tokens are checked into source.
+
+**Cricbuzz** is a browser reference only. Its terms expressly restrict
+automated scraping, so the integration intentionally does not scrape their
+site or reuse unofficial JSON APIs. Direct authorization/licensing must be
+obtained before any Cricbuzz-derived programmatic ingestion.
+
+The corroboration API does **not** automatically lock a Dream11 contest or
+claim that player-credit identities are matched. It only reports agreements
+between two remote providers. Frontend "simulate" options remain strictly
+administrative test controls, not provider-confirmed facts.

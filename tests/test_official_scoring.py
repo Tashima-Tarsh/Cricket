@@ -43,7 +43,7 @@ class PublishedDream11Points(unittest.TestCase):
                 "rule_version": RULE_VERSION, "match_format": "T20",
                 "runs": 40, "balls_faced": 30, "fours": 4, "sixes": 2,
             })
-            self.assertEqual(res.status_code, 200)
+            self.assertEqual(res.status_code, 200, res.text)
             self.assertEqual(res.json()["data"]["total_points"], 78)
             self.assertEqual(client.get("/api/v1/scoring/rules").status_code, 200)
 

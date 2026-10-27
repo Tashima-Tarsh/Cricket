@@ -5,12 +5,14 @@ exposes a stable identity/roster/scoring/evaluation contract without silently
 moving users across fixtures or promising calibrated predictions.
 """
 from typing import Literal, Optional
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel, ConfigDict, Field
 
 from .capabilities.c11_fantasy_scoring import CricketFantasyScoring
 from .official_scoring import RULE_VERSION, SOURCE_URL, score_official
 from .roster_safety import validate_roster
+from .admin_auth import require_admin
+from .live_xi_verification import verify_live_xi
 
 router = APIRouter(prefix="/api/v1", tags=["stable-research-api"])
 
@@ -95,6 +97,34 @@ def score(request: ScoreRequest):
         "rule_version": request.rule_version,
         "current_official_rule_verification": "LEGACY_ARCHIVAL_PROFILE",
         "data": CricketFantasyScoring().calculate_player_points(**data),
+    }
+
+
+class LiveXIRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    fixture_id: str = Field(min_length=1, max_length=128)
+    sportmonks_fixture_id: str = Field(min_length=1, max_length=128)
+    cricketdata_match_id: str = Field(min_length=1, max_length=128)
+
+
+@router.post("/live/verify-xi")
+def verified_live_xi(request: LiveXIRequest, _admin: None = Depends(require_admin)):
+    result = verify_live_xi(
+        sportmonks_fixture_id=request.sportmonks_fixture_id,
+        cricketdata_match_id=request.cricketdata_match_id,
+    )
+    return {"fixture_id": request.fixture_id, **result}
+
+
+@router.get("/live/providers")
+def live_provider_readiness():
+    from .providers.sportmonks_api import SportmonksCricketClient
+    from .cricketdata_api import CricketDataClient
+    return {
+        "sportmonks": "CONFIGURED_NOT_PROBED" if SportmonksCricketClient().is_live else "NOT_CONFIGURED",
+        "cricketdata": "CONFIGURED_NOT_PROBED" if CricketDataClient().is_live else "NOT_CONFIGURED",
+        "cricbuzz": "REFERENCE_ONLY_NO_AUTOMATED_SCRAPING",
+        "confirmed_xi": "REQUIRES_2_AGREEING_LIVE_FEEDS",
     }
 
 

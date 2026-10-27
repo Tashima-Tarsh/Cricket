@@ -48,7 +48,7 @@ class SportmonksCricketClient:
             res = self._get("livescores", {"include": "localteam,visitorteam,runs"})
             if "data" in res and res["data"] is not None:
                 return res["data"]
-        return self._mock_livescores()
+        return []  # Never expose illustrative fixtures as live
 
     def get_fixture_details(self, fixture_id: int or str, include: str = "lineup,bowling,batting,scoreboards,venue") -> Dict[str, Any]:
         """Retrieves full fixture details with batting, bowling, lineup, and venue."""
@@ -56,7 +56,7 @@ class SportmonksCricketClient:
             res = self._get(f"fixtures/{fixture_id}", {"include": include})
             if "data" in res and res["data"] is not None:
                 return res["data"]
-        return self._mock_fixture(fixture_id)
+        return {}  # No licensed connection / remote result
 
     def get_lineup(self, fixture_id: int or str) -> Dict[str, Any]:
         """Extracts confirmed Playing 11 and bench players from fixture."""
@@ -69,7 +69,13 @@ class SportmonksCricketClient:
         playing_xi = {"home": [], "away": []}
         bench = {"home": [], "away": []}
 
+        if not isinstance(lineup_raw, list) or not home_team_id or not away_team_id:
+            return {"status": "UNVERIFIED", "fixture_id": fixture_id,
+                    "playing_xi": {"home": [], "away": []},
+                    "home_team": None, "away_team": None}
         for p in lineup_raw:
+            if p.get("team_id") not in (home_team_id, away_team_id):
+                continue
             p_data = {
                 "player_id": p.get("id"),
                 "name": p.get("fullname", p.get("name", "Unknown")),
@@ -84,9 +90,10 @@ class SportmonksCricketClient:
                 target["away"].append(p_data)
 
         return {
+            "status": "LIVE_PROVIDER_RESPONSE",
             "fixture_id": fixture_id,
-            "home_team": fixture.get("localteam", {}).get("name", "Home Team"),
-            "away_team": fixture.get("visitorteam", {}).get("name", "Away Team"),
+            "home_team": fixture.get("localteam", {}).get("name"),
+            "away_team": fixture.get("visitorteam", {}).get("name"),
             "playing_xi": playing_xi,
             "bench": bench
         }

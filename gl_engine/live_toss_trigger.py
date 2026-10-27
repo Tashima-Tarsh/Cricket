@@ -201,8 +201,8 @@ class LiveTossLineupTrigger:
         validate_confirmed_xi(confirmed_players)
         expected = {p.get("id") for p in all_players}
         supplied = {p.get("id") for p in confirmed_players}
-        if expected != supplied:
-            raise HTTPException(422, "Confirmed XI must match the selected fixture's player pool")
+        if not supplied.issubset(expected):
+            raise HTTPException(422, "Confirmed XI contains players outside the selected fixture's roster")
 
         # 1. Export locked player pool to parquet
         pool_df = data_fusion_pipeline.score_player_pool(
