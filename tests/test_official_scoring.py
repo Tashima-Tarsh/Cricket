@@ -37,6 +37,24 @@ class PublishedDream11Points(unittest.TestCase):
         b = score_official(match_format="T20", runs=0, balls_faced=4, was_dismissed=True)
         self.assertEqual(a["total_points"] - b["total_points"], 2)
 
+    def test_cricket_overs_as_deliveries_not_decimal_fraction(self):
+        from gl_engine.official_scoring import _overs_as_balls
+        self.assertEqual(_overs_as_balls(4.2), 26)
+        self.assertEqual(_overs_as_balls(2.5), 17)
+        result = score_official(
+            match_format="T20", overs_bowled=2.4, runs_conceded=12,
+            is_playing=False
+        )
+        self.assertEqual(result["breakdown"]["legal_balls_bowled"], 16)
+        # 12 conceded in 2.4 overs = 4.5 RPO, +6 economy, not 5.0 RPO.
+        self.assertEqual(result["breakdown"]["bowling"], 6)
+
+    def test_invalid_cricket_overs_rejected(self):
+        for overs in (2.6, 4.25, -1.0, float("nan"), float("inf")):
+            with self.subTest(overs=overs):
+                with self.assertRaises(ValueError):
+                    score_official(match_format="T20", overs_bowled=overs)
+
     def test_explicit_versioned_api(self):
         with TestClient(app) as client:
             res = client.post("/api/v1/score", json={
