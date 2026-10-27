@@ -466,6 +466,107 @@ def get_cricsheet_matches():
     db = CricsheetDatabase()
     return {"matches": db.list_matches()[:25]}
 
+@app.post("/api/cricsheet/load/{match_id}")
+def load_cricsheet_match_endpoint(match_id: str):
+    """Loads a verified historical match from Cricsheet archive into UniversalMatchEngine."""
+    from .universal_engine import get_universal_engine
+    from .fixture_store import CustomFixture
+    from .cricsheet import CricsheetDatabase
+    
+    db = CricsheetDatabase()
+    file_path = db.matches_dir / f"{match_id}.json"
+    if not file_path.exists():
+        candidates = list(db.matches_dir.glob(f"*{match_id}*.json"))
+        if not candidates:
+            raise HTTPException(404, f"Cricsheet match '{match_id}' not found")
+        file_path = candidates[0]
+        
+    with open(file_path, "r", encoding="utf-8") as f:
+        data = json.load(f)
+        
+    info = data.get("info", {})
+    teams = info.get("teams", [])
+    if len(teams) < 2:
+        raise HTTPException(422, "Match does not contain two teams")
+        
+    home_team, away_team = teams[0], teams[1]
+    players_reg = info.get("players", {})
+    home_players = players_reg.get(home_team, [])[:11]
+    away_players = players_reg.get(away_team, [])[:11]
+    
+    if len(home_players) < 11 or len(away_players) < 11:
+        raise HTTPException(422, f"Match {match_id} lacks full 11 players per team in registry")
+        
+    home_xi = [
+        {
+            "name": name,
+            "role": "BAT" if i < 4 else ("WK" if i == 4 else ("AR" if i < 7 else "BOWL")),
+            "credits": round(8.0 + (i % 3) * 0.5, 1),
+            "order": i + 1,
+            "bat_hand": "RHB",
+            "bowl_style": "Right-arm medium",
+            "projected_ownership": 45.0
+        }
+        for i, name in enumerate(home_players)
+    ]
+    away_xi = [
+        {
+            "name": name,
+            "role": "BAT" if i < 4 else ("WK" if i == 4 else ("AR" if i < 7 else "BOWL")),
+            "credits": round(8.0 + (i % 3) * 0.5, 1),
+            "order": i + 1,
+            "bat_hand": "RHB",
+            "bowl_style": "Right-arm medium",
+            "projected_ownership": 45.0
+        }
+        for i, name in enumerate(away_players)
+    ]
+    
+    toss = info.get("toss", {})
+    decision = str(toss.get("decision", "bat")).lower()
+    choice = "bowl" if decision in ("field", "bowl") else "bat"
+    winner = toss.get("winner")
+    if winner not in (home_team, away_team):
+        winner = home_team
+        
+    m_id = f"custom_cricsheet_{match_id}"
+    fixture_payload = {
+        "id": m_id,
+        "match_id": m_id,
+        "name": f"{home_team} vs {away_team}",
+        "format": info.get("match_type", "T20"),
+        "status": "USER SUPPLIED | [VERIFY REQUIRED]",
+        "teams": {
+            "home": {"name": home_team, "code": home_team[:3].upper()},
+            "away": {"name": away_team, "code": away_team[:3].upper()}
+        },
+        "venue": {
+            "name": info.get("venue", "International Stadium"),
+            "city": info.get("city", "City")
+        },
+        "toss": {
+            "winner": winner,
+            "choice": choice
+        },
+        "current_crr": 0,
+        "projected_total": 0,
+        "chasing_win_prob": 50,
+        "playing_xi_home": home_xi,
+        "playing_xi_away": away_xi
+    }
+    
+    validated = CustomFixture.model_validate(fixture_payload)
+    engine = get_universal_engine()
+    state = engine.ingest_match(validated.model_dump())
+    _STATE_CACHES.clear()
+    _STATE_CACHE_TIMES.clear()
+    return {
+        "status": "success",
+        "match_id": m_id,
+        "match": state["match"],
+        "players": state["players"]
+    }
+
 from .live_feed import fetch_espn_cricinfo_live_matches, get_fixture_toss_feed
 
 @app.get("/api/live/matches")

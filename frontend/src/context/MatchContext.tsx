@@ -153,12 +153,32 @@ export const MatchContextProvider: React.FC<{ children: React.ReactNode }> = ({ 
     try {
       let selectedId = targetMatchId || activeMatchRef.current;
       if (!selectedId) {
-        const catalogResponse = await fetch("/api/matches", { signal: controller.signal });
-        if (!catalogResponse.ok) throw new Error("Match catalog unavailable.");
-        const catalog = await catalogResponse.json();
-        selectedId = (catalog.matches || [])[0]?.id || "";
+        try {
+          const catalogResponse = await fetch("/api/matches", { signal: controller.signal });
+          if (catalogResponse.ok) {
+            const catalog = await catalogResponse.json();
+            selectedId = (catalog.matches || [])[0]?.id || "";
+          }
+        } catch {
+          // offline or empty
+        }
       }
-      if (!selectedId) throw new Error("No fixture is connected. Open Match Setup and supply a validated playing XI.");
+      if (!selectedId) {
+        try {
+          const provRes = await fetch("/api/providers/status", { signal: controller.signal });
+          if (provRes.ok) {
+            const provData = await provRes.json();
+            setCurrentProviders((provData.providers || []).map((raw: any) => providerTelemetry(raw.id, raw)));
+          }
+        } catch {}
+        setCurrentMatch(initialMatch);
+        setCurrentPlayers([]);
+        setCurrentBattles([]);
+        setCurrentLineups([]);
+        setStateStatus("ready");
+        setStateError(null);
+        return;
+      }
       const res = await fetch(`/api/state?match_id=${encodeURIComponent(selectedId)}&overs=${oversToFetch}`, { signal: controller.signal });
       if (!res.ok) throw new Error(`State request failed (${res.status}).`);
       const data = await res.json();

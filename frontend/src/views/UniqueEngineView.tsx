@@ -29,6 +29,7 @@ import {
   Database,
   Cpu
 } from "lucide-react";
+import { useMatchContext } from "../context/MatchContext";
 import { PitchMap, PitchPlayer } from "../components/unique-gl/PitchMap";
 import { OwnershipHeatmap } from "../components/unique-gl/OwnershipHeatmap";
 import { DifferentialBadge } from "../components/unique-gl/DifferentialBadge";
@@ -109,7 +110,8 @@ type SubTab = "dashboard" | "venue" | "pool" | "generate" | "cards" | "simulate"
 export const UniqueEngineView: React.FC = () => {
   const [activeSubTab, setActiveSubTab] = useState<SubTab>("generate");
   const [matches, setMatches] = useState<MatchItem[]>([]);
-  const [selectedMatchId, setSelectedMatchId] = useState<string>("ind_w_vs_zim_w_2026_02");
+  const { currentMatch } = useMatchContext();
+  const [selectedMatchId, setSelectedMatchId] = useState<string>(currentMatch?.id || "");
   const [selectedMatch, setSelectedMatch] = useState<MatchItem | null>(null);
   
   // Players Pool
@@ -145,6 +147,12 @@ export const UniqueEngineView: React.FC = () => {
   const [triggerState, setTriggerState] = useState<any>(null);
   const [fusionStatus, setFusionStatus] = useState<any>(null);
   const [isTriggering, setIsTriggering] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (currentMatch?.id && (!selectedMatchId || selectedMatchId !== currentMatch.id)) {
+      setSelectedMatchId(currentMatch.id);
+    }
+  }, [currentMatch?.id]);
 
   // 1. Initial Load: Fetch Matches & Fusion Status
   useEffect(() => {

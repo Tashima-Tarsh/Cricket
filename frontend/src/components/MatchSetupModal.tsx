@@ -65,6 +65,7 @@ export const MatchSetupModal: React.FC<MatchSetupModalProps> = ({
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [liveMatches, setLiveMatches] = useState<LiveMatchItem[]>([]);
   const [seriesFixtures, setSeriesFixtures] = useState<MatchInfo[]>([]);
+  const [cricsheetMatches, setCricsheetMatches] = useState<any[]>([]);
   const [isLoadingLive, setIsLoadingLive] = useState<boolean>(false);
   const [isLoadingSeries, setIsLoadingSeries] = useState<boolean>(false);
 
@@ -84,15 +85,41 @@ export const MatchSetupModal: React.FC<MatchSetupModalProps> = ({
   const fetchSeriesFixtures = async () => {
     setIsLoadingSeries(true);
     try {
-      const res = await fetch("/api/series/fixtures");
+      const [res, cricRes] = await Promise.all([
+        fetch("/api/series/fixtures"),
+        fetch("/api/cricsheet/matches")
+      ]);
       if (res.ok) {
         const data = await res.json();
         if (Array.isArray(data.fixtures)) setSeriesFixtures(data.fixtures);
+      }
+      if (cricRes.ok) {
+        const cricData = await cricRes.json();
+        if (Array.isArray(cricData.matches)) setCricsheetMatches(cricData.matches);
       }
     } catch {
       // Standby fallback
     } finally {
       setIsLoadingSeries(false);
+    }
+  };
+
+  const handleLoadCricsheetMatch = async (matchId: string) => {
+    setIsSaving(true);
+    setFeedError(null);
+    try {
+      const res = await fetch(`/api/cricsheet/load/${encodeURIComponent(matchId)}`, { method: "POST" });
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.detail || "Failed to load Cricsheet match.");
+      }
+      const data = await res.json();
+      onApplyMatch(data.match, data.players);
+      onClose();
+    } catch (err) {
+      setFeedError(err instanceof Error ? err.message : "Could not load archived match.");
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -275,7 +302,7 @@ export const MatchSetupModal: React.FC<MatchSetupModalProps> = ({
                 : "border-transparent text-slate-400 hover:text-slate-200"
             }`}
           >
-            <Layers size={14} /> IND vs WI 2026 SERIES (5 FIXTURES)
+            <Layers size={14} /> VERIFIED & ARCHIVED FIXTURES
           </button>
 
           <button
@@ -366,6 +393,52 @@ export const MatchSetupModal: React.FC<MatchSetupModalProps> = ({
                 </div>
               ))}
             </div>
+            {cricsheetMatches.length > 0 && (
+              <div className="space-y-3 pt-4 border-t border-white/10">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-sans text-cyan-300 uppercase tracking-wider flex items-center gap-1.5 font-bold">
+                    <Database size={13} className="text-cyan-400" /> Cricsheet Verified Historical Matches ({cricsheetMatches.length})
+                  </span>
+                  <span className="text-[10px] font-mono text-cyan-400 font-bold bg-cyan-500/10 px-2 py-0.5 rounded border border-cyan-500/20">
+                    REAL DELIVERIES & SCORECARDS
+                  </span>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {cricsheetMatches.map((m) => (
+                    <div
+                      key={m.match_id}
+                      className="p-4 rounded-lg bg-slate-900/80 border border-white/10 hover:border-cyan-500/50 transition-all flex flex-col justify-between space-y-3 group"
+                    >
+                      <div className="space-y-1.5">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[10px] font-mono px-2 py-0.5 rounded font-bold bg-cyan-500/15 text-cyan-300 border border-cyan-500/30">
+                            {m.match_type || "T20"} · {m.date}
+                          </span>
+                          <span className="text-[10px] font-mono text-slate-400">{m.city || m.venue}</span>
+                        </div>
+                        <h3 className="text-sm font-bold text-white group-hover:text-cyan-300 transition-colors">
+                          {m.teams ? m.teams.join(" vs ") : `Match ${m.match_id}`}
+                        </h3>
+                        <div className="text-xs font-sans text-slate-300">
+                          <span className="font-semibold text-slate-200">Venue:</span> {m.venue}
+                        </div>
+                        <div className="text-xs font-sans text-slate-400">
+                          <span className="font-semibold text-slate-300">Winner:</span> {m.winner}
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => void handleLoadCricsheetMatch(m.match_id)}
+                        disabled={isSaving}
+                        className="w-full py-2 rounded text-xs font-sans font-bold flex items-center justify-center gap-2 transition-all bg-slate-800 hover:bg-cyan-600 text-slate-200 hover:text-white border border-white/10 disabled:opacity-50"
+                      >
+                        <Zap size={14} /> {isSaving ? "INGESTING XI & SOLVING..." : "LOAD VERIFIED HISTORICAL FIXTURE"}
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         )}
 

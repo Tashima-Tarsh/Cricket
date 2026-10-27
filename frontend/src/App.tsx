@@ -49,7 +49,48 @@ const MainAppContent: React.FC = () => {
     <AppShell onOpenMatchSetup={() => setIsMatchSetupOpen(true)}>
       <WorkspaceBoundary workspace={activeTab}>
       <Suspense fallback={<p role="status">Loading workspace...</p>}>
-      {stateStatus !== "ready" ? <div role="status" className="p-6 space-y-3"><p>{stateStatus === "loading" ? "Loading selected fixture..." : (stateError || "No connected fixture is available.")}</p><button type="button" onClick={() => setIsMatchSetupOpen(true)} className="px-4 py-2 rounded border border-stone-500">Open Match Setup</button></div> : <>
+            {stateStatus === "loading" && (
+        <div role="status" className="mb-4 flex items-center gap-3 rounded-lg border border-cyan-500/20 bg-slate-900/80 px-4 py-3 text-sm text-cyan-300">
+          <div className="h-4 w-4 animate-spin rounded-full border-2 border-cyan-400 border-t-transparent" />
+          <span>Synchronizing fixture telemetry, lineups and models...</span>
+        </div>
+      )}
+      {stateStatus === "error" && (
+        <div role="alert" className="mb-4 flex items-center justify-between rounded-lg border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-300">
+          <span>{stateError || "Fixture telemetry error."}</span>
+          <button type="button" onClick={() => setIsMatchSetupOpen(true)} className="rounded bg-amber-500/20 px-3 py-1 text-xs border border-amber-500/40 hover:bg-amber-500/30">
+            Open Match Setup
+          </button>
+        </div>
+      )}
+      {!currentMatch.id && activeTab !== "providers" && activeTab !== "ai-analyst" && activeTab !== "pitch-lab" && activeTab !== "match-studio" && activeTab !== "series-intelligence" && (
+        <div className="mb-4 rounded-xl border border-white/10 bg-gradient-to-r from-slate-900 to-indigo-950/40 p-5 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="space-y-1">
+            <h3 className="font-bold text-base text-amber-300 flex items-center gap-2">
+              <span>⚡</span> No Active Fixture Connected
+            </h3>
+            <p className="text-xs text-slate-300">
+              Select an archived match from Cricsheet, sync live fixtures, or configure custom playing XIs in Match Studio to unlock full tactical analysis and GL lineup generation.
+            </p>
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            <button
+              type="button"
+              onClick={() => setIsMatchSetupOpen(true)}
+              className="px-4 py-2 text-xs font-bold rounded-lg bg-emerald-500 text-slate-950 hover:bg-emerald-400 transition"
+            >
+              Open Match Setup
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveTab("series-intelligence")}
+              className="px-3 py-2 text-xs rounded-lg border border-white/20 text-white hover:bg-white/10 transition"
+            >
+              Match Archive
+            </button>
+          </div>
+        </div>
+      )}
       {/* 1. Command Center */}
       {activeTab === "command-center" && (
         <CommandCenter
@@ -130,8 +171,6 @@ const MainAppContent: React.FC = () => {
       {activeTab === "providers" && (
         <SettingsProviders providers={currentProviders} />
       )}
-
-      </>}
       </Suspense>
       </WorkspaceBoundary>
       {/* Match Setup & Ingestion Modal */}
