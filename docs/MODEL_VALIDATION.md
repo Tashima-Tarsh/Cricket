@@ -47,3 +47,4 @@ Under Non-Negotiable Invariant 5:
 - **`contest_probability_calibrated: false`**: Model estimates reflect historical statistical opportunity, not calibrated win percentages in a multi-million-entry contest.
 - **`rank_1_probability_available: false`**: The platform never advertises or guarantees Rank 1, profit, or ROI.
 - **`current_deployed_model_validated: false`**: Low $R^2$ (0.0164) is explicitly reported to users and operators. The model improves over simple rolling averages (+6.71% MAE) but possesses high natural variance inherent to T20 cricket.
+

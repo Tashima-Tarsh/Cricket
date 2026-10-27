@@ -68,3 +68,4 @@ The container build pipeline is separated into two isolated stages:
    cp /app/var/backup_20261027.sqlite3 /app/var/custom_fixtures.sqlite3
    ```
 3. **Rollback Strategy**: Maintain immutable Docker image tags (`strike-os:3.0.0`, `strike-os:3.0.1`). If a release exhibits defects, repoint the reverse proxy or container orchestrator to the previous verified tag.
+

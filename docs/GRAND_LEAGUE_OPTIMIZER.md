@@ -60,3 +60,4 @@ For a pool of $N$ eligible cricket players, let binary decision variable $x_i \i
 - **Monte Carlo Contest Simulation**: Simulates player scoring distributions via Gamma variance modeling and generates representative competitor fields.
 - **Explicit Diagnostics**: Metrics are labelled as `uncalibrated_rank_1_pct` and `uncalibrated_top_10_pct`.
 - **Zero Hallucinated Guarantees**: Calibrated probability fields (`rank_1_probability_pct`, `top_10_probability_pct`) are strictly output as `null` / `None` until validated against ground-truth multi-million contest field archives.
+

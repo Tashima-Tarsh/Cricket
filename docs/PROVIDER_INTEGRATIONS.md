@@ -76,3 +76,4 @@ When `SPORTMONKS_API_TOKEN` or `CRICKETDATA_API_KEY` are not provided in the env
 - Automated fixture discovery and live corroboration return structured status: **`BLOCKED — CREDENTIALS REQUIRED`** (HTTP 503).
 - Offline tests run exclusively against isolated test-only fixtures (`tests/support_runtime_fixture.py`).
 - Synthetic or mock data is **strictly barred** from entering production live feeds.
+

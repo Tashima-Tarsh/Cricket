@@ -205,3 +205,4 @@ class CrossProviderVerifier:
             "providers": [provider_a_xi.provider, provider_b_xi.provider],
             "verified_at_utc": datetime.now(timezone.utc).isoformat()
         }
+

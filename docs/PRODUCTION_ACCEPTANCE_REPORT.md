@@ -74,3 +74,4 @@
   The system is hardened, tested, reproducible, and ready for deployment behind an authenticated TLS reverse proxy with `CRICKET_ADMIN_TOKEN` configured.
 - **Autonomous Unsupervised Financial Wagering / Live Public Forecasting**: **`NO-GO`**  
   As reported honestly in `docs/MODEL_VALIDATION.md`, the out-of-time model exhibits low $R^2$ (0.0164) and high variance inherent in T20 cricket. The platform provides institutional analytics, tactical simulation, and combinatorial lineup optimization—it does not and cannot guarantee contest victory or financial profit.
+

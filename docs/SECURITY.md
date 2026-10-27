@@ -47,3 +47,4 @@ Every response emitted by the FastAPI backend carries:
 
 - Zero API keys, tokens, or credentials are hardcoded into Git.
 - Authorization headers and provider secrets are masked in application logs and tracebacks.
+

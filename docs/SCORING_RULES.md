@@ -69,3 +69,4 @@ Every output from `score_official` or `POST /api/v1/score` carries:
 - `provenance.source`: `"https://www.dream11.com/fantasy-cricket/point-system"`
 - `provenance.verification_status`: `"VERIFIED"`
 - `breakdown`: Detailed breakdown by batting, bowling, fielding, starting XI, dot balls, and milestone bonuses.
+

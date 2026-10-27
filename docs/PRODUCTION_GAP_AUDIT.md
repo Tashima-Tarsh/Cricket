@@ -58,3 +58,4 @@ Following the recent merges of Pull Request #6 and Pull Request #7 (`repair/evid
 8. **Phase 8**: Fix GAP-12 & GAP-14 (Docker multi-stage, health checks, storage persistence, and CI; document in `docs/DEPLOYMENT.md` and `.env.example`).
 9. **Phase 9**: Fix GAP-13 (frontend UI polish, empty states, and responsive views).
 10. **Phase 10**: Fix GAP-15 (release acceptance report in `docs/PRODUCTION_ACCEPTANCE_REPORT.md` and updated `README.md`).
+

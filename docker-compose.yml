@@ -34,3 +34,4 @@ services:
 volumes:
   strike-fixtures:
     name: strike-os-fixtures-data
+
