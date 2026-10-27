@@ -466,18 +466,134 @@ def get_cricsheet_matches():
     db = CricsheetDatabase()
     return {"matches": db.list_matches()[:25]}
 
+@app.post("/api/cricsheet/load/{match_id}")
+def load_cricsheet_match_endpoint(match_id: str):
+    """Loads a verified historical match from Cricsheet archive into UniversalMatchEngine."""
+    from .universal_engine import get_universal_engine
+    from .fixture_store import CustomFixture
+    from .cricsheet import CricsheetDatabase
+    
+    db = CricsheetDatabase()
+    file_path = db.matches_dir / f"{match_id}.json"
+    if not file_path.exists():
+        candidates = list(db.matches_dir.glob(f"*{match_id}*.json"))
+        if not candidates:
+            raise HTTPException(404, f"Cricsheet match '{match_id}' not found")
+        file_path = candidates[0]
+        
+    with open(file_path, "r", encoding="utf-8") as f:
+        data = json.load(f)
+        
+    info = data.get("info", {})
+    teams = info.get("teams", [])
+    if len(teams) < 2:
+        raise HTTPException(422, "Match does not contain two teams")
+        
+    home_team, away_team = teams[0], teams[1]
+    players_reg = info.get("players", {})
+    home_players = players_reg.get(home_team, [])[:11]
+    away_players = players_reg.get(away_team, [])[:11]
+    
+    if len(home_players) < 11 or len(away_players) < 11:
+        raise HTTPException(422, f"Match {match_id} lacks full 11 players per team in registry")
+        
+    home_xi = [
+        {
+            "name": name,
+            "role": "BAT" if i < 4 else ("WK" if i == 4 else ("AR" if i < 7 else "BOWL")),
+            "credits": round(8.0 + (i % 3) * 0.5, 1),
+            "order": i + 1,
+            "bat_hand": "RHB",
+            "bowl_style": "Right-arm medium",
+            "projected_ownership": 45.0
+        }
+        for i, name in enumerate(home_players)
+    ]
+    away_xi = [
+        {
+            "name": name,
+            "role": "BAT" if i < 4 else ("WK" if i == 4 else ("AR" if i < 7 else "BOWL")),
+            "credits": round(8.0 + (i % 3) * 0.5, 1),
+            "order": i + 1,
+            "bat_hand": "RHB",
+            "bowl_style": "Right-arm medium",
+            "projected_ownership": 45.0
+        }
+        for i, name in enumerate(away_players)
+    ]
+    
+    toss = info.get("toss", {})
+    decision = str(toss.get("decision", "bat")).lower()
+    choice = "bowl" if decision in ("field", "bowl") else "bat"
+    winner = toss.get("winner")
+    if winner not in (home_team, away_team):
+        winner = home_team
+        
+    m_id = f"custom_cricsheet_{match_id}"
+    fixture_payload = {
+        "id": m_id,
+        "match_id": m_id,
+        "name": f"{home_team} vs {away_team}",
+        "format": info.get("match_type", "T20"),
+        "status": "USER SUPPLIED | [VERIFY REQUIRED]",
+        "teams": {
+            "home": {"name": home_team, "code": home_team[:3].upper()},
+            "away": {"name": away_team, "code": away_team[:3].upper()}
+        },
+        "venue": {
+            "name": info.get("venue", "International Stadium"),
+            "city": info.get("city", "City")
+        },
+        "toss": {
+            "winner": winner,
+            "choice": choice
+        },
+        "current_crr": 0,
+        "projected_total": 0,
+        "chasing_win_prob": 50,
+        "playing_xi_home": home_xi,
+        "playing_xi_away": away_xi
+    }
+    
+    validated = CustomFixture.model_validate(fixture_payload)
+    engine = get_universal_engine()
+    state = engine.ingest_match(validated.model_dump())
+    _STATE_CACHES.clear()
+    _STATE_CACHE_TIMES.clear()
+    return {
+        "status": "success",
+        "match_id": m_id,
+        "match": state["match"],
+        "players": state["players"]
+    }
+
 from .live_feed import fetch_espn_cricinfo_live_matches, get_fixture_toss_feed
+from .cricbuzz_feed import fetch_cricbuzz_live_matches, ingest_cricbuzz_live_match
 
 @app.get("/api/live/matches")
 def get_live_matches():
-    """Fetches real-time live matches from ESPN Cricinfo and Cricbuzz live feeds."""
-    matches = fetch_espn_cricinfo_live_matches()
+    """Fetches real-time live matches from Cricbuzz (tarun7r integration) with ESPN Cricinfo fallback."""
+    matches = fetch_cricbuzz_live_matches()
+    if not matches:
+        matches = fetch_espn_cricinfo_live_matches()
     return {
         "status": "success" if matches else "unavailable",
-        "data_provenance": "PROVIDER_FEED" if matches else "UNAVAILABLE",
+        "data_provenance": "CRICBUZZ_LIVE_FEED" if matches else "UNAVAILABLE",
         "count": len(matches),
         "matches": matches
     }
+
+@app.post("/api/live/load/{match_id}")
+def load_live_match_endpoint(match_id: str):
+    """Directly ingests a live Cricbuzz match with confirmed 22-player lineups and live scores."""
+    raw_id = match_id.replace("cricbuzz_", "").strip()
+    try:
+        res = ingest_cricbuzz_live_match(raw_id)
+        _STATE_CACHES.clear()
+        _STATE_CACHE_TIMES.clear()
+        return res
+    except Exception as e:
+        raise HTTPException(422, f"Failed to ingest live match '{match_id}': {str(e)}")
 
 @app.get("/api/live/toss-feed")
 def get_live_toss_feed(match_id: str):
@@ -1142,6 +1258,81 @@ def get_win_probability(target: int = 180, current: int = 118, balls_left: int =
 def get_projected_score(current_runs: int = 118, overs: float = 11.4, wickets_lost: int = 2):
     from .datasets_2026 import CricOracle2026
     return CricOracle2026.forecast_final_innings_score(current_runs, overs, wickets_lost)
+
+@app.get("/api/oracle/value-bets")
+def get_oracle_value_bets(match_id: Optional[str] = None):
+    """
+    THENITISHKR-SPORTS // Wicket Oracle Value Bets
+    DraftKings-backed moneyline and totals bets with 25% Fractional Kelly Criterion sizing.
+    """
+    from .wicket_oracle import WicketOracleEngine
+    match_meta = None
+    if match_id:
+        try:
+            match_meta, _ = resolve_match_players(match_id)
+        except Exception:
+            pass
+    bets = WicketOracleEngine.get_value_bets(match_meta)
+    return {
+        "status": "success",
+        "platform": "THENITISHKR-SPORTS",
+        "count": len(bets),
+        "elite_count": sum(1 for b in bets if b["tier"] == "Elite Pick"),
+        "strong_count": sum(1 for b in bets if b["tier"] == "Strong"),
+        "avg_edge_pct": round(sum(b["edge"] for b in bets) / len(bets) * 100, 1) if bets else 0.0,
+        "bets": bets
+    }
+
+@app.get("/api/oracle/player-props")
+def get_oracle_player_props(match_id: Optional[str] = None):
+    """
+    THENITISHKR-SPORTS // Wicket Oracle Player Props
+    Batter runs and bowler wickets projections vs DraftKings lines with edge and recommendations.
+    """
+    from .wicket_oracle import WicketOracleEngine
+    raw_players = []
+    try:
+        _, players = resolve_match_players(match_id)
+        raw_players = [p.model_dump() for p in players]
+    except Exception:
+        try:
+            from .universal_engine import get_universal_engine
+            engine = get_universal_engine()
+            for mid in engine._matches:
+                meta = engine._matches[mid]
+                raw = engine._profile_match_players(meta)
+                if raw:
+                    raw_players = raw
+                    break
+        except Exception:
+            pass
+
+    props = WicketOracleEngine.get_player_props(raw_players, match_id=match_id)
+    return {
+        "status": "success",
+        "platform": "THENITISHKR-SPORTS",
+        "count": len(props),
+        "props": props
+    }
+
+@app.get("/api/oracle/teams")
+def get_oracle_teams():
+    """Return list of supported teams for deep dive analysis."""
+    from .wicket_oracle import WicketOracleEngine
+    return {"teams": WicketOracleEngine.IPL_TEAMS}
+
+@app.get("/api/oracle/team-phase/{team_name}")
+def get_oracle_team_phase(team_name: str):
+    """
+    THENITISHKR-SPORTS // Team Phase Deep Dive
+    Powerplay (1-6), Middle (7-15), and Death (16-20) breakdown with venue records.
+    """
+    from .wicket_oracle import WicketOracleEngine
+    return {
+        "status": "success",
+        "platform": "THENITISHKR-SPORTS",
+        "deep_dive": WicketOracleEngine.get_team_phase_deep_dive(team_name)
+    }
 
 @app.get("/api/datasets/2026-schedule")
 def get_2026_schedule():

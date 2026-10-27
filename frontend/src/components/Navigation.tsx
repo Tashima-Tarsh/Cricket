@@ -63,19 +63,19 @@ export const Header: React.FC<HeaderProps> = ({
       {/* 1. Left: Brand Icon & Title */}
       <div className="flex items-center gap-3.5 shrink-0">
         <div className="flex items-center justify-center w-9 h-9 rounded-xl bg-gradient-to-br from-cyan-400 via-emerald-400 to-[#C8FF35] text-slate-950 font-black font-mono text-sm shadow-[0_0_20px_rgba(0,240,255,0.4)]">
-          //S
+          NK
         </div>
         <div className="cursor-pointer" onClick={() => onSelectTab("command")}>
           <div className="flex items-center gap-2">
             <span className="font-heading font-black tracking-wider text-base text-white">
-              STRIKE<span className="text-cyan-400">//</span>OS
+              THENITISHKR<span className="text-cyan-400">-</span>SPORTS
             </span>
             <span className="px-2 py-0.5 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-[9px] font-mono text-cyan-300 font-bold">
               v2.6 PRO
             </span>
           </div>
           <div className="text-[10px] font-mono tracking-widest text-slate-400 uppercase hidden sm:block">
-            CRICKET INTELLIGENCE.
+            CRICKET INTELLIGENCE &amp; GRAND LEAGUE ENGINE
           </div>
         </div>
       </div>
