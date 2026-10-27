@@ -43,6 +43,10 @@ class UniversalMatchEngine:
         self._cached_states: Dict[str, Dict[str, Any]] = {}
         self._store = FixtureStore(store_path)
         for saved in self._store.load():
+            # Normalize persisted internal envelope before strict user-facing validation.
+            saved = dict(saved)
+            saved.setdefault("match_id", saved.get("id"))
+            saved.pop("data_provenance", None)
             fixture = CustomFixture.model_validate(saved).model_dump()
             match_id = fixture["match_id"]
             if fixture.get("id") not in (None, match_id):

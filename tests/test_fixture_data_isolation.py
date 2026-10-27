@@ -11,7 +11,7 @@ class MatchDataIsolationTests(unittest.TestCase):
         self.assertFalse(list((root / "data" / "snapshots").glob("nz_ind_*.json")))
 
     def test_no_fixture_specific_snapshot_endpoint(self):
-        paths = {route.path for route in app.routes}
+        paths = {route.path for route in app.routes if hasattr(route, "path")}
         self.assertFalse(any("/research/nz-ind-" in path for path in paths))
 
 
