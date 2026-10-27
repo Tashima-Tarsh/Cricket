@@ -67,3 +67,19 @@ now return HTTP 503 instead of leaking unsourced measurements from the
 experimental pitch-vision module. Rendering-only mock trajectories in the
 frontend remain labelled as sample illustrations and must never enter analysis
 or be represented as observed.
+
+## New dated official scoring profile (2026-10-27)
+
+The source-backed `dream11_published_2026_10_27` profile is available via
+`POST /api/v1/score` with an explicit `rule_version` field for T20, ODI and
+T10. The old `legacy_v3` profile remains unchanged for previous consumers;
+this avoids silently rewriting old archives. Source:
+https://www.dream11.com/fantasy-cricket/point-system
+
+The published rule profile uses T20 boundary +4, six +6, 25/50/75/100
+bonuses 4/8/12/16 and five-wicket haul +12; ODI one point per **three**
+dot balls with 25 through 150-run thresholds; T10 25/50/75/100 and
+two-through-five wicket thresholds. The scorer does not guess dismissals
+from a zero-run scorecard; `was_dismissed` must be explicit. Full match
+substitute handling still needs fielding participation evidence.
+

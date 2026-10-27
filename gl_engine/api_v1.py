@@ -9,6 +9,7 @@ from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, ConfigDict, Field
 
 from .capabilities.c11_fantasy_scoring import CricketFantasyScoring
+from .official_scoring import RULE_VERSION, SOURCE_URL, score_official
 from .roster_safety import validate_roster
 
 router = APIRouter(prefix="/api/v1", tags=["stable-research-api"])
@@ -16,7 +17,8 @@ router = APIRouter(prefix="/api/v1", tags=["stable-research-api"])
 
 class ScoreRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
-    rule_version: Literal["legacy_v3"] = "legacy_v3"
+    rule_version: Literal["legacy_v3", "dream11_published_2026_10_27"] = "legacy_v3"
+    was_dismissed: bool = False
     match_format: Literal["T20", "ODI", "T10"] = "T20"
     runs: int = Field(default=0, ge=0)
     fours: int = Field(default=0, ge=0)
@@ -86,10 +88,26 @@ def fixture_roster(fixture_id: str):
 @router.post("/score")
 def score(request: ScoreRequest):
     data = request.model_dump(exclude={"rule_version"})
+    if request.rule_version == RULE_VERSION:
+        return {"rule_version": RULE_VERSION, "data": score_official(**data)}
+    data.pop("was_dismissed")
     return {
         "rule_version": request.rule_version,
-        "current_official_rule_verification": "REQUIRED",
+        "current_official_rule_verification": "LEGACY_ARCHIVAL_PROFILE",
         "data": CricketFantasyScoring().calculate_player_points(**data),
+    }
+
+
+@router.get("/scoring/rules")
+def scoring_rules():
+    return {
+        "published_version": RULE_VERSION,
+        "published_source": SOURCE_URL,
+        "reviewed_on": "2026-10-27",
+        "formats": ["T20", "ODI", "T10"],
+        "legacy_profile_available": "legacy_v3",
+        "selection_required": True,
+        "caveat": "Published 2026 rules are not retroactive to historical contests.",
     }
 
 
