@@ -1096,18 +1096,20 @@ def get_unified_live_match(match_id: str = "ind-vs-wi-t20i-2026"):
 
 @app.get("/api/pitch/hawkeye")
 def get_pitch_hawkeye(bowler_type: str = "Pace"):
-    from .pitch_venue_vision import PitchVenueVisionEngine
-    return PitchVenueVisionEngine().analyze_hawkeye_lengths(bowler_type)
+    """No observed tracking feed is configured; never export model assumptions as Hawk-Eye."""
+    raise HTTPException(503, "Observed ball-tracking measurements unavailable; no substitute trajectories generated")
+
 
 @app.get("/api/pitch/boundary-geometry")
 def get_pitch_boundaries():
-    from .pitch_venue_vision import PitchVenueVisionEngine
-    return PitchVenueVisionEngine().compute_boundary_risk_zones()
+    """Boundary distances and hit probabilities require sourced venue measurements."""
+    raise HTTPException(503, "Verified boundary dimensions unavailable; simulated geometry withheld")
+
 
 @app.get("/api/pitch/degradation")
 def get_pitch_degradation(over: float = 10.0, innings: int = 2):
-    from .pitch_venue_vision import PitchVenueVisionEngine
-    return PitchVenueVisionEngine().evaluate_pitch_degradation(over, innings)
+    """Do not market heuristic pitch wear and dew values as observations."""
+    raise HTTPException(503, "Observed pitch-wear telemetry unavailable; model-only estimates withheld")
 
 @app.get("/api/matchups/h2h")
 def get_matchup_h2h(batter: str = "Pooran", bowler: str = "Kuldeep"):

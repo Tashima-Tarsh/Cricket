@@ -51,3 +51,19 @@ Branch: `repair/evidence-and-roster-safety-20261027`.
    confirmed pre-match XI are sourced and timestamped.
 6. **Operations**: no production deployment, rate limiting, managed
    authentication, or remote provider integration has been validated.
+
+
+## Data-artifact quarantine
+
+The previously committed `data/processed/player_matchups.parquet` and
+`venue_profiles.parquet` were produced before the provenance fix and may
+contain invented tracking and venue measurements. This repair removes both
+derived files from the current branch (they remain retrievable in Git history)
+and ignores their future regeneration. Any regeneration must originate from
+independently sourced observations. Historical Cricsheet databases are retained.
+
+The three old `/api/pitch/{hawkeye,boundary-geometry,degradation}` endpoints
+now return HTTP 503 instead of leaking unsourced measurements from the
+experimental pitch-vision module. Rendering-only mock trajectories in the
+frontend remain labelled as sample illustrations and must never enter analysis
+or be represented as observed.

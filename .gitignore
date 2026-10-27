@@ -52,3 +52,7 @@ data/raw/
 *.egg-info/
 data/raw/
 
+
+# Generated analysis products (regenerate only from verified inputs)
+data/processed/player_matchups.parquet
+data/processed/venue_profiles.parquet
