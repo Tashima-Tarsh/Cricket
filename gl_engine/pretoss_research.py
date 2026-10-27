@@ -108,3 +108,64 @@ def save_manual_xi(nz_names, ind_names, source_note, toss_winner, toss_decision)
             "eligible_provisional_teams":accepted,
             "need_rebuild":len(accepted)<3,
             "message":"Provisional templates containing absent XI players are discarded, not repaired by substitution."}
+
+
+POST_TOSS_PATH = Path(__file__).resolve().parents[1] / "data" / "snapshots" / "nz_ind_2026_10_27_post_toss.json"
+
+
+def get_post_toss_research():
+    """Validate user-attested playing XI and recompute all contest portfolios.
+
+    This is an explicitly recorded manual announcement, not independent
+    provider confirmation. No player absent from either XI may enter a team.
+    """
+    from .roster_safety import validate_confirmed_xi
+    doc = load_snapshot()
+    record = json.loads(POST_TOSS_PATH.read_text(encoding="utf-8"))
+    if record.get("fixture_id") != SNAPSHOT_ID:
+        raise HTTPException(409, "Post-toss and pre-toss fixture IDs differ")
+    teams = record["players"]
+    nz = teams.get("NZ", [])
+    ind = teams.get("IND", [])
+    if len(nz) != 11 or len(ind) != 11:
+        raise HTTPException(409, "Exactly eleven names required per team")
+    for team, players in teams.items():
+        if team not in {"NZ", "IND"}:
+            raise HTTPException(409, "Unexpected opponent fixture")
+        if any(not isinstance(pair, list) or len(pair) != 2 or not all(pair) for pair in players):
+            raise HTTPException(409, "Full-name/credit-identity aliases required")
+    ids = {team: [pair[0] for pair in players] for team, players in teams.items()}
+    # Reject duplicates, wrong team membership and screenshot identity mismatches.
+    confirmed = validate_manual_xi(ids["NZ"], ids["IND"])
+    validate_confirmed_xi(confirmed)
+    all_real_names = [pair[1].casefold().strip() for pairs in teams.values() for pair in pairs]
+    if len(set(all_real_names)) != 22:
+        raise HTTPException(409, "Playing XI has duplicate real names")
+    available = set(ids["NZ"] + ids["IND"])
+    generated = []
+    for seed in record["contest_scenarios"]:
+        portfolio = lineup_evidence(
+            seed["names"], seed["captain"], seed["vice_captain"],
+            doc["players"], available=available,
+        )
+        generated.append({
+            "contest": seed["contest"],
+            "scenario": seed["scenario"],
+            "predictions_status": "SCENARIO_ONLY_NOT_HISTORICALLY_CALIBRATED",
+            **portfolio,
+        })
+    if len({p["contest"] for p in generated}) != 3:
+        raise HTTPException(409, "Missing or duplicated entry-tier strategy")
+    return {
+        "fixture_id": SNAPSHOT_ID,
+        "provenance": record["provenance"],
+        "status": "USER_ATTESTED_XI_NOT_INDEPENDENTLY_VERIFIED",
+        "toss": record["toss"],
+        "full_player_names": teams,
+        "player_pool": confirmed,
+        "contest_sizes": doc["contests"],
+        "teams": generated,
+        "rank_1_probability": None,
+        "source_snapshot_time_ist": "2026-10-27T11:44:00+05:30",
+        "caveat": "Verify exact contest lock time and screenshot credits in app",
+    }

@@ -119,3 +119,21 @@ not the current deployed historical model or a contest winner/Rank-1 metric.
 
 Automatic synthetic retraining is disabled when the model or data are absent.
 Providers and exact XI are still required to use any projection on a live fixture.
+
+## NZ–IND 3rd T20I 2026: manual after-toss scenario workflow
+
+User provided the 22 playing-XI names and reported India won the toss
+and chose to field at approximately 12:04 IST on 27 October 2026.
+Their identities and the 11:44–11:45 IST screenshot credits/ownership are
+saved separately in `data/snapshots/nz_ind_2026_10_27_post_toss.json`.
+
+Access `GET /api/v1/research/nz-ind-2026-10-27/post-toss` for
+all 22 names and three legal 11-player fantasy research portfolios by
+₹5, ₹19, and ₹49 contest. The endpoint revalidates credits, roles,
+team limits, unique names, captain/vice-captain and excludes unavailable
+players. It does NOT claim provider verification or a measured Rank-1 chance.
+
+For future fixtures, authenticated users may submit full XI via the
+manual XI processing interface; user-provided confirmations are separate
+from licensed two-provider confirmation. Never pull a player from
+the pre-toss additional pool automatically after the lineup is announced.

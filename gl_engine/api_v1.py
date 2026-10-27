@@ -87,6 +87,12 @@ def fixture_roster(fixture_id: str):
     }
 
 
+@router.get("/research/nz-ind-2026-10-27/post-toss")
+def nz_ind_user_attested_portfolios():
+    from .pretoss_research import get_post_toss_research
+    return get_post_toss_research()
+
+
 @router.post("/score")
 def score(request: ScoreRequest):
     data = request.model_dump(exclude={"rule_version"})

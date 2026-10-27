@@ -1,0 +1,171 @@
+{
+  "fixture_id": "nz_ind_2026_10_27_3rd_t20i_pretoss",
+  "updated_by": "USER_IN_CHAT",
+  "submission_recorded_at": "2026-10-27T12:04:00+05:30",
+  "provenance": {
+    "source": "USER_SUBMITTED_TOSS_AND_PLAYING_XI",
+    "verification_status": "UNVERIFIED",
+    "notes": "Named XI attested by user after toss; not corroborated against provider. Role, credits, ownership from earlier screenshot, not live updates."
+  },
+  "toss": {
+    "winner": "IND",
+    "decision": "bowl",
+    "submitted_as": "India have won the toss and have opted to field"
+  },
+  "players": {
+    "IND": [
+      [
+        "S Samson",
+        "Sanju Samson"
+      ],
+      [
+        "A Sharma",
+        "Abhishek Sharma"
+      ],
+      [
+        "V Sooryavanshi",
+        "Vaibhav Sooryavanshi"
+      ],
+      [
+        "S Iyer",
+        "Shreyas Iyer"
+      ],
+      [
+        "T Varma",
+        "Tilak Varma"
+      ],
+      [
+        "Kumar Reddy",
+        "Nitish Kumar Reddy"
+      ],
+      [
+        "N Dhir",
+        "Naman Dhir"
+      ],
+      [
+        "A Patel",
+        "Axar Patel"
+      ],
+      [
+        "B Kumar",
+        "Bhuvneshwar Kumar"
+      ],
+      [
+        "A Singh",
+        "Arshdeep Singh"
+      ],
+      [
+        "P Yadav",
+        "Prince Yadav"
+      ]
+    ],
+    "NZ": [
+      [
+        "T Seifert",
+        "Tim Seifert"
+      ],
+      [
+        "F Allen",
+        "Finn Allen"
+      ],
+      [
+        "D Mitchell",
+        "Daryl Mitchell"
+      ],
+      [
+        "G Phillips",
+        "Glenn Phillips"
+      ],
+      [
+        "B Jacobs",
+        "Bevon Jacobs"
+      ],
+      [
+        "M Bracewell",
+        "Michael Bracewell"
+      ],
+      [
+        "M Santner",
+        "Mitchell Santner"
+      ],
+      [
+        "K Jamieson",
+        "Kyle Jamieson"
+      ],
+      [
+        "A Milne",
+        "Adam Milne"
+      ],
+      [
+        "J Duffy",
+        "Jacob Duffy"
+      ],
+      [
+        "M Fisher",
+        "Matthew Fisher"
+      ]
+    ]
+  },
+  "contest_scenarios": [
+    {
+      "contest": "entry_5",
+      "scenario": "India new ball movement; India top-order chase",
+      "captain": "A Singh",
+      "vice_captain": "S Samson",
+      "names": [
+        "S Samson",
+        "F Allen",
+        "A Sharma",
+        "S Iyer",
+        "V Sooryavanshi",
+        "G Phillips",
+        "M Santner",
+        "A Patel",
+        "A Singh",
+        "J Duffy",
+        "B Kumar"
+      ]
+    },
+    {
+      "contest": "entry_19",
+      "scenario": "New Zealand middle order and India chase survive, role-diversified",
+      "captain": "D Mitchell",
+      "vice_captain": "T Varma",
+      "names": [
+        "T Seifert",
+        "F Allen",
+        "D Mitchell",
+        "S Iyer",
+        "T Varma",
+        "M Bracewell",
+        "A Patel",
+        "G Phillips",
+        "K Jamieson",
+        "A Singh",
+        "P Yadav"
+      ]
+    },
+    {
+      "contest": "entry_49",
+      "scenario": "New Zealand sets target and seam bowlers defend in high variance field",
+      "captain": "K Jamieson",
+      "vice_captain": "D Mitchell",
+      "names": [
+        "T Seifert",
+        "B Jacobs",
+        "D Mitchell",
+        "S Iyer",
+        "T Varma",
+        "G Phillips",
+        "M Bracewell",
+        "N Dhir",
+        "K Jamieson",
+        "B Kumar",
+        "A Milne"
+      ]
+    }
+  ],
+  "contest_probability_calibrated": false,
+  "rank1_success_claim": null,
+  "entry_cutoff": "UNVERIFIED_CHECK_IN_APP"
+}
