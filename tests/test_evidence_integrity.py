@@ -46,8 +46,11 @@ class EvidenceIntegrityTests(unittest.TestCase):
     def test_unique_optimizer_rejects_unconfirmed_after_toss(self):
         players = roster()
         players[-1]["is_confirmed_xi"] = False
-        self.assertEqual(UniqueTeamEngine().generate_unique_teams(
-            players, num_teams=1, uniqueness_level=1, toss_completed=True), [])
+        with self.assertRaises(HTTPException) as ctx:
+            UniqueTeamEngine().generate_unique_teams(
+                players, num_teams=1, uniqueness_level=1, toss_completed=True
+            )
+        self.assertEqual(ctx.exception.status_code, 503)
 
     def test_field_rank_remains_unavailable_without_calibration(self):
         engine = UniqueTeamEngine()
