@@ -143,7 +143,8 @@ class UniversalMatchEngine:
                         "is_c": p.get("is_c", False),
                         "is_vc": p.get("is_vc", False),
                         "is_wk": p.get("is_wk", False),
-                        "projected_ownership": p.get("projected_ownership")
+                        "projected_ownership": p.get("projected_ownership"),
+                    "expected_overs": p.get("expected_overs")
                     })
             return parsed
 

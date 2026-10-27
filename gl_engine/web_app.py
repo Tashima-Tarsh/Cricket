@@ -395,7 +395,7 @@ def get_model_validation_endpoint():
 
 @app.get("/api/data")
 def get_data():
-    return load_data()
+    raise HTTPException(410, "Archived report removed from production API; select a connected fixture")
 
 @app.get("/api/state")
 def get_full_state(match_id: Optional[str] = None,
@@ -1288,90 +1288,44 @@ def live_portal():
 
 @app.get("/api/portal/matches")
 def get_portal_matches_catalog():
-    """Returns all available matches combined from Master Fixtures, Universal Engine, and Live Daily Sync with Date, Time, Venue, and Countdown."""
-    from .portal_fixtures import MASTER_FIXTURES
-    from .daily_match_sync import get_daily_match_sync_engine
-    sync_eng = get_daily_match_sync_engine()
+    """Only persisted, user-attested fixtures belong in the active catalog.
 
-    catalog = []
-    seen = set()
-
-    # 1. Master Fixtures (Primary verified fixtures with full Date, Time, Venue)
-    for mid, m in MASTER_FIXTURES.items():
-        seen.add(mid)
-        for a in m.get("aliases", []):
-            seen.add(a)
-        catalog.append({
-            "id": mid,
-            "title": m["title"],
-            "series": m["series"],
-            "date": m["date"],
-            "time": m["time"],
-            "venue": m["venue"],
-            "countdown": m["countdown"],
-            "format": m["format"],
-            "status": m["status"],
-            "archetype": m["archetype"],
-            "category": m.get("category", "INTERNATIONAL"),
-            "par_score": m.get("par_score", 180)
+    Discovery may be shown separately by /api/live/matches, never as a
+    playable fixture before XI, roles and credits are independently supplied.
+    """
+    from .universal_engine import get_universal_engine
+    matches = []
+    for m in get_universal_engine().list_available_matches():
+        matches.append({
+            "id": m["id"], "title": m["name"], "series": None,
+            "date": None, "time": None, "venue": m["venue_name"],
+            "countdown": None, "format": m["format"],
+            "status": m["status"], "data_provenance": m["data_provenance"],
+            "roster_status": "USER_SUPPLIED_UNVERIFIED",
         })
+    return {"status": "success", "count": len(matches), "matches": matches}
 
-    # 2. Live Daily Sync fixtures (Discovered matches from Cricbuzz/Daily sync)
-    try:
-        daily_matches = sync_eng.discover_daily_matches() if hasattr(sync_eng, "discover_daily_matches") else []
-        for d in daily_matches:
-            did = str(d.get("match_id") or d.get("id"))
-            if did not in seen:
-                seen.add(did)
-                v_name = d.get("details", "").split("at")[-1].strip() if "at" in d.get("details", "") else "International Ground"
-                status_raw = d.get("status", "SCHEDULED")
-                is_live = "LIVE" in status_raw.upper()
-                catalog.append({
-                    "id": did,
-                    "title": d.get("title", "Match " + did),
-                    "series": "Daily Cricket Syndicate Hub",
-                    "date": "Today, Oct 24, 2026",
-                    "time": "Live In-Play / Upcoming",
-                    "venue": v_name,
-                    "countdown": "Live in Progress" if is_live else "Scheduled Today",
-                    "format": d.get("format", "T20"),
-                    "status": "LIVE NOW" if is_live else "UPCOMING",
-                    "archetype": d.get("ai_archetype", "HIGH_STAKES_PARITY"),
-                    "category": d.get("category", "INTERNATIONAL"),
-                    "par_score": 175
-                })
-    except Exception as e:
-        print("Error fetching daily sync fixtures:", e)
-
-    return {"status": "success", "count": len(catalog), "matches": catalog}
 
 def extract_match_roster(match_data: Dict[str, Any]) -> List[Dict[str, Any]]:
-    """Extracts or synthesizes a 22-player roster for a fixture with bilateral roles and stats."""
+    """Extracts explicitly supplied players; never infers a roster from a title."""
     player_dict = {}
-    title = match_data.get("title", "")
-    parts = title.replace(",", " ").replace("-", " ").split()
-    team_a = "IND"
-    team_b = "NZ"
-    for i, p in enumerate(parts):
-        if p.lower() == "vs" and i > 0 and i < len(parts) - 1:
-            team_a = parts[i-1].upper()
-            team_b = parts[i+1].upper()
-            break
 
     # 1. Harvest players from lineups
     for l in match_data.get("lineups", []):
         for p in l.get("players", []):
             name = p.get("name")
-            if name and name not in player_dict:
+            if (name and name not in player_dict and p.get("team") and
+                    p.get("role") in {"WK", "BAT", "AR", "BOWL"} and
+                    isinstance(p.get("credits"), (int, float))):
                 player_dict[name] = {
                     "name": name,
-                    "team": p.get("team", team_a if len(player_dict) % 2 == 0 else team_b),
-                    "role": p.get("role", "BAT"),
-                    "credits": p.get("credits", 8.5),
-                    "projected_points": float(p.get("projected_points", 42.0)),
-                    "ceiling_score": float(p.get("ceiling_score", 75.0)),
-                    "floor_score": float(p.get("floor_score", 12.0)),
-                    "order": 3
+                    "team": p.get("team"),
+                    "role": p.get("role"),
+                    "credits": p.get("credits"),
+                    "projected_points": p.get("projected_points"),
+                    "ceiling_score": p.get("ceiling_score"),
+                    "floor_score": p.get("floor_score"),
+                    "order": p.get("order")
                 }
 
     # Return only verified players present in match data; never synthesize dummy players
@@ -1380,7 +1334,7 @@ def extract_match_roster(match_data: Dict[str, Any]) -> List[Dict[str, Any]]:
 
 
 @app.get("/api/portal/dfs-contest-sim")
-def run_dfs_contest_simulation(match_id: str = "161190", n_sims: int = Query(2500, ge=1, le=5000)):
+def run_dfs_contest_simulation(match_id: str, n_sims: int = Query(2500, ge=1, le=5000)):
     """Executes full Copula Correlation + Dream11 Contest Simulation across match lineups."""
     from .dfs_distribution_copula import EmpiricalDistributionCopula
     from .dfs_contest_simulator import DFSContestSimulator, Dream11ContestStructure
@@ -1529,77 +1483,46 @@ def synthesize_bilateral_matchups(title: str, v_name: str):
 
 @app.get("/api/portal/match-data")
 def get_portal_match_data(match_id: str):
-    """Returns real-time dynamic pitch, boundary radar, 4-scenario lineups, and NLP data for ANY selected match."""
-    from .portal_fixtures import MASTER_FIXTURES
-    from .venue_pitch_intelligence import VenuePitchIntelligenceEngine
-    from .daily_match_sync import get_daily_match_sync_engine
+    """Fixture-specific, validated data only; never invent a venue/pitch."""
     from .universal_engine import get_universal_engine
-    if match_id not in get_universal_engine()._matches:
+    if not match_id:
+        raise HTTPException(422, "Explicit match_id required")
+    engine = get_universal_engine()
+    if match_id not in engine._matches:
         raise UnknownMatchError(f"Unknown or disconnected match: {match_id}")
-
-    venue_eng = VenuePitchIntelligenceEngine()
-    sync_eng = get_daily_match_sync_engine()
-
-    # 1. Check MASTER_FIXTURES directly or by alias
-    if match_id in MASTER_FIXTURES:
-        return MASTER_FIXTURES[match_id]
-    
-    for mid, item in MASTER_FIXTURES.items():
-        if match_id in item.get("aliases", []):
-            return item
-
-        # 2. Fallback to VenuePitchIntelligence or Daily Sync
-    telemetry = sync_eng.fetch_live_commentary_and_scorecard(match_id)
-    title = telemetry.get("title") or ("Match " + match_id)
-    v_spec = venue_eng.get_venue_specs(title) or venue_eng.catalog.get("raipur_svns_stadium")
-    
-    # Return unverified baseline estimate without fabricating matchups or fake live telemetry
+    state = engine.get_unified_state(match_id)
+    match = state["match"]
+    venue = match["venue"]
     return {
         "id": match_id,
-        "title": title,
-        "series": "Scheduled Fixture",
-        "date": "Today, Oct 24, 2026",
-        "time": "Scheduled Match Time",
-        "venue": v_spec.venue_name if v_spec else "International Cricket Stadium",
-        "countdown": "Telemetry Pending",
-        "format": "T20 / ODI",
-        "status": "SCHEDULED_UNTRACKED",
-        "category": "INTERNATIONAL",
-        "archetype": v_spec.archetype if v_spec else "HIGH_STAKES_PARITY",
-        "par_score": v_spec.t20_par_score if v_spec else 175,
-        "spin_pct": str(int(v_spec.spin_wicket_pct)) + "% Wkts (" + str(v_spec.expected_turn_deg) + "° Turn)" if v_spec else "45% Wkts (2.5° Turn)",
-        "toss_statement": f"Match {title}: Live provider commentary not synchronized. Pitch conditions are venue baseline estimates requiring field verification.",
-        "unspent_shield": "13.5 - 18.0 Cr Unspent",
-        "narrative_shield": "Venue Baseline Model",
-        "boundaries": {
-            "straight": str(v_spec.boundary_dimensions.get("straight", 70)) + "m" if v_spec else "70m",
-            "sqLeg": str(v_spec.boundary_dimensions.get("square_leg", 62)) + "m" if v_spec else "62m",
-            "midWkt": str(v_spec.boundary_dimensions.get("midwicket", 66)) + "m" if v_spec else "66m",
-            "thirdMan": str(v_spec.boundary_dimensions.get("third_man", 60)) + "m" if v_spec else "60m",
-            "cover": str(v_spec.boundary_dimensions.get("cover", 65)) + "m" if v_spec else "65m"
-        },
-        "soil": v_spec.soil_type if v_spec else "Standard Balanced Deck",
-        "seamMm": str(v_spec.expected_seam_mm) + " mm" if v_spec else "3.2 mm",
-        "turnDeg": str(v_spec.expected_turn_deg) + "°" if v_spec else "2.5°",
-        "pacePct": int(v_spec.pace_wicket_pct) if v_spec else 55,
-        "spinPct": int(v_spec.spin_wicket_pct) if v_spec else 45,
+        "title": match["name"],
+        "series": None,
+        "date": None,
+        "time": None,
+        "venue": venue["name"],
+        "format": match["format"],
+        "status": match["status"],
+        "data_provenance": "USER_SUPPLIED_UNVERIFIED",
+        "toss_statement": match["toss"].get("statement"),
+        "boundaries": venue.get("boundaries"),
+        "soil": venue.get("soil_type"),
+        "pitch_nature": venue.get("pitch_nature"),
+        "par_score": venue.get("avg_first_innings"),
+        "pacePct": venue.get("pace_wicket_pct"),
+        "spinPct": venue.get("spin_wicket_pct"),
+        "lineups": state["lineups"],
+        "battles": state["battles"],
+        "players": state["players"],
         "matchups": [],
         "handedness_matrix": [],
         "venue_player_records": [],
-        "data_provenance": "FALLBACK_MODEL_DEFAULT",
-        "lineups": [],
-        "battles": []
+        "metrics_status": "UNCALIBRATED_HEURISTIC",
     }
 
 
 @app.get("/legacy", response_class=HTMLResponse)
 def index():
-    raw_data = load_data()
-    json_str = json.dumps(raw_data).replace("</script>", "<\\/script>")
-    if LEGACY_TEMPLATE_PATH.exists():
-        template = LEGACY_TEMPLATE_PATH.read_text(encoding="utf-8")
-        return template.replace("__DATA_JSON__", json_str)
-    return "<h1>Legacy Portal Template Not Found</h1>"
+    raise HTTPException(410, "Legacy snapshot portal disabled; use the dynamic application")
 
 @app.get("/api/backtesting/replays")
 def get_backtesting_replays():
