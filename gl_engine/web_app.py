@@ -568,17 +568,32 @@ def load_cricsheet_match_endpoint(match_id: str):
     }
 
 from .live_feed import fetch_espn_cricinfo_live_matches, get_fixture_toss_feed
+from .cricbuzz_feed import fetch_cricbuzz_live_matches, ingest_cricbuzz_live_match
 
 @app.get("/api/live/matches")
 def get_live_matches():
-    """Fetches real-time live matches from ESPN Cricinfo and Cricbuzz live feeds."""
-    matches = fetch_espn_cricinfo_live_matches()
+    """Fetches real-time live matches from Cricbuzz (tarun7r integration) with ESPN Cricinfo fallback."""
+    matches = fetch_cricbuzz_live_matches()
+    if not matches:
+        matches = fetch_espn_cricinfo_live_matches()
     return {
         "status": "success" if matches else "unavailable",
-        "data_provenance": "PROVIDER_FEED" if matches else "UNAVAILABLE",
+        "data_provenance": "CRICBUZZ_LIVE_FEED" if matches else "UNAVAILABLE",
         "count": len(matches),
         "matches": matches
     }
+
+@app.post("/api/live/load/{match_id}")
+def load_live_match_endpoint(match_id: str):
+    """Directly ingests a live Cricbuzz match with confirmed 22-player lineups and live scores."""
+    raw_id = match_id.replace("cricbuzz_", "").strip()
+    try:
+        res = ingest_cricbuzz_live_match(raw_id)
+        _STATE_CACHES.clear()
+        _STATE_CACHE_TIMES.clear()
+        return res
+    except Exception as e:
+        raise HTTPException(422, f"Failed to ingest live match '{match_id}': {str(e)}")
 
 @app.get("/api/live/toss-feed")
 def get_live_toss_feed(match_id: str):

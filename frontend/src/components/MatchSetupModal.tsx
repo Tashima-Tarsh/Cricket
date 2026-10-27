@@ -158,38 +158,54 @@ export const MatchSetupModal: React.FC<MatchSetupModalProps> = ({
   };
 
   // Load a live match directly
-  const handleLoadLiveMatch = (item: LiveMatchItem) => {
-    const updatedMatch: MatchInfo = {
-      ...currentMatch,
-      id: item.id,
-      name: item.title,
-      teams: {
-        home: {
-          name: item.team_home,
-          code: item.team_home.substring(0, 3).toUpperCase(),
-          score: item.score_home || "",
-          overs: ""
-        },
-        away: {
-          name: item.team_away,
-          code: item.team_away.substring(0, 3).toUpperCase(),
-          score: item.score_away || "",
-          overs: ""
-        }
-      },
-      toss: {
-        winner: "TBD",
-        choice: "bowl",
-        statement: item.toss || "Awaiting toss declaration"
-      },
-      venue: {
-        ...currentMatch.venue,
-        pitch_nature: item.pitch_report || currentMatch.venue.pitch_nature
+  const handleLoadLiveMatch = async (item: LiveMatchItem) => {
+    setIsSaving(true);
+    setFeedError(null);
+    try {
+      const rawId = item.id.replace("cricbuzz_", "").replace("espn_rss_", "").trim();
+      const res = await fetch(`/api/live/load/${encodeURIComponent(rawId)}`, { method: "POST" });
+      if (res.ok) {
+        const data = await res.json();
+        onApplyMatch(data.match, data.players);
+        onClose();
+        return;
       }
-    };
-
-    onApplyMatch(updatedMatch);
-    onClose();
+      // Fallback
+      const updatedMatch: MatchInfo = {
+        ...currentMatch,
+        id: item.id,
+        name: item.title,
+        teams: {
+          home: {
+            name: item.team_home,
+            code: item.team_home.substring(0, 3).toUpperCase(),
+            score: item.score_home || "",
+            overs: ""
+          },
+          away: {
+            name: item.team_away,
+            code: item.team_away.substring(0, 3).toUpperCase(),
+            score: item.score_away || "",
+            overs: ""
+          }
+        },
+        toss: {
+          winner: "TBD",
+          choice: "bowl",
+          statement: item.toss || "Awaiting toss declaration"
+        },
+        venue: {
+          ...currentMatch.venue,
+          pitch_nature: item.pitch_report || currentMatch.venue.pitch_nature
+        }
+      };
+      onApplyMatch(updatedMatch);
+      onClose();
+    } catch (err) {
+      setFeedError(err instanceof Error ? err.message : "Live match ingestion failed.");
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   // Submit custom match form
@@ -539,7 +555,11 @@ export const MatchSetupModal: React.FC<MatchSetupModalProps> = ({
                           </span>
                         )}
 
-                        {m.data_provenance === "LIVE_CRICDATA_SDK" ? (
+                        {m.data_provenance === "CRICBUZZ_LIVE_FEED" ? (
+                          <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-bold border border-emerald-500/30">
+                            CRICBUZZ LIVE (tarun7r)
+                          </span>
+                        ) : m.data_provenance === "LIVE_CRICDATA_SDK" ? (
                           <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-bold border border-emerald-500/30">
                             Provider-supplied · verification pending
                           </span>
@@ -592,7 +612,7 @@ export const MatchSetupModal: React.FC<MatchSetupModalProps> = ({
                         : "bg-slate-800 hover:bg-emerald-600 text-slate-200 hover:text-white border border-white/10"
                     }`}
                   >
-                    <Zap size={14} /> {currentMatch.id === m.id ? "ACTIVE LIVE MATCH" : "LOAD THIS MATCH INTO STRIKE//OS"}
+                    <Zap size={14} /> {isSaving ? "SYNCING LIVE LINEUPS & SOLVING..." : (currentMatch.id === m.id ? "ACTIVE LIVE MATCH" : "⚡ SYNC LIVE LINEUP & SOLVE")}
                   </button>
                 </div>
               ))}
