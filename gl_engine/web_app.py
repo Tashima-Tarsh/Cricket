@@ -1011,7 +1011,7 @@ def get_ten_scenarios():
     }
 
 @app.get("/api/odds/devig")
-def get_odds_devig(decimal_a: float = 1.44, decimal_b: float = 2.75, team_a: str = "India", team_b: str = "West Indies"):
+def get_odds_devig(decimal_a: float = Query(..., gt=1), decimal_b: float = Query(..., gt=1), team_a: str = Query(..., min_length=1), team_b: str = Query(..., min_length=1)):
     """Returns de-vigged market implied probabilities using Shin, Power, and Multiplicative methods."""
     from .odds_devig import OddsDeVigEngine
     engine = OddsDeVigEngine()
@@ -1163,12 +1163,12 @@ def get_dls_target(first_runs: int = 180, first_overs: int = 20, second_overs: i
     return PlayerBattlesMCPEngine().compute_dls_target(first_runs, first_overs, second_overs, wickets_lost)
 
 @app.get("/api/oracle/win-probability")
-def get_win_probability(target: int = 180, current: int = 118, balls_left: int = 50, wickets_left: int = 8):
+def get_win_probability(target: int = Query(..., ge=1), current: int = Query(..., ge=0), balls_left: int = Query(..., ge=0), wickets_left: int = Query(..., ge=0, le=10)):
     from .datasets_2026 import CricOracle2026
     return CricOracle2026.calculate_win_probability(target, current, balls_left, wickets_left)
 
 @app.get("/api/oracle/projected-score")
-def get_projected_score(current_runs: int = 118, overs: float = 11.4, wickets_lost: int = 2):
+def get_projected_score(current_runs: int = Query(..., ge=0), overs: float = Query(..., ge=0), wickets_lost: int = Query(..., ge=0, le=10)):
     from .datasets_2026 import CricOracle2026
     return CricOracle2026.forecast_final_innings_score(current_runs, overs, wickets_lost)
 
