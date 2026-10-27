@@ -241,7 +241,7 @@ def ingest_match_endpoint(payload: Dict[str, Any] = Body(...), _authorized: None
     """Dynamically ingests ANY new match or custom playing XIs, running DuckDB ball-by-ball
     profiling and OR-Tools CP-SAT lineup optimization in real-time."""
     from .universal_engine import get_universal_engine
-     engine = get_universal_engine()
+    engine = get_universal_engine()
     try:
         state = engine.ingest_match(payload)
     except (ValidationError, ValueError, TypeError) as exc:
