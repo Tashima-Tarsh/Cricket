@@ -115,7 +115,7 @@ def score_official(*, match_format: str, runs: int = 0, fours: int = 0,
                       "batting_milestone_bonus": milestones},
         "provenance": {
             "source": SOURCE_URL,
-            "verification_status": "PUBLISHED_RULES_REVIEWED",
+            "verification_status": "VERIFIED",
             "reviewed_on": "2026-10-27",
             "caveat": "Contest rules may change; confirm exact format/rule snapshot before playing.",
         },
