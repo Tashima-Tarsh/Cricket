@@ -155,6 +155,7 @@ export const MatchStudio: React.FC = () => {
   const [customMinCredits, setCustomMinCredits] = useState<number>(78.0);
   const [customMaxCredits, setCustomMaxCredits] = useState<number>(86.0);
   const [numTeams, setNumTeams] = useState<number>(10);
+  const [contestSpots, setContestSpots] = useState<number>(100000);
   const [maxOverlap, setMaxOverlap] = useState<number>(8);
   const [minDifferentials, setMinDifferentials] = useState<number>(2);
   const [riskMode, setRiskMode] = useState<"BALANCED" | "HIGH_CEILING" | "DIFFERENTIAL_HEAVY">("HIGH_CEILING");
@@ -231,7 +232,8 @@ export const MatchStudio: React.FC = () => {
       const params = new URLSearchParams({
         teams: String(numTeams),
         max_overlap: String(maxOverlap),
-        spots: "700000",
+        spots: String(contestSpots),
+        min_differentials: String(minDifferentials),
         credit_strategy: creditStrategy === "custom" ? "custom" : creditStrategy,
         min_credits: String(minCr),
         max_credits: String(maxCr),
@@ -258,7 +260,7 @@ export const MatchStudio: React.FC = () => {
       const data = await res.json();
       if (Array.isArray(data.lineups)) {
         setSolvedLineups(data.lineups);
-        setSolveStatusMessage(`Successfully generated ${data.lineups.length} Grand League lineups (${useCopula ? "Copula Correlated" : "Vectorized"}).`);
+        setSolveStatusMessage(`Generated ${data.lineups.length} experimental lineups. Field simulation is uncalibrated.`);
       }
     } catch (e: any) {
       setSolveStatusMessage(`Optimization Notice: ${e.message || "Lineup generation could not converge."}`);
@@ -570,15 +572,23 @@ export const MatchStudio: React.FC = () => {
             </div>
 
             <div className="pt-2 border-t border-stone-200">
+              <label htmlFor="contestSpots" className="text-stone-600 block mb-1">Actual contest entries (1 to 5,000,000)</label>
+              <input id="contestSpots" type="number" min={1} max={5000000} step={1}
+                value={contestSpots}
+                onChange={(e) => setContestSpots(Number(e.target.value))}
+                className="w-full bg-stone-50 border border-stone-300 rounded-lg px-3 py-1.5 text-stone-900"
+              />
+            </div>
+            <div className="pt-2 border-t border-stone-200">
               <label className="text-stone-600 block mb-1">Contest Type & Risk Calibration</label>
               <select
                 value={riskMode}
                 onChange={(e) => setRiskMode(e.target.value as any)}
                 className="w-full bg-stone-50 border border-stone-300 rounded-lg px-3 py-1.5 text-stone-900"
               >
-                <option value="HIGH_CEILING">Mega Contest (500k - 700k+ Spots • Max 99th Percentile)</option>
-                <option value="DIFFERENTIAL_HEAVY">Ultra Contrarian (4+ Differentials • Solo Winner)</option>
-                <option value="BALANCED">Mini-GL / Medium Field (10k - 50k Spots)</option>
+                <option value="HIGH_CEILING">High-ceiling optimization (experimental)</option>
+                <option value="DIFFERENTIAL_HEAVY">Differential-heavy (requires ownership input)</option>
+                <option value="BALANCED">Balanced optimization</option>
               </select>
             </div>
 
@@ -610,7 +620,7 @@ export const MatchStudio: React.FC = () => {
                 onChange={(e) => setCreditStrategy(e.target.value as any)}
                 className="w-full bg-stone-50 border border-stone-300 rounded-lg px-3 py-2 text-stone-900 font-bold"
               >
-                <option value="79-85">79.0 – 85.0 Cr (Leaves 15+ Cr Unspent, 0 Collisions)</option>
+                <option value="79-85">79.0 – 85.0 Cr (Higher unused-credit band; duplicates unknown)</option>
                 <option value="87-89">87.0 – 89.0 Cr (Balanced High Ceiling)</option>
                 <option value="90-95">90.0 – 95.0 Cr (Standard Full Budget)</option>
                 <option value="custom">Custom Credit Min & Max Range</option>

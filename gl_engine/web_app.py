@@ -558,7 +558,8 @@ def get_ortools_lineups(
     locked: Optional[str] = None,
     excluded: Optional[str] = None,
     exposure: Optional[str] = None,
-    confirmed_xi: Optional[str] = None
+    confirmed_xi: Optional[str] = None,
+    min_differentials: Optional[int] = None
 ):
     # Format-aware overs bounds: default T20 allows 5-20; ODI allows up to 50; Test up to 450.
     max_allowed_overs = 20
@@ -598,6 +599,8 @@ def get_ortools_lineups(
         raise HTTPException(422, "Both custom credit bounds are required.")
     if min_credits is not None and not (math.isfinite(min_credits) and math.isfinite(max_credits) and 0 <= min_credits <= max_credits <= 100):
         raise HTTPException(422, "Credit bounds must be finite and ordered within 0-100.")
+    if min_differentials is not None and not 0 <= min_differentials <= 5:
+        raise HTTPException(422, "Differential count must be between 0 and 5.")
     effective_spots = spots
     from .universal_engine import get_universal_engine
     selected_id = match_id or get_universal_engine()._active_match_id
@@ -675,7 +678,7 @@ def get_ortools_lineups(
     opt = ORToolsCricketOptimizer(players)
     lineups = opt.generate_grand_league_portfolio(
         num_teams=teams,
-        min_differentials_per_team=3 if effective_spots >= 700000 else 2,
+        min_differentials_per_team=min_differentials if min_differentials is not None else (3 if effective_spots >= 700000 else 2),
         max_overlap_between_teams=max_overlap,
         spots=effective_spots,
         credit_strategy=credit_strategy,
