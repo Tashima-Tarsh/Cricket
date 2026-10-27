@@ -1212,8 +1212,7 @@ def get_oracle_team_phase(team_name: str):
 
 @app.get("/api/datasets/2026-schedule")
 def get_2026_schedule():
-    from .datasets_2026 import Datasets2026Pipeline
-    return {"fixtures": Datasets2026Pipeline().get_season_2026_fixtures()}
+    return {"status": "unavailable", "fixtures": [], "reason": "Verified season schedule provider not connected"}
 
 
 @app.get("/api/portal/roster")
