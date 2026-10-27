@@ -1259,6 +1259,81 @@ def get_projected_score(current_runs: int = 118, overs: float = 11.4, wickets_lo
     from .datasets_2026 import CricOracle2026
     return CricOracle2026.forecast_final_innings_score(current_runs, overs, wickets_lost)
 
+@app.get("/api/oracle/value-bets")
+def get_oracle_value_bets(match_id: Optional[str] = None):
+    """
+    THENITISHKR-SPORTS // Wicket Oracle Value Bets
+    DraftKings-backed moneyline and totals bets with 25% Fractional Kelly Criterion sizing.
+    """
+    from .wicket_oracle import WicketOracleEngine
+    match_meta = None
+    if match_id:
+        try:
+            match_meta, _ = resolve_match_players(match_id)
+        except Exception:
+            pass
+    bets = WicketOracleEngine.get_value_bets(match_meta)
+    return {
+        "status": "success",
+        "platform": "THENITISHKR-SPORTS",
+        "count": len(bets),
+        "elite_count": sum(1 for b in bets if b["tier"] == "Elite Pick"),
+        "strong_count": sum(1 for b in bets if b["tier"] == "Strong"),
+        "avg_edge_pct": round(sum(b["edge"] for b in bets) / len(bets) * 100, 1) if bets else 0.0,
+        "bets": bets
+    }
+
+@app.get("/api/oracle/player-props")
+def get_oracle_player_props(match_id: Optional[str] = None):
+    """
+    THENITISHKR-SPORTS // Wicket Oracle Player Props
+    Batter runs and bowler wickets projections vs DraftKings lines with edge and recommendations.
+    """
+    from .wicket_oracle import WicketOracleEngine
+    raw_players = []
+    try:
+        _, players = resolve_match_players(match_id)
+        raw_players = [p.model_dump() for p in players]
+    except Exception:
+        try:
+            from .universal_engine import get_universal_engine
+            engine = get_universal_engine()
+            for mid in engine._matches:
+                meta = engine._matches[mid]
+                raw = engine._profile_match_players(meta)
+                if raw:
+                    raw_players = raw
+                    break
+        except Exception:
+            pass
+
+    props = WicketOracleEngine.get_player_props(raw_players, match_id=match_id)
+    return {
+        "status": "success",
+        "platform": "THENITISHKR-SPORTS",
+        "count": len(props),
+        "props": props
+    }
+
+@app.get("/api/oracle/teams")
+def get_oracle_teams():
+    """Return list of supported teams for deep dive analysis."""
+    from .wicket_oracle import WicketOracleEngine
+    return {"teams": WicketOracleEngine.IPL_TEAMS}
+
+@app.get("/api/oracle/team-phase/{team_name}")
+def get_oracle_team_phase(team_name: str):
+    """
+    THENITISHKR-SPORTS // Team Phase Deep Dive
+    Powerplay (1-6), Middle (7-15), and Death (16-20) breakdown with venue records.
+    """
+    from .wicket_oracle import WicketOracleEngine
+    return {
+        "status": "success",
+        "platform": "THENITISHKR-SPORTS",
+        "deep_dive": WicketOracleEngine.get_team_phase_deep_dive(team_name)
+    }
+
 @app.get("/api/datasets/2026-schedule")
 def get_2026_schedule():
     from .datasets_2026 import Datasets2026Pipeline

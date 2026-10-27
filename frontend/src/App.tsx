@@ -19,6 +19,9 @@ const FantasyLab = lazy(() => import("./views/FantasyLab").then(module => ({ def
 const UniqueEngineView = lazy(() => import("./views/UniqueEngineView").then(module => ({ default: module.UniqueEngineView })));
 const AIAnalyst = lazy(() => import("./views/AIAnalyst").then(module => ({ default: module.AIAnalyst })));
 const SettingsProviders = lazy(() => import("./views/SettingsProviders").then(module => ({ default: module.SettingsProviders })));
+const ValueBetsOracle = lazy(() => import("./views/ValueBetsOracle").then(module => ({ default: module.ValueBetsOracle })));
+const PlayerPropsOracle = lazy(() => import("./views/PlayerPropsOracle").then(module => ({ default: module.PlayerPropsOracle })));
+const TeamDeepDiveOracle = lazy(() => import("./views/TeamDeepDiveOracle").then(module => ({ default: module.TeamDeepDiveOracle })));
 
 
 import { MatchInfo, WorkspaceTab } from "./types";
@@ -63,7 +66,7 @@ const MainAppContent: React.FC = () => {
           </button>
         </div>
       )}
-      {!currentMatch.id && activeTab !== "providers" && activeTab !== "ai-analyst" && activeTab !== "pitch-lab" && activeTab !== "match-studio" && activeTab !== "series-intelligence" && (
+      {!currentMatch.id && activeTab !== "providers" && activeTab !== "ai-analyst" && activeTab !== "pitch-lab" && activeTab !== "match-studio" && activeTab !== "series-intelligence" && activeTab !== "value-bets" && activeTab !== "player-props" && activeTab !== "team-deep-dive" && (
         <div className="mb-4 rounded-xl border border-white/10 bg-gradient-to-r from-slate-900 to-indigo-950/40 p-5 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="space-y-1">
             <h3 className="font-bold text-base text-amber-300 flex items-center gap-2">
@@ -170,6 +173,19 @@ const MainAppContent: React.FC = () => {
       {/* 12. Live Providers */}
       {activeTab === "providers" && (
         <SettingsProviders providers={currentProviders} />
+      )}
+
+      {/* THENITISHKR-SPORTS Wicket Oracle Views */}
+      {activeTab === "value-bets" && (
+        <ValueBetsOracle />
+      )}
+
+      {activeTab === "player-props" && (
+        <PlayerPropsOracle />
+      )}
+
+      {activeTab === "team-deep-dive" && (
+        <TeamDeepDiveOracle />
       )}
       </Suspense>
       </WorkspaceBoundary>

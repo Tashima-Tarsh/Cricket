@@ -20,7 +20,10 @@ import {
   RefreshCw,
   Sparkles,
   CloudRain,
-  Flame
+  Flame,
+  TrendingUp,
+  Target,
+  BarChart3
 } from "lucide-react";
 import { useMatchContext } from "../context/MatchContext";
 import { WorkspaceTab } from "../types";
@@ -61,6 +64,14 @@ const groups: { label: string; items: NavItem[] }[] = [
       { id: "fantasy-lab", label: "GL Lineup Solver", icon: Trophy },
       { id: "ai-analyst", label: "AI Analyst Query", icon: Bot },
       { id: "providers", label: "Data Providers Hub", icon: Database }
+    ]
+  },
+  {
+    label: "THENITISHKR-SPORTS Betting Intel",
+    items: [
+      { id: "value-bets", label: "💰 Value Bets (Kelly)", icon: TrendingUp },
+      { id: "player-props", label: "🎯 Player Props vs Lines", icon: Target },
+      { id: "team-deep-dive", label: "📊 Team Deep Dive", icon: BarChart3 }
     ]
   }
 ];
@@ -157,10 +168,10 @@ export const AppShell: React.FC<{ children: React.ReactNode; onOpenMatchSetup: (
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="text-white text-base font-bold tracking-tight">STRIKE//OS</span>
+              <span className="text-white text-base font-bold tracking-tight">THENITISHKR-SPORTS</span>
               <span className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-mono font-bold tracking-widest">PRO</span>
             </div>
-            <span>Cricket analysis workspace</span>
+            <span>Cricket Intelligence & Grand League Engine</span>
           </div>
         </button>
 
@@ -352,7 +363,7 @@ export const AppShell: React.FC<{ children: React.ReactNode; onOpenMatchSetup: (
             onClick={(event) => event.stopPropagation()}
           >
             <div className="flex items-center justify-between mb-4 pb-2 border-b border-white/10">
-              <span className="font-bold text-sm tracking-wider uppercase text-emerald-400">STRIKE//OS PRO</span>
+              <span className="font-bold text-sm tracking-wider uppercase text-emerald-400">THENITISHKR-SPORTS PRO</span>
               <button aria-label="Close navigation" onClick={() => setMobileOpen(false)}>
                 <X size={18} />
               </button>

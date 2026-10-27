@@ -79,7 +79,7 @@ export const AIAnalyst: React.FC = () => {
         id: `bot_err_${Date.now()}`,
         sender: "analyst",
         timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" }),
-        content: `**Query Execution Error:** ${err instanceof Error ? err.message : "Network error"}. Please ensure the STRIKE//OS backend server is active.`,
+        content: `**Query Execution Error:** ${err instanceof Error ? err.message : "Network error"}. Please ensure the THENITISHKR-SPORTS backend server is active.`,
         citations: ["System Diagnostic"]
       };
       setMessages((prev) => [...prev, errMsg]);
@@ -208,7 +208,7 @@ export const AIAnalyst: React.FC = () => {
             <Terminal size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
             <input aria-label="Input query"
               type="text"
-              placeholder="Ask STRIKE//OS analyst: e.g. 'Evaluate Pooran vs Kuldeep in middle overs'..."
+              placeholder="Ask THENITISHKR-SPORTS analyst: e.g. 'Evaluate Pooran vs Kuldeep in middle overs'..."
               value={inputQuery}
               onChange={(e) => setInputQuery(e.target.value)}
               onKeyDown={(e) => {

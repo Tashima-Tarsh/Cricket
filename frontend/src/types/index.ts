@@ -172,7 +172,10 @@ export type WorkspaceTab =
   | "series-intelligence"
   | "fantasy-lab"
   | "ai-analyst"
-  | "providers";
+  | "providers"
+  | "value-bets"
+  | "player-props"
+  | "team-deep-dive";
 
 export interface FielderPosition {
   id: string;
