@@ -330,12 +330,9 @@ def get_specific_matchup(batter_id: str, bowler_id: str):
 @app.get("/api/teams")
 @app.get("/api/teams/portfolio")
 def get_grand_league_teams():
-    """Generates exactly 4 mathematically optimized Grand League teams enforcing 15-20 credits unspent,
-    distinct C/VC pairs, max overlap <= 7 players, and 500,000-entry contest duplication simulation.
-    """
-    from .four_team_optimizer import FourTeamGrandLeagueOptimizer
-    opt = FourTeamGrandLeagueOptimizer()
-    return opt.solve_portfolio()
+    """Never return a historical fixed-opponent fantasy portfolio."""
+    raise HTTPException(410, "Legacy fixed-match portfolio retired. Use /api/ortools/optimize with an explicitly connected fixture and confirmed XI.")
+
 
 @app.get("/api/data-sources/status")
 def get_data_sources_status():
