@@ -70,6 +70,10 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+from .security_middleware import SecurityHeadersMiddleware, ContentSizeLimitMiddleware, IPRateLimiterMiddleware
+app.add_middleware(SecurityHeadersMiddleware)
+app.add_middleware(ContentSizeLimitMiddleware, max_bytes=1_048_576)
+app.add_middleware(IPRateLimiterMiddleware, requests_per_minute=240)
 
 MATCH_FILE = MATCH_FILE_5TH
 FRONTEND_DIST = Path(__file__).parent.parent / "frontend" / "dist"
