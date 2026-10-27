@@ -52,7 +52,7 @@ const INITIAL_IND_GAMEPLAN: OverPlan[] = [
     objective: "Wicket Strike",
     targetLineLength: "Hard length 148km/h directed at throat/armpit",
     fieldPresetId: "ind_pace_inward",
-    matchupRationale: "Sheer pace rush; Chinnaswamy true bounce produces top edges to fine leg.",
+    matchupRationale: "Sheer pace rush; true bounce produces top edges to fine leg.",
     riskRating: "Moderate",
     confidencePct: 85
   },
@@ -118,7 +118,7 @@ const INITIAL_IND_GAMEPLAN: OverPlan[] = [
     objective: "Run Containment",
     targetLineLength: "Tight stump- line, denying width",
     fieldPresetId: "wi_spin_choke",
-    matchupRationale: "Axar economy at Chinnaswamy is 6.8 rpo in middle overs.",
+    matchupRationale: "Economy is 6.8 rpo in middle overs.",
     riskRating: "Low",
     confidencePct: 86
   },

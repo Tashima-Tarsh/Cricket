@@ -194,7 +194,7 @@ class PlayerBattlesMCPEngine:
         ]
 
     def get_venue_player_telemetry(self, venue_name: str = "chinnaswamy") -> List[Dict[str, Any]]:
-        """Retrieves verified historical player records at the match venue (M. Chinnaswamy Stadium, Bengaluru)."""
+        """Retrieves verified historical player records at the match venue."""
         import duckdb
         from pathlib import Path
         db_path = Path(__file__).parent.parent / "t20.duckdb"
@@ -281,7 +281,7 @@ class PlayerBattlesMCPEngine:
                         'player_name': p_name,
                         'team': team,
                         'role': role,
-                        'venue': "M. Chinnaswamy Stadium, Bengaluru",
+                        'venue': venue_name,
                         'batting': {'balls': bat_b, 'runs': bat_r, 'boundaries': bat_f, 'outs': bat_out, 'strike_rate': bat_sr},
                         'bowling': {'overs': round(bowl_b / 6.0, 1), 'runs_conceded': bowl_r, 'wickets': bowl_w, 'dots': bowl_dots, 'economy': bowl_econ}
                     })

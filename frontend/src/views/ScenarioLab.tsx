@@ -52,7 +52,7 @@ export const computeScenario = (overs: number): DLSScenario => {
   else if (validOvers >= 12) ppOvers = 4;
   else if (validOvers >= 9) ppOvers = 3;
 
-  // Continuous standard T20 DLS resource curve (185 par baseline at Chinnaswamy)
+  // Continuous standard T20 DLS resource curve (185 par baseline)
   const resPct = (1.0 - Math.exp(-0.065 * validOvers)) / (1.0 - Math.exp(-0.065 * 20));
   const par = Math.round(185 * resPct);
   const rrr = Math.round((par / validOvers) * 100) / 100;
@@ -114,11 +114,11 @@ export const ScenarioLab: React.FC = () => {
 
   const scenario = computeScenario(selectedOvers);
 
-  // Calculate projected chase win equity based on Chinnaswamy historical venue model
+  // Calculate projected chase win equity based on historical venue model
   const calculateWinEquity = () => {
     let base = selectedTossChoice === "bowl" ? 58.5 : 41.5;
     if (selectedOvers < 20) {
-      base += (20 - selectedOvers) * 1.1; // Rain reduction boosts chasing side at Chinnaswamy
+      base += (20 - selectedOvers) * 1.1; // Rain reduction boosts chasing side
     }
     return Math.min(88, Math.max(25, Math.round(base * 10) / 10));
   };
@@ -361,7 +361,7 @@ export const ScenarioLab: React.FC = () => {
                   {selectedTossChoice === "bowl" && <span className="text-[10px] font-mono text-emerald-400">ACTIVE</span>}
                 </div>
                 <div className="text-[11px] text-slate-400 font-sans font-normal">
-                  Chinnaswamy venue advantage + wet ball buffer
+                  Venue advantage + wet ball buffer
                 </div>
               </button>
 

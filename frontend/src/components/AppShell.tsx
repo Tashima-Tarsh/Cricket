@@ -170,7 +170,7 @@ export const AppShell: React.FC<{ children: React.ReactNode; onOpenMatchSetup: (
             <span className="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
             <span className="text-slate-200 font-semibold">{currentMatch.name}</span>
             <span className="text-slate-500">|</span>
-            <span className="text-slate-400">{currentMatch.venue?.name?.split(",")[0] || "Chinnaswamy"}</span>
+            <span className="text-slate-400">{currentMatch.venue?.name?.split(",")[0] || "Venue Unspecified"}</span>
           </div>
 
           {/* Interactive Rain Curtailment Control (Any Over 5 to 20) */}

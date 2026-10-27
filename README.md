@@ -91,11 +91,19 @@ cd frontend && npm ci && npm run build && npm run lint
 CI also runs a dated historical-model evaluation. That report is a research
 artifact, not authorization to claim calibrated Rank-1 forecasts.
 
-## Operations, data and security
+## Operations, data and documentation suite
 
-See **[Production readiness and deployment blockers](docs/PRODUCTION_READINESS.md)**
-for provider credentials, ingress authentication, rate limits, backups, model
-validation, disaster recovery and licensing requirements.
+Comprehensive engineering and operational documentation:
+
+- **[Production Gap Audit](docs/PRODUCTION_GAP_AUDIT.md)**: Baseline audit and remediation matrix across 15 defect classes.
+- **[System Architecture](docs/ARCHITECTURE.md)**: End-to-end 10-state match intelligence pipeline, readiness gates, and JSON/CSV export schemas.
+- **[Provider Integrations](docs/PROVIDER_INTEGRATIONS.md)**: Canonical provider interface, rate limiting, circuit breaker, and cross-provider corroboration.
+- **[Official Scoring Rules](docs/SCORING_RULES.md)**: Multi-format scoring specifications and published Dream11 rule benchmarks for T20, ODI, and T10.
+- **[Model Validation & Forecasting](docs/MODEL_VALIDATION.md)**: Out-of-time chronological validation, prediction intervals, and honest calibration declarations.
+- **[Grand League Optimizer](docs/GRAND_LEAGUE_OPTIMIZER.md)**: Google OR-Tools CP-SAT MILP mathematical formulation, dynamic credit boundaries, and anti-chalk constraints.
+- **[Production Security](docs/SECURITY.md)**: Bearer authorization, response security headers, payload bounding (1MB), and IP rate limiting (240 rpm).
+- **[Production Deployment Guide](docs/DEPLOYMENT.md)**: Multi-stage Docker packaging, non-root user execution, persistence volumes, and disaster recovery.
+- **[Production Acceptance Report](docs/PRODUCTION_ACCEPTANCE_REPORT.md)**: Formal release certification, phase-by-phase audit matrix, and GO/NO-GO assessment.
 
 Use `CRICKET_FIXTURE_DB` to relocate the SQLite fixture store. Set
 `CRICKET_ENV=production` and a strong `CRICKET_ADMIN_TOKEN` on deployment.
