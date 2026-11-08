@@ -179,7 +179,7 @@ export const MatchContextProvider: React.FC<{ children: React.ReactNode }> = ({ 
         setStateError(null);
         return;
       }
-      const res = await fetch(`/api/state?match_id=${encodeURIComponent(selectedId)}&overs=${oversToFetch}`, { signal: controller.signal });
+      const res = await fetch(`/api/state?match_id=${encodeURIComponent(selectedId)}&overs=${oversToFetch}&force_refresh=true`, { signal: controller.signal });
       if (!res.ok) throw new Error(`State request failed (${res.status}).`);
       const data = await res.json();
       if (data.status !== "success" || !data.match || !Array.isArray(data.players) || !Array.isArray(data.lineups)) throw new Error("The server returned an incomplete snapshot.");
@@ -192,6 +192,8 @@ export const MatchContextProvider: React.FC<{ children: React.ReactNode }> = ({ 
       setSelectedBatter(data.players.find((p: Player) => p.role === "BAT" || p.role === "WK") || null);
       setSelectedBowler(data.players.find((p: Player) => p.role === "BOWL" || p.role === "AR") || null);
       setLastUpdated(data.generated_at || new Date().toISOString()); setStateStatus("ready");
+      // Broadcast a lightweight "data refreshed" signal so child 3D panels can reload fresh deliveries.
+      window.dispatchEvent(new CustomEvent("cricket-data-refreshed", { detail: { matchId: selectedId, generatedAt: data.generated_at } }));
     } catch (error) {
       if (requestRef.current !== controller) return;
       setStateError(error instanceof Error && error.name !== "AbortError" ? error.message : "Loading timed out. Check the local server and retry.");

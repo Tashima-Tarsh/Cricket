@@ -1,5 +1,6 @@
 import { WorkspaceBoundary } from "./components/WorkspaceBoundary";
 import React, { useState, lazy, Suspense } from "react";
+import { RefreshCw } from "lucide-react";
 import { MatchContextProvider, useMatchContext } from "./context/MatchContext";
 import { AppShell } from "./components/AppShell";
 import { MatchSetupModal } from "./components/MatchSetupModal";
@@ -39,6 +40,7 @@ const MainAppContent: React.FC = () => {
     currentLineups,
     currentProviders,
     navigateToWorkspace,
+    lastUpdated,
     refreshState
   } = useMatchContext();
 
@@ -66,6 +68,35 @@ const MainAppContent: React.FC = () => {
           </button>
         </div>
       )}
+      {/* Connection status bar — live signal from the local engine */}
+      <div className="mb-3 flex items-center justify-between rounded-xl border border-white/10 bg-slate-900/80 px-4 py-2.5 text-xs font-mono shadow-sm backdrop-blur">
+        <div className="flex items-center gap-2">
+          <span className={`flex items-center gap-1.5 ${stateStatus === "ready" ? "text-emerald-400" : stateStatus === "error" ? "text-rose-400" : "text-amber-400"}`}>
+            <span className={`h-1.5 w-1.5 rounded-full animate-pulse bg-current`} />
+            {stateStatus === "ready" ? "Local Engine Online" : stateStatus === "error" ? "Engine Unreachable" : "Synchronizing…"}
+          </span>
+          {currentMatch.id && (
+            <span className="text-slate-400">• Fixture {currentMatch.id}</span>
+          )}
+        </div>
+        <div className="flex items-center gap-2">
+          {lastUpdated && (
+            <span className="text-slate-400">
+              Refreshed {new Date(lastUpdated).toLocaleTimeString()}
+            </span>
+          )}
+          <button
+            type="button"
+            disabled={stateStatus === "loading"}
+            onClick={() => void refreshState()}
+            className="rounded-lg border border-white/10 bg-white/5 px-2.5 py-1 text-slate-300 hover:bg-white/10 hover:text-white disabled:opacity-50 transition"
+            title="Force refresh fixture data"
+          >
+            <RefreshCw size={12} />
+            <span className="ml-1">Refresh</span>
+          </button>
+        </div>
+      </div>
       {!currentMatch.id && activeTab !== "providers" && activeTab !== "ai-analyst" && activeTab !== "pitch-lab" && activeTab !== "match-studio" && activeTab !== "series-intelligence" && activeTab !== "value-bets" && activeTab !== "player-props" && activeTab !== "team-deep-dive" && (
         <div className="mb-4 rounded-xl border border-white/10 bg-gradient-to-r from-slate-900 to-indigo-950/40 p-5 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="space-y-1">

@@ -55,7 +55,7 @@ export const PitchLab: React.FC = () => {
     <section className="border border-white/10 bg-slate-900/70 rounded-2xl p-5 space-y-2">
       <h2 className="text-white font-bold flex items-center gap-2"><Database size={18}/> Pitch visualization</h2>
       <p className="text-slate-400 text-sm">{venuePlayers.length} recorded venue-player entries for this selected fixture. The diagram is not ball-tracking telemetry.</p>
-      <Stadium3D className="w-full h-96" />
+      <Stadium3D className="w-full h-[520px]" matchId={currentMatch.id || undefined} />
     </section>
   </div>;
 };

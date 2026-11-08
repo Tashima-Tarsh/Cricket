@@ -22,9 +22,15 @@ wheels/
 
 # Virtual environments
 .venv/
+.venv*/
 venv/
 ENV/
 env/
+
+# Node.js
+node_modules/
+frontend/dist/
+frontend/.vite/
 
 # Testing
 .pytest_cache/

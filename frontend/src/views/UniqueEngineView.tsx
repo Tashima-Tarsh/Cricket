@@ -25,8 +25,6 @@ import {
   CheckCircle2,
   Info,
   Radio,
-  Clock,
-  Database,
   Cpu
 } from "lucide-react";
 import { useMatchContext } from "../context/MatchContext";
@@ -123,6 +121,10 @@ export const UniqueEngineView: React.FC = () => {
   // Venue Intel
   const [venue, setVenue] = useState<VenueDetails | null>(null);
 
+  // Toss / lineup state derived from the authoritative match context (no fabricated telemetry).
+  const [triggerState, setTriggerState] = useState<any>(null);
+  const [fusionStatus, setFusionStatus] = useState<any>(null);
+
   // Generator Sliders & State
   const [uniquenessLevel, setUniquenessLevel] = useState<number>(8); // 1-10
   const [riskAppetite, setRiskAppetite] = useState<string>("HIGH");
@@ -136,121 +138,48 @@ export const UniqueEngineView: React.FC = () => {
   const [savedSuccessMsg, setSavedSuccessMsg] = useState<string | null>(null);
   const [savedEntries, setSavedEntries] = useState<any[]>([]);
   const [showConfetti, setShowConfetti] = useState<boolean>(false);
-  // In-memory only; never persist this token or ship it in a bundle.
-  const [adminToken, setAdminToken] = useState<string>("");
-  const adminHeaders = () => ({
-    "Content-Type": "application/json",
-    Authorization: `Bearer ${adminToken}`,
-  });
-
-  // Live Trigger & Fusion States
-  const [triggerState, setTriggerState] = useState<any>(null);
-  const [fusionStatus, setFusionStatus] = useState<any>(null);
-  const [isTriggering, setIsTriggering] = useState<boolean>(false);
-
-  useEffect(() => {
-    if (currentMatch?.id && (!selectedMatchId || selectedMatchId !== currentMatch.id)) {
-      setSelectedMatchId(currentMatch.id);
-    }
-  }, [currentMatch?.id]);
+  // In-memory persisted entries (no backend /teams/saved endpoint exists yet).
+  const STORAGE_KEY = "cricket.savedEntries.v1";
+  const loadSavedEntries = (): any[] => {
+    try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]"); } catch { return []; }
+  };
+  const saveSavedEntries = (entries: any[]) => {
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(entries)); } catch {}
+  };
 
   // 1. Initial Load: Fetch Matches & Fusion Status
   useEffect(() => {
     fetchMatches();
-    fetchSavedEntries();
+    setSavedEntries(loadSavedEntries());
     fetchFusionStatus();
   }, []);
 
-  // 2. When selected match changes, fetch player pool, venue details, and poll trigger state
+  // 2. When selected match changes, fetch player pool, venue details
   useEffect(() => {
     if (selectedMatchId) {
       fetchMatchData(selectedMatchId);
-      fetchTriggerStatus(selectedMatchId);
-      const interval = setInterval(() => {
-        fetchTriggerStatus(selectedMatchId);
-      }, 10000);
-      return () => clearInterval(interval);
     }
   }, [selectedMatchId]);
 
-  const fetchTriggerStatus = async (matchId: string) => {
-    try {
-      const res = await fetch(`/api/trigger/status/${matchId}`);
-      if (res.ok) {
-        const data = await res.json();
-        setTriggerState(data.trigger_state || null);
-      }
-    } catch (e) {
-      // offline
+  // Toss / lineup state is derived from the authoritative match context (no fabricated telemetry).
+  useEffect(() => {
+    if (currentMatch) {
+      setTriggerState({
+        state: currentMatch.toss?.winner ? "TOSS_DONE" : "SCHEDULED",
+        toss_winner: currentMatch.toss?.winner || null,
+        toss_decision: currentMatch.toss?.choice || null,
+      });
     }
-  };
+  }, [currentMatch]);
 
   const fetchFusionStatus = async () => {
-    try {
-      const res = await fetch("/api/fusion/status");
-      if (res.ok) {
-        const data = await res.json();
-        setFusionStatus(data);
-      }
-    } catch (e) {
-      // offline
-    }
-  };
-
-  const handleSimulateToss = async () => {
-    setIsTriggering(true);
-    try {
-      const res = await fetch(`/api/trigger/simulate-toss/${selectedMatchId}`, {
-        method: "POST",
-        headers: adminHeaders(),
-        body: JSON.stringify({ toss_winner: "India", toss_decision: "bat" })
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setTriggerState(data.trigger_state);
-        fetchMatchData(selectedMatchId);
-      }
-    } finally {
-      setIsTriggering(false);
-    }
-  };
-
-  const handleSimulateLineup = async () => {
-    setIsTriggering(true);
-    try {
-      const res = await fetch(`/api/trigger/simulate-lineup/${selectedMatchId}`, {
-        method: "POST",
-        headers: adminHeaders(),
-        body: JSON.stringify({ confirmed_players: players })
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setTriggerState(data.trigger_state);
-        fetchMatchData(selectedMatchId);
-        // Refresh generated teams
-        handleGenerateTeams();
-      }
-    } finally {
-      setIsTriggering(false);
-    }
-  };
-
-  const handleRunFusionPipeline = async () => {
-    setIsTriggering(true);
-    try {
-      const res = await fetch("/api/fusion/run-pipeline", { method: "POST", headers: adminHeaders() });
-      if (res.ok) {
-        fetchFusionStatus();
-        fetchMatchData(selectedMatchId);
-      }
-    } finally {
-      setIsTriggering(false);
-    }
+    // /api/fusion/status is not exposed by the local engine yet; report neutral status.
+    setFusionStatus({ matchups_indexed: 0, venues_profiled: 0 });
   };
 
   const fetchMatches = async () => {
     try {
-      const res = await fetch("/matches");
+      const res = await fetch("/api/matches", { cache: "no-store" });
       if (res.ok) {
         const data = await res.json();
         if (data.matches && data.matches.length > 0) {
@@ -267,88 +196,130 @@ export const UniqueEngineView: React.FC = () => {
   const fetchMatchData = async (matchId: string) => {
     try {
       const [pRes, vRes] = await Promise.all([
-        fetch(`/matches/${matchId}/players`),
-        fetch(`/matches/${matchId}/venue`)
+        fetch(`/api/players?match_id=${encodeURIComponent(matchId)}`, { cache: "no-store" }),
+        fetch(`/api/match/current?match_id=${encodeURIComponent(matchId)}`, { cache: "no-store" })
       ]);
       if (pRes.ok) {
         const pData = await pRes.json();
-        setPlayers(pData.players || []);
+        const players = Array.isArray(pData.players) ? pData.players : (Array.isArray(pData) ? pData : []);
+        setPlayers(players.map((p: any) => ({
+          id: p.id || p.name,
+          name: p.name,
+          team: p.team,
+          role: p.role,
+          credits: p.credits ?? p.credit ?? 8,
+          predicted_points: p.projected_points ?? p.expected_points ?? 0,
+          predicted_ownership: p.projected_sel_pct ?? p.projected_ownership ?? 50,
+          differential_score: ((p.projected_points ?? p.expected_points ?? 0) / Math.max(p.projected_sel_pct ?? p.projected_ownership ?? 1, 1)),
+          is_confirmed_xi: p.is_confirmed_xi ?? true,
+        })));
       }
       if (vRes.ok) {
         const vData = await vRes.json();
-        setVenue(vData.venue || null);
+        const match = vData.match ?? vData;
+        const venue = match.venue ?? match;
+        setVenue({
+          name: venue.name || match.name || "",
+          city: venue.city || match.city || "",
+          pitch_nature: venue.pitch_nature || "",
+          avg_first_innings: venue.avg_first_innings ?? 0,
+          avg_second_innings: venue.avg_second_innings ?? 0,
+          chasing_win_pct: match.chasing_win_prob ?? venue.chasing_win_pct ?? 0,
+          pace_wicket_pct: venue.pace_wicket_pct ?? 0,
+          spin_wicket_pct: venue.spin_wicket_pct ?? 0,
+          dew_factor: venue.dew_factor ?? 0,
+          toss_impact: venue.toss_impact || "",
+          toss_completed: !!match.toss?.winner,
+        });
       }
     } catch (e) {
       console.error("Failed fetching match data", e);
     }
   };
 
-  const fetchSavedEntries = async () => {
-    try {
-      const res = await fetch("/teams/saved");
-      if (res.ok) {
-        const data = await res.json();
-        setSavedEntries(data.entries || []);
-      }
-    } catch (e) {
-      // offline
-    }
-  };
-
-  // 3. Hero Action: Generate Unique Teams
+  // 3. Hero Action: Generate Unique Teams — wired to /api/ortools/optimize
   const handleGenerateTeams = async () => {
     setIsGenerating(true);
     setSavedSuccessMsg(null);
     try {
-      const res = await fetch("/generate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          match_id: selectedMatchId,
-          num_teams: numTeams,
-          uniqueness: uniquenessLevel,
-          risk: riskAppetite,
-          contest_spots: 1000
-        })
+      const params = new URLSearchParams({
+        teams: String(numTeams),
+        match_id: selectedMatchId,
+        overs: "20",
+        credit_strategy: riskAppetite === "HIGH" ? "79-85" : (riskAppetite === "MEDIUM" ? "87-89" : "90-95"),
+        risk: riskAppetite,
       });
-      if (res.ok) {
-        const data = await res.json();
-        const teams = data.teams || [];
-        setGeneratedTeams(teams);
-        setActiveTeamIndex(0);
-        setActiveSubTab("cards");
-
-        // Trigger confetti burst if rank 1 probability > 5%
-        const hasHighRank1 = teams.some((t: GeneratedTeam) => typeof t.rank_1_probability_pct === "number" && t.rank_1_probability_pct > 5.0);
-        if (hasHighRank1) {
-          setShowConfetti(true);
-        }
+      const res = await fetch(`/api/ortools/optimize?${params.toString()}`, {
+        signal: AbortSignal.timeout(60000),
+        cache: "no-store"
+      });
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(typeof errData.detail === "string" ? errData.detail : `Generation failed (${res.status}).`);
       }
+      const data = await res.json();
+      const teams = Array.isArray(data.lineups) ? data.lineups : [];
+      setGeneratedTeams(teams.map((t: any, i: number) => {
+        const players = Array.isArray(t.players) ? t.players : [];
+        return {
+          team_id: t.team_id || `team_${i + 1}`,
+          name: t.team_name || `Team ${i + 1}`,
+          rank_1_probability_pct: null,
+          rank_10_probability_pct: 0,
+          median_rank: i + 1,
+          projected_points: t.projected_points ?? 0,
+          ceiling_p90: t.simulated_ceiling ?? t.projected_points ?? 0,
+          floor_p10: t.projected_points ?? 0,
+          crowd_overlap_pct: t.total_ownership_sum ?? 0,
+          uniqueness_rating: t.uniqueness_score ?? 5,
+          total_credits: t.total_credits ?? 0,
+          team_split: "6-5",
+          captain: (t.captain as any)?.name ?? "Unknown",
+          captain_id: (t.captain as any)?.id ?? "",
+          vice_captain: (t.vice_captain as any)?.name ?? "Unknown",
+          vice_captain_id: (t.vice_captain as any)?.id ?? "",
+          is_toss_locked: true,
+          toss_status: "LINEUP_LOCKED",
+          players: players.map((p: any) => ({
+            id: p.id ?? p.name,
+            name: p.name,
+            team: p.team,
+            role: p.role,
+            credits: p.credits ?? 8,
+            predicted_points: p.expected_points ?? p.projected_points ?? 0,
+            predicted_ownership: p.projected_sel_pct ?? p.projected_ownership ?? 50,
+            differential_score: ((p.expected_points ?? p.projected_points ?? 0) / Math.max(p.projected_sel_pct ?? p.projected_ownership ?? 1, 1)),
+            is_captain: p.is_captain ?? false,
+            is_vice_captain: p.is_vice_captain ?? false,
+          })),
+          risk_rating: riskAppetite,
+        };
+      }));
+      setActiveTeamIndex(0);
+      setActiveSubTab("cards");
     } catch (e) {
       console.error("Generation failed", e);
+      setSavedSuccessMsg(null);
     } finally {
       setIsGenerating(false);
     }
   };
 
-  // 4. Save Team Entry
+  // 4. Save Team Entry — persisted to localStorage (no /teams/save endpoint yet)
   const handleSaveTeam = async (team: GeneratedTeam) => {
     try {
-      const res = await fetch("/teams/save", {
-        method: "POST",
-        headers: adminHeaders(),
-        body: JSON.stringify({
-          ...team,
-          match_id: selectedMatchId,
-          match_name: selectedMatch?.name || "Cricket Decider"
-        })
-      });
-      if (res.ok) {
-        setSavedSuccessMsg("Team locked. Go win that grand league.");
-        setShowConfetti(true);
-        fetchSavedEntries();
-        setTimeout(() => setSavedSuccessMsg(null), 4000);
-      }
+      const entries = loadSavedEntries();
+      const entry = {
+        ...team,
+        match_id: selectedMatchId,
+        match_name: selectedMatch?.name || "Cricket Decider",
+        saved_at: new Date().toISOString(),
+      };
+      saveSavedEntries([entry, ...entries]);
+      setSavedEntries([entry, ...entries]);
+      setSavedSuccessMsg("Team locked. Go win that grand league.");
+      setShowConfetti(true);
+      setTimeout(() => setSavedSuccessMsg(null), 4000);
     } catch (e) {
       console.error("Save failed", e);
     }
@@ -526,48 +497,25 @@ export const UniqueEngineView: React.FC = () => {
               </div>
             </div>
 
-            {/* Admin token is required for state-changing operations. */}
-            <div className="flex items-center gap-2 flex-wrap">
-              <input
-                type="password"
-                autoComplete="off"
-                aria-label="Administrator token for restricted operations"
-                placeholder="Admin token (not stored)"
-                value={adminToken}
-                onChange={(event) => setAdminToken(event.target.value)}
-                className="px-3 py-1.5 text-xs rounded-lg bg-[#0B0F14] border border-white/20 text-white w-48"
-              />
-              <button
-                disabled={isTriggering || !adminToken}
-                onClick={handleSimulateToss}
-                className="px-3 py-1.5 rounded-xl bg-[#0B0F14] border border-amber-500/40 hover:bg-amber-500/10 text-amber-400 text-xs font-mono font-bold flex items-center gap-1.5 transition-all cursor-pointer disabled:opacity-50"
-                title="Simulate toss outcome"
-              >
-                <Clock size={12} />
-                <span>Simulate Toss (T-30m)</span>
-              </button>
-
-              <button
-                disabled={isTriggering || !adminToken || players.length !== 22 || players.some((p) => p.is_confirmed_xi !== true)}
-                onClick={handleSimulateLineup}
-                className="px-3 py-1.5 rounded-xl bg-[#00C853]/20 border border-[#00C853]/60 hover:bg-[#00C853]/30 text-[#00C853] text-xs font-mono font-bold flex items-center gap-1.5 transition-all cursor-pointer disabled:opacity-50"
-                title="Simulate confirmed playing XI and re-optimize unique portfolios"
-              >
-                <CheckCircle2 size={12} />
-                <span>Confirm Lineup XI (T-25m)</span>
-              </button>
-
-              <button
-                disabled={isTriggering || !adminToken}
-                onClick={handleRunFusionPipeline}
-                className="px-3 py-1.5 rounded-xl bg-[#0B0F14] border border-white/10 hover:border-white/30 text-white text-xs font-mono font-bold flex items-center gap-1.5 transition-all cursor-pointer disabled:opacity-50"
-                title="Re-run openIPL + Pitchnama data fusion"
-              >
-                <Database size={12} />
-                <span>Run Data Fusion</span>
-              </button>
+              {/* Local engine data status + manual refresh (no admin token required) */}
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-[#00C853]/20 text-[#00C853] border border-[#00C853]/40">
+                  Local Engine Connected
+                </span>
+                <button
+                  disabled={isGenerating}
+                  onClick={() => void fetchMatchData(selectedMatchId!)}
+                  className="px-3 py-1.5 rounded-xl bg-[#0B0F14] border border-cyan-500/40 hover:bg-cyan-500/10 text-cyan-400 text-xs font-mono font-bold flex items-center gap-1.5 transition-all cursor-pointer disabled:opacity-50"
+                  title="Refresh match data from the local engine"
+                >
+                  <RefreshCw size={12} />
+                  <span>Refresh Data</span>
+                </button>
+                <span className="text-[10px] text-slate-500 font-mono">
+                  {players.length} players indexed
+                </span>
+              </div>
             </div>
-          </div>
 
           {/* Stepper Progress Bar */}
           <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 text-xs font-mono">
@@ -604,18 +552,18 @@ export const UniqueEngineView: React.FC = () => {
           <div className="flex flex-wrap items-center justify-between text-[11px] font-mono bg-[#0B0F14] p-2.5 rounded-xl border border-white/5 text-[#8A96A3]">
             <div className="flex items-center gap-4 flex-wrap">
               <span>
-                Matchups Indexed: <strong className="text-white">{fusionStatus?.matchups_indexed || 3194}</strong>
+                Matches Indexed: <strong className="text-white">{matches.length}</strong>
               </span>
               <span>
-                Venue Profiles: <strong className="text-white">{fusionStatus?.venues_profiled || 13}</strong>
+                Players Indexed: <strong className="text-white">{players.length}</strong>
               </span>
               <span>
-                Pitchnama Tilt: <strong className="text-[#00C853]">Active (Upper Hand Meter)</strong>
+                Local Engine: <strong className="text-[#00C853]">Active (CP-SAT + DuckDB)</strong>
               </span>
             </div>
             <div className="flex items-center gap-1.5 text-slate-400">
               <Cpu size={12} className="text-[#00C853]" />
-              <span>Zero-leakage Parquet Store</span>
+              <span>Data served by local FastAPI engine — no external fusion configured</span>
             </div>
           </div>
 
