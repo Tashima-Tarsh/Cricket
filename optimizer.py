@@ -17,6 +17,52 @@ ROLE_BOUNDS = {
     "BOWL":(3, 6),
 }
 
+
+def build_correlation_constraints(model, selected, captain, vice_cap, players):
+    """
+    Adds explicit positive and negative correlation constraints to the OR-Tools model.
+    Uses clean linear constraints (no invalid OnlyEnforceIf on linear expressions)
+    so the model stays feasible and solves reliably.
+    """
+    n = len(players)
+
+    def get_idx(name):
+        return next(
+            (i for i, pl in enumerate(players)
+             if pl.get("name") == name or pl.get("player") == name),
+            None,
+        )
+
+    # ---------------------------------------------------------
+    # 1. NEGATIVE CORRELATION (The "Cancel-Out" Prevention / "Block")
+    # If an opposition bowler is Captain, the opposition's star opener
+    # should NOT be Vice-Captain (and vice versa), because their
+    # successes mutually exclude each other.
+    # ---------------------------------------------------------
+    rivalries = [
+        ("Jasprit_Bumrah", "Virat_Kohli"),
+        ("Rashid_Khan", "Rohit_Sharma"),
+        ("Mohammed_Siraj", "Suryakumar_Yadav"),
+    ]
+    for bowler_name, batter_name in rivalries:
+        b_idx = get_idx(bowler_name)
+        bat_idx = get_idx(batter_name)
+        if b_idx is None or bat_idx is None:
+            continue
+        # If bowler is Captain, batter cannot be Vice-Captain
+        model.Add(captain[b_idx] + vice_cap[bat_idx] <= 1)
+        # If bowler is Vice-Captain, batter cannot be Captain
+        model.Add(vice_cap[b_idx] + captain[bat_idx] <= 1)
+
+    # ---------------------------------------------------------
+    # 2. POSITIVE CORRELATION (The "Stack")
+    # Hinted via per-player objective bonuses below (middle-order
+    # batters from teams with 2+ top-order batters get a stack hint),
+    # plus explicit team-stacking in scenario forcing.
+    # ---------------------------------------------------------
+    return None
+
+
 class GrandLeagueOptimizer:
     def __init__(self, players_df: pd.DataFrame):
         self.players = players_df.to_dict("records")
@@ -69,6 +115,9 @@ class GrandLeagueOptimizer:
             model.Add(sum(selected[i] for i in role_idx) >= lo)
             model.Add(sum(selected[i] for i in role_idx) <= hi)
 
+        # ---------- CORRELATION LOCKS (Negative + Positive) ----------
+        build_correlation_constraints(model, selected, captain, vice_cap, p)
+
         # ---------- GRAND LEAGUE SOFT CONSTRAINTS (The Winning Edge) ----------
         # 8. ANTI-CHALK: Force at least 2 players with < 15% selection
         low_own_idx = [i for i, x in enumerate(p) if x["projected_sel_pct"] < 15.0]
@@ -86,24 +135,69 @@ class GrandLeagueOptimizer:
             # Force: pick at least 2 opening bowlers as key players
             bowlers_idx = [i for i, x in enumerate(p) if x["role"] == "BOWL"][:4]
             model.Add(sum(selected[i] for i in bowlers_idx) >= 2)
+            # Positive correlation stack: if Team A's bowlers collapse the innings,
+            # at least 1 batter from the opposing team faces the collapse opportunity
+            other_team_batters = [i for i, x in enumerate(p)
+                                  if x["role"] == "BAT" and x["team"] != "MI"]
+            if len(other_team_batters) >= 1:
+                model.Add(sum(selected[i] for i in other_team_batters) >= 1)
         elif scenario == "death_bowler_special":
             # Force: pick death-overs specialists (high phase_strike_rate impact)
             death_idx = [i for i, x in enumerate(p) if x["variance_score"] > 0.6]
             if len(death_idx) >= 2:
                 model.Add(sum(selected[i] for i in death_idx) >= 2)
+        elif scenario == "high_scoring_chase":
+            # Force: batting-heavy lineup (team stacking = positive correlation)
+            batters_idx = [i for i, x in enumerate(p) if x["role"] == "BAT"]
+            model.Add(sum(selected[i] for i in batters_idx) >= 4)
 
-        # ---------- OBJECTIVE: Maximize Upside (Mean + Variance Bonus) ----------
-        # For Grand League, we reward HIGH CEILING players, not just safe ones
+        # ---------- OBJECTIVE: Maximize Upside WITH CORRELATION ----------
+        # For Grand League, we reward HIGH CEILING players, not just safe ones.
+        # Correlation-aware: negative-correlation pairs are hard-blocked above;
+        # positive-correlation stacks are hinted via objective bonuses below.
+        # (CP-SAT objective coefficients must be constants, so per-player bonuses
+        # are used rather than multiplying two decision variables.)
+
+        # Pre-compute per-team top-order / middle-order for stacking hints
+        team_top_order = {}
+        for i, pi in enumerate(p):
+            if pi["team"] not in team_top_order:
+                team_top_order[pi["team"]] = []
+            if pi["role"] == "BAT" and pi["credit"] >= 9.0:
+                team_top_order[pi["team"]].append(i)
+
         objective_terms = []
         for i in range(n):
             base_score = int(p[i]["expected_points"] * 100)
-            variance_bonus = int(p[i]["variance_score"] * 3000)  # GL upside weight
+
+            # GL Secret: Exponentially reward high variance AND low ownership
+            ownership_penalty = (100 - p[i]["projected_sel_pct"]) / 100.0
+            variance_bonus = int(p[i]["variance_score"] * 5000 * ownership_penalty)
+
             total_score = base_score + variance_bonus
 
+            # --- CORRELATION ADJUSTMENTS ---
+            correlation_bonus = 0
+
+            # 1. Positive Correlation: All-rounders are naturally self-correlated
+            # (they contribute with both bat and ball), so boost their score.
+            if p[i]["role"] == "AR":
+                correlation_bonus += 1000
+
+            # 2. Positive Correlation: Middle-order batter from a team with
+            # 2+ top-order batters gets a stack hint (top order success = easier
+            # runs for middle order; top order collapse = more balls for middle order).
+            if (p[i]["role"] in ["BAT", "AR"]
+                    and p[i]["credit"] < 9.0
+                    and len(team_top_order.get(p[i]["team"], [])) >= 2):
+                correlation_bonus += 800
+
+            final_score = total_score + correlation_bonus
+
             # Captain multiplier: 2x, Vice-Captain: 1.5x
-            objective_terms.append(selected[i] * total_score)
-            objective_terms.append(captain[i] * total_score)   # extra 1x (total 2x)
-            objective_terms.append(vice_cap[i] * int(total_score * 0.5))  # extra 0.5x (total 1.5x)
+            objective_terms.append(selected[i] * final_score)
+            objective_terms.append(captain[i] * final_score)   # extra 1x (total 2x)
+            objective_terms.append(vice_cap[i] * int(final_score * 0.5))  # extra 0.5x (total 1.5x)
 
         model.Maximize(sum(objective_terms))
 
