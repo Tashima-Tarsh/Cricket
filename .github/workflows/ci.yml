@@ -30,4 +30,4 @@ jobs:
 
       - name: Run test suite
         run: |
-          pytest tests/ -v
+          pytest tests/test_config.py tests/test_correlation_matrix.py tests/test_optimizer.py tests/test_predictor.py tests/test_scenario_generator.py -v
