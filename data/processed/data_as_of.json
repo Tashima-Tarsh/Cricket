@@ -1,0 +1,23 @@
+{
+  "pipeline_run_utc": "2026-10-26T19:42:38.977784+00:00",
+  "sources": {
+    "openIPL": {
+      "status": "STALE_FALLBACK_ACTIVE",
+      "last_commit_utc": "2026-06-01T19:07:34Z",
+      "age_days": 147.0,
+      "fallback": "Cricsheet Mother Source"
+    },
+    "The-Ultimate-Ball-by-Ball-Cricket-Dataset": {
+      "status": "STALE_FALLBACK_ACTIVE",
+      "last_commit_utc": "2026-10-10T19:22:49+11:00",
+      "age_days": 16.5,
+      "fallback": "Cricsheet Mother Source"
+    },
+    "pitchnama": {
+      "status": "HEALTHY",
+      "last_commit_utc": "2026-10-23T06:51:12Z",
+      "age_days": 3.5,
+      "fallback": "None"
+    }
+  }
+}
