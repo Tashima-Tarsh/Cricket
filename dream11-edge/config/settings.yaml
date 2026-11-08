@@ -1,0 +1,26 @@
+sim:
+  n_sims: 20000
+  n_sims_ball: 1500
+  n_field: 60000
+  n_entries: 150
+  engine: marginal
+
+portfolio:
+  max_exposure: 0.65
+  min_swap: 3
+  unique_cvc: true
+  jitter: 0.03
+
+relock:
+  min_edge: 0.02
+  freeze_minutes: 3
+
+model:
+  form_halflife_days: 120
+  matchup_min_balls: 60
+  window_edges: [0, 15, 30, 50, 75, 999999]
+
+paths:
+  data: data
+  web: web
+  artifacts: artifacts

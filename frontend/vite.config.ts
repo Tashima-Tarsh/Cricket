@@ -1,0 +1,29 @@
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+import tailwindcss from '@tailwindcss/vite'
+
+// https://vite.dev/config/
+export default defineConfig({
+  plugins: [
+    react(),
+    tailwindcss(),
+  ],
+  server: {
+    port: 5174,
+    host: true,
+    proxy: Object.fromEntries(
+      ['/api', '/matches', '/generate', '/simulate', '/teams', '/odds'].map((route) => [
+        route,
+        {
+          target: process.env.VITE_BACKEND_PORT
+            ? `http://127.0.0.1:${process.env.VITE_BACKEND_PORT}`
+            : 'http://127.0.0.1:8000',
+          changeOrigin: true
+        }
+      ])
+    )
+  },
+  build: {
+    chunkSizeWarningLimit: 1200
+  }
+})

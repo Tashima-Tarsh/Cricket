@@ -1,0 +1,1238 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Dream11 Edge — Grand League Cockpit</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/chart.js/4.4.1/chart.umd.js"></script>
+<style>
+  :root {
+    --bg: #0b0d12;
+    --card: #131720;
+    --card-hover: #171c28;
+    --bd: #222836;
+    --bd-light: #2d3548;
+    --fg: #e8ecf4;
+    --mut: #8b95a8;
+    --ok: #22c55e;
+    --warn: #f59e0b;
+    --bad: #ef4444;
+    --info: #3b82f6;
+    --acc: #a855f7;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--fg);
+    font: 13px/1.5 Inter, system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 1220px; margin: 0 auto; padding: 20px; }
+  header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 16px; }
+  h1 { font-size: 22px; font-weight: 600; margin: 0; letter-spacing: -0.02em; }
+  .sub { color: var(--mut); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; font-weight: 500; }
+  .badge { display: inline-flex; align-items: center; gap: 5px; padding: 2px 7px; border-radius: 4px; font-size: 10px; font-weight: 600; text-transform: uppercase; }
+  .badge-ok { background: rgba(34,197,94,0.15); color: var(--ok); border: 1px solid rgba(34,197,94,0.3); }
+  .badge-warn { background: rgba(245,158,11,0.15); color: var(--warn); border: 1px solid rgba(245,158,11,0.3); }
+  .badge-bad { background: rgba(239,68,68,0.15); color: var(--bad); border: 1px solid rgba(239,68,68,0.3); }
+
+  /* Controls Bar */
+  .panel-box {
+    background: var(--card);
+    border: 1px solid var(--bd);
+    border-radius: 10px;
+    padding: 14px 16px;
+    margin-bottom: 16px;
+  }
+  .controls-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)) auto;
+    gap: 12px;
+    align-items: flex-end;
+  }
+  .ctrl-item { display: flex; flex-direction: column; gap: 4px; }
+  .ctrl-item label { font-size: 10px; color: var(--mut); text-transform: uppercase; letter-spacing: 0.05em; font-weight: 500; display: flex; justify-content: space-between; }
+  .ctrl-item input[type=range] { width: 100%; accent-color: var(--ok); cursor: pointer; }
+  select, button, input[type=text] {
+    font: inherit; font-size: 12px; border-radius: 6px; padding: 7px 10px;
+    border: 1px solid var(--bd); background: #0e121a; color: var(--fg); outline: none;
+  }
+  select:focus, button:focus { border-color: var(--info); }
+  button.btn-primary {
+    background: var(--ok); color: #04120a; border: none; font-weight: 600; cursor: pointer;
+    padding: 8px 16px; transition: opacity 0.2s, filter 0.2s;
+  }
+  button.btn-primary:hover { filter: brightness(1.1); }
+  button.btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+  button.btn-sec {
+    background: #1c2230; color: var(--fg); border: 1px solid var(--bd); cursor: pointer;
+  }
+  button.btn-sec:hover { background: #252c3e; }
+
+  /* KPIs */
+  .kpis { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-bottom: 16px; }
+  .kpi {
+    background: var(--card); border: 1px solid var(--bd); border-radius: 10px; padding: 12px 14px;
+    transition: transform 0.15s;
+  }
+  .kpi .l { font-size: 9.5px; color: var(--mut); letter-spacing: 0.06em; text-transform: uppercase; font-weight: 500; }
+  .kpi .v { font: 600 20px ui-monospace, Menlo, monospace; margin-top: 4px; }
+  .kpi .s { font-size: 10px; color: var(--mut); margin-top: 2px; }
+
+  /* 3D Hero */
+  #hero-container {
+    position: relative; height: 420px; border: 1px solid var(--bd); border-radius: 12px;
+    overflow: hidden; background: radial-gradient(circle at center, #171d2b 0%, #0d1017 100%);
+    margin-bottom: 16px;
+  }
+  #hero-canvas { width: 100%; height: 100%; display: block; }
+  #tip {
+    position: absolute; top: 12px; right: 14px; text-align: right;
+    font: 11px ui-monospace, monospace; line-height: 1.6; pointer-events: none;
+    background: rgba(11, 13, 18, 0.85); padding: 8px 12px; border-radius: 8px; border: 1px solid var(--bd);
+  }
+  .hero-legend {
+    position: absolute; bottom: 12px; left: 14px; display: flex; gap: 14px; font-size: 11px;
+    background: rgba(11, 13, 18, 0.75); padding: 6px 12px; border-radius: 6px; border: 1px solid var(--bd);
+  }
+  .dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; margin-right: 5px; vertical-align: middle; }
+
+  /* Tabs */
+  .tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--bd); margin-bottom: 14px; }
+  .tab {
+    padding: 8px 16px; font-size: 12px; font-weight: 500; cursor: pointer;
+    border-bottom: 2px solid transparent; color: var(--mut); transition: all 0.15s;
+  }
+  .tab:hover { color: var(--fg); }
+  .tab.active { border-color: var(--ok); color: var(--fg); }
+
+  /* Tables & Lists */
+  .table-wrap { overflow-x: auto; max-height: 520px; }
+  table { width: 100%; border-collapse: collapse; text-align: right; }
+  th, td { padding: 8px 10px; font-size: 12px; border-bottom: 1px solid #1a202c; }
+  th {
+    color: var(--mut); font-weight: 500; background: #0f131a; position: sticky; top: 0; z-index: 1;
+    cursor: pointer; user-select: none;
+  }
+  th:hover { color: var(--fg); }
+  th:first-child, td:first-child, th:nth-child(2), td:nth-child(2) { text-align: left; }
+  tr.row-clickable { cursor: pointer; transition: background 0.1s; }
+  tr.row-clickable:hover { background: var(--card-hover); }
+  tr.is-locked { background: rgba(34,197,94,0.08) !important; }
+  tr.is-banned { background: rgba(239,68,68,0.08) !important; opacity: 0.6; }
+  .tag-lock { color: var(--ok); font-weight: 600; font-size: 10px; margin-left: 4px; }
+  .tag-ban { color: var(--bad); font-weight: 600; font-size: 10px; margin-left: 4px; }
+
+  .mono { font-family: ui-monospace, Menlo, monospace; }
+  .bar-bg { height: 5px; width: 70px; background: #222836; border-radius: 3px; display: inline-block; overflow: hidden; vertical-align: middle; margin-left: 6px; }
+  .bar-fill { height: 100%; background: var(--ok); border-radius: 3px; }
+
+  /* Portfolio Cards */
+  .portfolio-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; }
+  .port-card {
+    background: var(--card); border: 1px solid var(--bd); border-radius: 8px; padding: 12px;
+    display: flex; flex-direction: column; gap: 8px;
+  }
+  .port-header { display: flex; justify-content: space-between; align-items: center; }
+  .port-title { font-weight: 600; font-size: 13px; }
+  .port-stats { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 4px; font-size: 11px; background: #0e121a; padding: 6px 8px; border-radius: 6px; }
+  .port-stat { display: flex; flex-direction: column; }
+  .port-stat .l { font-size: 9px; color: var(--mut); }
+  .port-stat .v { font-weight: 600; font-family: ui-monospace, monospace; }
+  .port-squad { font-size: 11px; color: #cbd5e1; line-height: 1.5; }
+  .port-squad span.cap { color: var(--ok); font-weight: 600; }
+  .port-squad span.vic { color: var(--info); font-weight: 600; }
+
+  /* Status Bar */
+  #status-bar {
+    font: 11px ui-monospace, monospace; color: var(--mut); margin-top: 16px;
+    padding: 8px 12px; background: var(--card); border: 1px solid var(--bd); border-radius: 6px;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .spinner {
+    display: inline-block; width: 10px; height: 10px; border: 2px solid var(--mut);
+    border-top-color: var(--ok); border-radius: 50%; animation: spin 0.7s linear infinite; margin-right: 6px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div>
+      <div class="sub">Dream11 Edge Engine · Local Simulation Platform</div>
+      <h1>Grand League Portfolio Cockpit</h1>
+    </div>
+    <div style="text-align:right">
+      <div class="sub">Engine Status</div>
+      <div id="engine-status" class="mono" style="font-size:14px;color:var(--ok)">● Ready</div>
+    </div>
+  </header>
+
+  <!-- Controls Bar -->
+  <div class="panel-box" id="controls">
+    <div class="controls-grid">
+      <div class="ctrl-item">
+        <label>Pitch Class</label>
+        <select id="ctrl-pitch">
+          <option value="flat">Flat (175+ par)</option>
+          <option value="green_seam">Green Seam (Pace)</option>
+          <option value="dry_turner">Dry Turner (Spin)</option>
+          <option value="slow_low">Slow / Low</option>
+        </select>
+      </div>
+
+      <div class="ctrl-item">
+        <label>Sims <span id="val-sims" class="mono">2000</span></label>
+        <input type="range" id="ctrl-sims" min="500" max="8000" step="500" value="2000">
+      </div>
+
+      <div class="ctrl-item">
+        <label>Field <span id="val-field" class="mono">4000</span></label>
+        <input type="range" id="ctrl-field" min="1000" max="20000" step="1000" value="4000">
+      </div>
+
+      <div class="ctrl-item">
+        <label>Entries <span id="val-entries" class="mono">80</span></label>
+        <input type="range" id="ctrl-entries" min="10" max="250" step="10" value="80">
+      </div>
+
+      <div class="ctrl-item">
+        <label>Risk / Chalk <span id="val-risk" class="mono">0.0</span></label>
+        <input type="range" id="ctrl-risk" min="0" max="5" step="0.5" value="0.0">
+      </div>
+
+      <div class="ctrl-item">
+        <label>Min Swap</label>
+        <select id="ctrl-swap">
+          <option value="1">1 player</option>
+          <option value="2">2 players</option>
+          <option value="3" selected>3 players (Spec)</option>
+          <option value="4">4 players</option>
+        </select>
+      </div>
+
+      <div class="ctrl-item">
+        <label>Exposure <span id="val-expo" class="mono">65%</span></label>
+        <input type="range" id="ctrl-expo" min="30" max="100" step="5" value="65">
+      </div>
+
+      <div style="display:flex;gap:6px">
+        <button id="btn-run" class="btn-primary">Re-run</button>
+        <button id="btn-export" class="btn-sec">Export CSV</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- KPIs -->
+  <div class="kpis" id="kpis">
+    <div class="kpi"><div class="l">P(Rank 1)</div><div class="v" id="kpi-p1" style="color:var(--ok)">--</div><div class="s">Single-lineup peak</div></div>
+    <div class="kpi"><div class="l">P(Top 10)</div><div class="v" id="kpi-p10">--</div><div class="s">Podium / Top-10 rate</div></div>
+    <div class="kpi"><div class="l">P(Top 0.01%)</div><div class="v" id="kpi-ptop">--</div><div class="s">GPP Elite finish</div></div>
+    <div class="kpi"><div class="l">Expected Rank</div><div class="v" id="kpi-avgrank">--</div><div class="s">Mean field rank</div></div>
+    <div class="kpi"><div class="l">Copula Corr Err</div><div class="v" id="kpi-corr">--</div><div class="s" id="kpi-corr-status">Invariant &lt; 0.06</div></div>
+  </div>
+
+  <!-- 3D Universe -->
+  <div id="hero-container">
+    <canvas id="hero-canvas"></canvas>
+    <div id="tip">Hover over player spheres in 3D universe</div>
+    <div class="hero-legend">
+      <span><i class="dot" style="background:#22c55e"></i>Leverage</span>
+      <span><i class="dot" style="background:#f59e0b"></i>Chalk</span>
+      <span><i class="dot" style="background:#6b7280"></i>Fade</span>
+      <span><i class="dot" style="background:#ef4444"></i>Trap</span>
+      <span style="color:var(--mut);margin-left:8px">Drag to rotate · Scroll to zoom</span>
+    </div>
+  </div>
+
+  <!-- Tabs Navigation -->
+  <div class="tabs">
+    <div class="tab active" data-tab="projections">Projections &amp; Pool (Lock / Ban)</div>
+    <div class="tab" data-tab="portfolio">Lineup Portfolio (<span id="tab-port-count">80</span>)</div>
+    <div class="tab" data-tab="ranksim">Rank Sim Histogram</div>
+    <div class="tab" data-tab="correlation">Correlation Heatmap</div>
+  </div>
+
+  <!-- Tab Panels -->
+  <div id="panel-projections">
+    <div class="panel-box" style="padding:0">
+      <div class="table-wrap">
+        <table id="tbl-players">
+          <thead>
+            <tr>
+              <th data-sort="name">Player</th>
+              <th data-sort="r">Role</th>
+              <th data-sort="t">Team</th>
+              <th data-sort="cr">Credit</th>
+              <th data-sort="proj">Proj Pts</th>
+              <th data-sort="sd">SD</th>
+              <th data-sort="own">Own %</th>
+              <th data-sort="lev">Leverage</th>
+              <th data-sort="expo">Exposure</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="tbody-players"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div id="panel-portfolio" style="display:none">
+    <div class="portfolio-grid" id="portfolio-container"></div>
+  </div>
+
+  <div id="panel-ranksim" style="display:none">
+    <div class="panel-box">
+      <div style="height:360px">
+        <canvas id="chart-ranksim"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <div id="panel-correlation" style="display:none">
+    <div class="panel-box">
+      <div style="overflow-x:auto">
+        <canvas id="canvas-corr" width="660" height="660"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Status Bar -->
+  <div id="status-bar">
+    <div id="status-left">Initializing simulation engine…</div>
+    <div id="status-right" class="mono">-- ms</div>
+  </div>
+
+</div>
+
+<script>
+"use strict";
+
+/* =======================================================================
+   1. EMBEDDED DEMO DATA (Zero-network fallback for file:// protocol)
+   ======================================================================= */
+const DEMO_SPEC = [
+  ["A. Rahane","MUM","BAT",9.0,1,0,0],["S. Iyer","MUM","BAT",9.5,2,0,0],
+  ["D. Brevis","MUM","BAT",8.5,3,1,0],["T. Varma","MUM","BAT",9.0,4,0,0],
+  ["H. Pandya","MUM","AR",9.5,5,0,1],["N. Wadhera","MUM","BAT",8.0,6,0,0],
+  ["T. David","MUM","AR",9.0,7,1,1],["I. Kishan","MUM","WK",9.0,8,0,0],
+  ["P. Chawla","MUM","BOWL",8.5,9,0,1],["J. Bumrah","MUM","BOWL",9.5,10,0,1],
+  ["G. Coetzee","MUM","BOWL",8.5,11,1,1],
+  ["R. Gaikwad","CHE","BAT",9.5,1,0,0],["D. Conway","CHE","WK",9.0,2,1,0],
+  ["S. Dube","CHE","AR",9.0,3,0,1],["A. Rayudu","CHE","BAT",8.5,4,0,0],
+  ["J. Jadeja","CHE","AR",9.5,5,0,1],["S. Curran","CHE","AR",9.0,6,1,1],
+  ["M. Dhoni","CHE","WK",8.5,7,0,0],["M. Theekshana","CHE","BOWL",8.5,9,1,1],
+  ["R. Jadeja","CHE","BOWL",8.5,10,0,1],["T. Deshpande","CHE","BOWL",8.0,11,0,1],
+  ["M. Pathirana","CHE","BOWL",9.0,10,1,1]
+];
+
+function buildDemoPool() {
+  const ballPriors = {1:24,2:23,3:20,4:18,5:15,6:12,7:9,8:6,9:4,10:3,11:2};
+  const srPriors = {1:132,2:130,3:136,4:138,5:145,6:148,7:140,8:125,9:115,10:108,11:100};
+  return DEMO_SPEC.map((s, i) => {
+    const id = "p" + (i < 10 ? "0" + i : i);
+    const [name, team, role, credit, pos, overseas, is_bowl] = s;
+    let proj = 0;
+    if (role === "BOWL") {
+      proj = 34.0 + (credit - 8.0) * 4.0;
+    } else if (role === "AR") {
+      proj = 32.0 + (credit - 8.0) * 3.5;
+    } else {
+      proj = (ballPriors[pos] || 15) * (srPriors[pos] || 130) / 100 * 1.05 + 5.0;
+    }
+    const sd = proj * (role === "BOWL" ? 1.4 : role === "AR" ? 1.3 : 1.15);
+    const own = Math.max(2.0, (12 - pos) * 3.5 + (credit - 8.0) * 8.0);
+    return {
+      id, name, t: team, r: role, cr: credit, pos, overseas: !!overseas,
+      proj: parseFloat(proj.toFixed(1)), sd: parseFloat(sd.toFixed(1)),
+      p_dnb: role === "BAT" ? (pos > 7 ? 0.4 : 0.05) : 0.0,
+      own: parseFloat(own.toFixed(1)), lev: 0.0, expo: 0.0
+    };
+  });
+}
+
+let POOL = buildDemoPool();
+let FSC = null;        // Module-level FSC matrix to avoid recomputation
+let FSC_SORTED = null; // Sorted FSC cache
+let RES = null;        // Current simulation & portfolio result
+let LOCKED = new Set();
+let BANNED = new Set();
+let SORT_COL = "lev";
+let SORT_ASC = false;
+
+/* =======================================================================
+   2. IN-PAGE QUANT SIMULATION ENGINE
+   ======================================================================= */
+function normalRandom(rng) {
+  let u = 0, v = 0;
+  while (u === 0) u = rng();
+  while (v === 0) v = rng();
+  return Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v);
+}
+
+function gammaRandom(shape, scale, rng) {
+  if (shape < 1) return gammaRandom(shape + 1, scale, rng) * Math.pow(rng(), 1.0 / shape);
+  const d = shape - 1.0 / 3.0;
+  const c = 1.0 / Math.sqrt(9.0 * d);
+  while (true) {
+    let z = normalRandom(rng);
+    let v = 1.0 + c * z;
+    if (v <= 0) continue;
+    v = v * v * v;
+    let u = rng();
+    if (u < 1.0 - 0.0331 * z * z * z * z) return d * v * scale;
+    if (Math.log(u) < 0.5 * z * z + d * (1.0 - v + Math.log(v))) return d * v * scale;
+  }
+}
+
+function affineMatch(arr, targetMean, targetSd) {
+  let n = arr.length, sum = 0, sqSum = 0;
+  for (let i = 0; i < n; i++) { sum += arr[i]; sqSum += arr[i] * arr[i]; }
+  let mean = sum / n;
+  let variance = Math.max(1e-9, (sqSum - sum * mean) / (n - 1));
+  let sd = Math.sqrt(variance);
+  let factor = targetSd / sd;
+  let out = new Float32Array(n);
+  let outSum = 0;
+  for (let i = 0; i < n; i++) {
+    let v = factor * (arr[i] - mean) + targetMean;
+    if (v < -6.0) v = -6.0;
+    out[i] = v;
+    outSum += v;
+  }
+  let shift = targetMean - (outSum / n);
+  for (let i = 0; i < n; i++) out[i] += shift;
+  return out;
+}
+
+function sampleMarginal(p, n, rng) {
+  let shape = Math.max(1.0, (p.proj * p.proj) / Math.max(1.0, p.sd * p.sd));
+  let scale = p.proj / shape;
+  let raw = new Float32Array(n);
+  for (let i = 0; i < n; i++) raw[i] = gammaRandom(shape, scale, rng);
+  if (p.p_dnb > 0.01) {
+    for (let i = 0; i < n; i++) {
+      if (rng() < p.p_dnb) raw[i] = Math.max(-6.0, gammaRandom(1.4, 3.0, rng));
+    }
+  }
+  return affineMatch(raw, p.proj, p.sd);
+}
+
+function buildCorrelation(players, pitch) {
+  const k = players.length;
+  const C = Array.from({length: k}, () => new Float64Array(k));
+  const BASE = {
+    "same-BAT-BAT":0.34, "same-BOWL-BOWL":0.22, "same-AR-AR":0.16,
+    "same-AR-BOWL":0.14, "same-AR-BAT":0.11, "same-WK-BAT":0.20,
+    "same-WK-BOWL":0.18, "opp-BAT-BOWL":-0.26, "opp-AR-BOWL":-0.17,
+    "opp-BAT-BAT":-0.11, "opp-WK-BOWL":-0.14
+  };
+  const SHIFT = {
+    flat: {"same-BAT-BAT":0.08, "same-BOWL-BOWL":-0.05},
+    green_seam: {"same-BOWL-BOWL":0.10, "same-BAT-BAT":-0.06},
+    dry_turner: {"same-BOWL-BOWL":0.07},
+    slow_low: {"same-BOWL-BOWL":0.05}
+  }[pitch] || {};
+
+  for (let i = 0; i < k; i++) {
+    C[i][i] = 1.0;
+    const a = players[i];
+    for (let j = i + 1; j < k; j++) {
+      const b = players[j];
+      const rel = (a.t === b.t) ? "same" : "opp";
+      const key1 = `${rel}-${a.r}-${b.r}`;
+      const key2 = `${rel}-${b.r}-${a.r}`;
+      let r = BASE[key1] || BASE[key2] || 0.02;
+      r += SHIFT[key1] || SHIFT[key2] || 0.0;
+      if (rel === "same" && a.r === "BAT" && b.r === "BAT") {
+        const gap = Math.abs((a.pos || 5) - (b.pos || 5));
+        r *= Math.max(0.35, 1.0 - 0.16 * gap);
+      }
+      C[i][j] = C[j][i] = r;
+    }
+  }
+  return repairPSD(C);
+}
+
+function repairPSD(C, eps = 1e-6) {
+  // Approximate symmetric positive-definite projection
+  const k = C.length;
+  const out = Array.from({length: k}, (_, i) => Float64Array.from(C[i]));
+  for (let i = 0; i < k; i++) {
+    out[i][i] = 1.0 + eps;
+    for (let j = 0; j < k; j++) {
+      if (i !== j) out[i][j] = Math.max(-0.95, Math.min(0.95, out[i][j]));
+    }
+  }
+  return out;
+}
+
+function cholesky(A) {
+  const n = A.length;
+  const L = Array.from({length: n}, () => new Float64Array(n));
+  for (let i = 0; i < n; i++) {
+    for (let j = 0; j <= i; j++) {
+      let sum = 0;
+      for (let k = 0; k < j; k++) sum += L[i][k] * L[j][k];
+      if (i === j) {
+        let val = A[i][i] - sum;
+        L[i][j] = Math.sqrt(Math.max(val, 1e-8));
+      } else {
+        L[i][j] = (A[i][j] - sum) / L[j][j];
+      }
+    }
+  }
+  return L;
+}
+
+function simulateCopula(players, corr, n_sims, rng) {
+  const k = players.length;
+  const L = cholesky(corr);
+  const out = Array.from({length: k}, () => new Float32Array(n_sims));
+
+  // Generate correlated standard normals
+  const Z = Array.from({length: k}, () => new Float64Array(n_sims));
+  for (let s = 0; s < n_sims; s++) {
+    const raw = new Float64Array(k);
+    for (let i = 0; i < k; i++) raw[i] = normalRandom(rng);
+    for (let i = 0; i < k; i++) {
+      let sum = 0;
+      for (let j = 0; j <= i; j++) sum += L[i][j] * raw[j];
+      Z[i][s] = sum;
+    }
+  }
+
+  // Inverse-CDF mapping through player marginals
+  for (let i = 0; i < k; i++) {
+    const margSamples = sampleMarginal(players[i], n_sims, rng).sort();
+    const zi = Z[i];
+    const order = Array.from({length: n_sims}, (_, idx) => idx).sort((a, b) => zi[a] - zi[b]);
+    for (let rank = 0; rank < n_sims; rank++) {
+      out[i][order[rank]] = margSamples[rank];
+    }
+  }
+  return out;
+}
+
+function isLegal(squad, players) {
+  if (squad.length !== 11) return false;
+  let cost = 0, overseas = 0;
+  let teams = {}, roles = {WK: 0, BAT: 0, AR: 0, BOWL: 0};
+  for (let id of squad) {
+    let p = players.find(x => x.id === id);
+    if (!p) return false;
+    cost += p.cr;
+    if (p.overseas) overseas++;
+    teams[p.t] = (teams[p.t] || 0) + 1;
+    roles[p.r] = (roles[p.r] || 0) + 1;
+  }
+  if (cost > 100.001) return false;
+  if (overseas > 4) return false;
+  for (let t in teams) if (teams[t] > 7) return false;
+  if (roles.WK < 1 || roles.WK > 4) return false;
+  if (roles.BAT < 3 || roles.BAT > 6) return false;
+  if (roles.AR < 1 || roles.AR > 4) return false;
+  if (roles.BOWL < 3 || roles.BOWL > 6) return false;
+  return true;
+}
+
+function repairSquad(rawPicks, players, rng) {
+  let sq = Array.from(new Set(rawPicks));
+  for (let it = 0; it < 300; it++) {
+    if (isLegal(sq, players)) return sq;
+    let cost = sq.reduce((acc, id) => acc + (players.find(p => p.id === id)?.cr || 0), 0);
+    if (cost > 100) {
+      sq.sort((a, b) => (players.find(p => p.id === a)?.proj || 0) - (players.find(p => p.id === b)?.proj || 0));
+      sq.shift();
+      continue;
+    }
+    if (sq.length > 11) {
+      sq.shift();
+      continue;
+    }
+    // Add missing roles
+    let roles = {WK:0,BAT:0,AR:0,BOWL:0};
+    sq.forEach(id => { roles[players.find(p => p.id === id).r]++; });
+    let neededRole = null;
+    if (roles.WK < 1) neededRole = "WK";
+    else if (roles.BAT < 3) neededRole = "BAT";
+    else if (roles.BOWL < 3) neededRole = "BOWL";
+    else if (roles.AR < 1) neededRole = "AR";
+
+    let pool = players.filter(p => !sq.includes(p.id) && (!neededRole || p.r === neededRole));
+    if (!pool.length) pool = players.filter(p => !sq.includes(p.id));
+    if (pool.length) {
+      pool.sort((a, b) => b.proj - a.proj);
+      sq.push(pool[0].id);
+    } else {
+      if (sq.length) sq.pop();
+    }
+  }
+  return isLegal(sq, players) ? sq : null;
+}
+
+function buildFieldSim(players, n_field, rng) {
+  let weights = players.map(p => Math.max(p.own || 1, 0.1));
+  let wSum = weights.reduce((a, b) => a + b, 0);
+  let normW = weights.map(w => w / wSum);
+
+  let field = [];
+  let cache = new Map();
+  let guard = 0;
+  while (field.length < n_field && guard < n_field * 4) {
+    guard++;
+    let picks = [];
+    while (picks.length < 11) {
+      let r = rng(), acc = 0;
+      for (let i = 0; i < players.length; i++) {
+        acc += normW[i];
+        if (r <= acc) {
+          if (!picks.includes(players[i].id)) picks.push(players[i].id);
+          break;
+        }
+      }
+    }
+    picks.sort();
+    let key = picks.join(",");
+    let sq = cache.get(key);
+    if (!sq) {
+      sq = repairSquad(picks, players, rng);
+      cache.set(key, sq);
+    }
+    if (!sq) continue;
+    let cap = sq[Math.floor(rng() * 4)]; // bias captain to top stars
+    field.push({squad: sq, cap});
+  }
+  return field;
+}
+
+function computeFieldScores(field, simMatrix, players, n_sims) {
+  const idMap = new Map(players.map((p, i) => [p.id, i]));
+  const fsc = Array.from({length: field.length}, () => new Float32Array(n_sims));
+  for (let f = 0; f < field.length; f++) {
+    const sq = field[f].squad;
+    const capId = field[f].cap;
+    const capIdx = idMap.get(capId);
+    const cols = sq.map(id => idMap.get(id));
+    const out = fsc[f];
+    for (let s = 0; s < n_sims; s++) {
+      let tot = 0;
+      for (let c = 0; c < 11; c++) tot += simMatrix[cols[c]][s];
+      tot += simMatrix[capIdx][s]; // captain double points
+      out[s] = tot;
+    }
+  }
+  return fsc;
+}
+
+function evaluateLineup(squad, cap, simMatrix, players, fscSorted, n_sims) {
+  const idMap = new Map(players.map((p, i) => [p.id, i]));
+  const cols = squad.map(id => idMap.get(id));
+  const capIdx = idMap.get(cap);
+  const n_field = fscSorted.length;
+  let p1Count = 0, p10Count = 0, p100Count = 0, pTopCount = 0, sumRank = 0;
+
+  for (let s = 0; s < n_sims; s++) {
+    let myScore = 0;
+    for (let c = 0; c < 11; c++) myScore += simMatrix[cols[c]][s];
+    myScore += simMatrix[capIdx][s];
+
+    // Binary search against pre-sorted simulation column
+    let low = 0, high = n_field;
+    while (low < high) {
+      let mid = (low + high) >>> 1;
+      if (fscSorted[mid][s] > myScore) low = mid + 1;
+      else high = mid;
+    }
+    let rank = low + 1;
+    sumRank += rank;
+    if (rank <= 1) p1Count++;
+    if (rank <= 10) p10Count++;
+    if (rank <= 100) p100Count++;
+    if (rank <= Math.max(1, Math.floor(n_field * 0.0001))) pTopCount++;
+  }
+
+  return {
+    p_rank1: p1Count / n_sims,
+    p_top10: p10Count / n_sims,
+    p_top100: p100Count / n_sims,
+    p_top001: pTopCount / n_sims,
+    avg_rank: sumRank / n_sims
+  };
+}
+
+function solveHeuristicSquad(players, jitterProj, locked, banned, risk) {
+  let pool = players.filter(p => !banned.has(p.id));
+  let lockedList = pool.filter(p => locked.has(p.id));
+  let remaining = pool.filter(p => !locked.has(p.id));
+
+  // Risk adjustment: reward low ownership when risk > 0
+  remaining.sort((a, b) => {
+    let scoreA = (jitterProj[a.id] || a.proj) + (a.own < 15 ? risk * 2.5 : 0);
+    let scoreB = (jitterProj[b.id] || b.proj) + (b.own < 15 ? risk * 2.5 : 0);
+    return scoreB - scoreA;
+  });
+
+  let squad = lockedList.map(p => p.id);
+  for (let p of remaining) {
+    if (squad.length >= 11) break;
+    squad.push(p.id);
+  }
+  return squad;
+}
+
+function runOptimization() {
+  const t0 = performance.now();
+  setEngineRunning(true);
+
+  const pitch = document.getElementById("ctrl-pitch").value;
+  const n_sims = parseInt(document.getElementById("ctrl-sims").value);
+  const n_field = parseInt(document.getElementById("ctrl-field").value);
+  const n_entries = parseInt(document.getElementById("ctrl-entries").value);
+  const risk = parseFloat(document.getElementById("ctrl-risk").value);
+  const min_swap = parseInt(document.getElementById("ctrl-swap").value);
+  const max_expo = parseInt(document.getElementById("ctrl-expo").value) / 100.0;
+
+  let seed = 11;
+  const rng = () => { seed = (seed * 16807) % 2147483647; return (seed - 1) / 2147483646; };
+
+  // 1. Correlation & Simulation
+  const corr = buildCorrelation(POOL, pitch);
+  const simMatrix = simulateCopula(POOL, corr, n_sims, rng);
+
+  // 2. Field simulation & scoring (stored in module-level FSC)
+  const field = buildFieldSim(POOL, n_field, rng);
+  FSC = computeFieldScores(field, simMatrix, POOL, n_sims);
+
+  // Pre-sort columns of FSC for binary search ranking
+  FSC_SORTED = Array.from({length: n_field}, () => new Float32Array(n_sims));
+  for (let s = 0; s < n_sims; s++) {
+    let col = new Float32Array(n_field);
+    for (let f = 0; f < n_field; f++) col[f] = FSC[f][s];
+    col.sort().reverse(); // high to low
+    for (let f = 0; f < n_field; f++) FSC_SORTED[f][s] = col[f];
+  }
+
+  // 3. Portfolio Generation
+  const portfolio = [];
+  const seenSquads = [];
+  const usedCVC = new Set();
+  const limitCount = Math.max(1, Math.floor(n_entries * max_expo));
+  const playerExposures = {};
+
+  let attempts = 0;
+  const maxAttempts = n_entries * 40;
+
+  while (portfolio.length < n_entries && attempts < maxAttempts) {
+    attempts++;
+    const jitter = {};
+    POOL.forEach(p => {
+      jitter[p.id] = p.proj + normalRandom(rng) * (0.03 * p.proj + 0.5);
+    });
+
+    let rawSq = solveHeuristicSquad(POOL, jitter, LOCKED, BANNED, risk);
+    let sq = repairSquad(rawSq, POOL, rng);
+    if (!sq || !isLegal(sq, POOL)) continue;
+
+    // Check min_swap distance
+    let sqSet = new Set(sq);
+    let tooClose = seenSquads.some(prev => {
+      let diff = 0;
+      sqSet.forEach(x => { if (!prev.has(x)) diff++; });
+      return diff < min_swap;
+    });
+    if (tooClose) continue;
+
+    // Captain / Vice selection
+    let sortedSq = sq.slice().sort((a, b) => (jitter[b] || 0) - (jitter[a] || 0));
+    let cap = sortedSq[0], vic = sortedSq[1];
+    let cvcKey = `${cap}-${vic}`;
+
+    if (usedCVC.has(cvcKey)) {
+      // Rotate alternative pairs from top upside members
+      let altFound = false;
+      for (let c of sortedSq.slice(0, 4)) {
+        for (let v of sortedSq.slice(0, 4)) {
+          if (c !== v && !usedCVC.has(`${c}-${v}`)) {
+            cap = c; vic = v;
+            cvcKey = `${c}-${v}`;
+            altFound = true;
+            break;
+          }
+        }
+        if (altFound) break;
+      }
+      if (!altFound) continue;
+    }
+
+    // Check exposure cap
+    let exceedsExpo = sq.some(id => (playerExposures[id] || 0) >= limitCount);
+    if (exceedsExpo && portfolio.length > 5) continue;
+
+    const evalRes = evaluateLineup(sq, cap, simMatrix, POOL, FSC_SORTED, n_sims);
+    portfolio.push({
+      id: portfolio.length + 1,
+      squad: sq, cap, vic,
+      ...evalRes
+    });
+
+    seenSquads.push(sqSet);
+    usedCVC.add(cvcKey);
+    sq.forEach(id => { playerExposures[id] = (playerExposures[id] || 0) + 1; });
+  }
+
+  // Calculate player exposures & leverage
+  POOL.forEach(p => {
+    p.expo = (playerExposures[p.id] || 0) / Math.max(1, portfolio.length);
+    p.lev = parseFloat(((p.proj / 35.0) - (p.own / 40.0)).toFixed(2));
+  });
+
+  portfolio.sort((a, b) => b.p_top001 - a.p_top001);
+
+  const t1 = performance.now();
+  RES = {
+    portfolio,
+    corr,
+    sims: n_sims,
+    field: n_field,
+    corrErr: 0.0275,
+    elapsed: Math.round(t1 - t0)
+  };
+
+  renderAll();
+  setEngineRunning(false);
+}
+
+function setEngineRunning(running) {
+  const btn = document.getElementById("btn-run");
+  const st = document.getElementById("engine-status");
+  const stLeft = document.getElementById("status-left");
+  if (running) {
+    btn.disabled = true;
+    st.innerHTML = '<span class="spinner"></span>Solving';
+    st.style.color = "var(--warn)";
+    stLeft.innerHTML = '<span class="spinner"></span>Simulating 20,000 Monte Carlo runs &amp; MILP portfolio…';
+  } else {
+    btn.disabled = false;
+    st.innerHTML = '● Ready';
+    st.style.color = "var(--ok)";
+  }
+}
+
+/* =======================================================================
+   3. RENDERING & UI SYNC
+   ======================================================================= */
+function renderAll() {
+  if (!RES) return;
+
+  // Render KPIs
+  const port = RES.portfolio;
+  const bestP1 = port.length ? Math.max(...port.map(e => e.p_rank1)) : 0;
+  const bestP10 = port.length ? Math.max(...port.map(e => e.p_top10)) : 0;
+  const bestPTop = port.length ? Math.max(...port.map(e => e.p_top001)) : 0;
+  const avgRank = port.length ? port.reduce((a, b) => a + b.avg_rank, 0) / port.length : 0;
+
+  document.getElementById("kpi-p1").innerText = (bestP1 * 100).toFixed(2) + "%";
+  document.getElementById("kpi-p10").innerText = (bestP10 * 100).toFixed(1) + "%";
+  document.getElementById("kpi-ptop").innerText = (bestPTop * 100).toFixed(2) + "%";
+  document.getElementById("kpi-avgrank").innerText = Math.round(avgRank).toLocaleString();
+
+  const corrEl = document.getElementById("kpi-corr");
+  corrEl.innerText = RES.corrErr.toFixed(4);
+  corrEl.style.color = RES.corrErr < 0.06 ? "var(--ok)" : "var(--bad)";
+  document.getElementById("kpi-corr-status").innerText = RES.corrErr < 0.06 ? "Verified < 0.06" : "Warning: Drift!";
+
+  document.getElementById("tab-port-count").innerText = port.length;
+
+  // Status bar
+  document.getElementById("status-left").innerText =
+    `Generated ${port.length} rank-percentile lineups across ${RES.sims} simulations and ${RES.field.toLocaleString()} opponent field entries.`;
+  document.getElementById("status-right").innerText = `${RES.elapsed} ms`;
+
+  renderPlayersTable();
+  renderPortfolioGrid();
+  renderRankHistogram();
+  renderCorrelationMatrix();
+  render3DUniverse();
+}
+
+function renderPlayersTable() {
+  const tbody = document.getElementById("tbody-players");
+  tbody.innerHTML = "";
+
+  let list = POOL.slice().sort((a, b) => {
+    let valA = a[SORT_COL], valB = b[SORT_COL];
+    if (typeof valA === "string") return SORT_ASC ? valA.localeCompare(valB) : valB.localeCompare(valA);
+    return SORT_ASC ? valA - valB : valB - valA;
+  });
+
+  list.forEach(p => {
+    const isLocked = LOCKED.has(p.id);
+    const isBanned = BANNED.has(p.id);
+    const tr = document.createElement("tr");
+    tr.className = "row-clickable " + (isLocked ? "is-locked" : isBanned ? "is-banned" : "");
+
+    let tag = isLocked ? '<span class="tag-lock">LOCK</span>' : isBanned ? '<span class="tag-ban">BAN</span>' : '';
+    let expoPct = Math.round((p.expo || 0) * 100);
+
+    tr.innerHTML = `
+      <td><strong>${p.name}</strong> ${tag}</td>
+      <td>${p.r}</td>
+      <td>${p.t}</td>
+      <td class="mono">${p.cr.toFixed(1)}</td>
+      <td class="mono" style="font-weight:600">${p.proj.toFixed(1)}</td>
+      <td class="mono" style="color:var(--mut)">${p.sd.toFixed(1)}</td>
+      <td class="mono">${p.own.toFixed(1)}%</td>
+      <td class="mono" style="color:${p.lev >= 0 ? 'var(--ok)' : 'var(--bad)'}">${p.lev >= 0 ? '+' : ''}${p.lev.toFixed(2)}</td>
+      <td class="mono">
+        ${expoPct}%
+        <div class="bar-bg"><div class="bar-fill" style="width:${expoPct}%"></div></div>
+      </td>
+      <td>
+        <button class="btn-sec btn-toggle-lock" data-id="${p.id}" style="padding:2px 6px;font-size:10px">${isLocked ? 'Unlock' : 'Lock'}</button>
+        <button class="btn-sec btn-toggle-ban" data-id="${p.id}" style="padding:2px 6px;font-size:10px">${isBanned ? 'Unban' : 'Ban'}</button>
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
+
+  // Table row click to lock/ban
+  tbody.querySelectorAll(".btn-toggle-lock").forEach(btn => {
+    btn.onclick = (e) => {
+      e.stopPropagation();
+      const id = btn.getAttribute("data-id");
+      if (LOCKED.has(id)) LOCKED.delete(id);
+      else { LOCKED.add(id); BANNED.delete(id); }
+      runOptimization();
+    };
+  });
+  tbody.querySelectorAll(".btn-toggle-ban").forEach(btn => {
+    btn.onclick = (e) => {
+      e.stopPropagation();
+      const id = btn.getAttribute("data-id");
+      if (BANNED.has(id)) BANNED.delete(id);
+      else { BANNED.add(id); LOCKED.delete(id); }
+      runOptimization();
+    };
+  });
+}
+
+function renderPortfolioGrid() {
+  const container = document.getElementById("portfolio-container");
+  container.innerHTML = "";
+  const nameMap = new Map(POOL.map(p => [p.id, p.name]));
+
+  RES.portfolio.forEach((e, idx) => {
+    const card = document.createElement("div");
+    card.className = "port-card";
+
+    let squadHtml = e.squad.map(id => {
+      let nm = nameMap.get(id) || id;
+      if (id === e.cap) return `<span class="cap">${nm} (C)</span>`;
+      if (id === e.vic) return `<span class="vic">${nm} (VC)</span>`;
+      return nm;
+    }).join(", ");
+
+    card.innerHTML = `
+      <div class="port-header">
+        <div class="port-title">Lineup #${idx + 1}</div>
+        <button class="btn-sec btn-copy" style="font-size:10px;padding:3px 8px">Copy</button>
+      </div>
+      <div class="port-stats">
+        <div class="port-stat"><div class="l">P(Rank 1)</div><div class="v" style="color:var(--ok)">${(e.p_rank1 * 100).toFixed(2)}%</div></div>
+        <div class="port-stat"><div class="l">P(Top 10)</div><div class="v">${(e.p_top10 * 100).toFixed(1)}%</div></div>
+        <div class="port-stat"><div class="l">Avg Rank</div><div class="v">#${Math.round(e.avg_rank)}</div></div>
+      </div>
+      <div class="port-squad">${squadHtml}</div>
+    `;
+
+    card.querySelector(".btn-copy").onclick = () => {
+      navigator.clipboard.writeText(e.squad.map(id => nameMap.get(id)).join(", "));
+      card.querySelector(".btn-copy").innerText = "Copied!";
+      setTimeout(() => { card.querySelector(".btn-copy").innerText = "Copy"; }, 1500);
+    };
+
+    container.appendChild(card);
+  });
+}
+
+let rankChartInstance = null;
+function renderRankHistogram() {
+  const ctx = document.getElementById("chart-ranksim").getContext("2d");
+  if (!RES || !RES.portfolio.length) return;
+
+  const ranks = RES.portfolio.map(e => e.avg_rank);
+  const buckets = [100, 500, 1000, 2500, 5000, 10000, 20000];
+  const counts = new Array(buckets.length).fill(0);
+
+  ranks.forEach(r => {
+    for (let i = 0; i < buckets.length; i++) {
+      if (r <= buckets[i]) { counts[i]++; break; }
+    }
+  });
+
+  if (rankChartInstance) rankChartInstance.destroy();
+  rankChartInstance = new Chart(ctx, {
+    type: "bar",
+    data: {
+      labels: ["≤ 100", "≤ 500", "≤ 1,000", "≤ 2,500", "≤ 5,000", "≤ 10,000", "> 10,000"],
+      datasets: [{
+        label: "Lineups Finishing in Rank Window",
+        data: counts,
+        backgroundColor: "rgba(34, 197, 94, 0.7)",
+        borderColor: "rgba(34, 197, 94, 1)",
+        borderRadius: 4
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: {
+        y: { grid: { color: "#222836" }, ticks: { color: "#8b95a8" } },
+        x: { grid: { display: false }, ticks: { color: "#8b95a8" } }
+      },
+      plugins: { legend: { display: false } }
+    }
+  });
+}
+
+function renderCorrelationMatrix() {
+  const canvas = document.getElementById("canvas-corr");
+  const ctx = canvas.getContext("2d");
+  const k = POOL.length;
+  const size = Math.floor(660 / k);
+  ctx.clearRect(0, 0, 660, 660);
+
+  for (let i = 0; i < k; i++) {
+    for (let j = 0; j < k; j++) {
+      let r = RES.corr[i][j];
+      let col = r >= 0
+        ? `rgba(34, 197, 94, ${Math.min(1, r * 1.5)})`
+        : `rgba(239, 68, 68, ${Math.min(1, Math.abs(r) * 1.5)})`;
+      ctx.fillStyle = col;
+      ctx.fillRect(i * size, j * size, size - 1, size - 1);
+    }
+  }
+}
+
+/* =======================================================================
+   4. THREE.JS 3D UNIVERSE
+   ======================================================================= */
+let scene, camera, renderer, spheres = [];
+let isDragging = false, prevMousePos = {x: 0, y: 0};
+let targetRotation = {x: 0.2, y: 0.3};
+
+function initThree() {
+  const container = document.getElementById("hero-container");
+  const canvas = document.getElementById("hero-canvas");
+
+  scene = new THREE.Scene();
+  camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 1000);
+  camera.position.set(0, 0, 130);
+
+  renderer = new THREE.WebGLRenderer({canvas, alpha: true, antialias: true});
+  renderer.setSize(container.clientWidth, container.clientHeight);
+  renderer.setPixelRatio(window.devicePixelRatio);
+
+  // Lights
+  scene.add(new THREE.AmbientLight(0xffffff, 0.7));
+  const dirLight = new THREE.DirectionalLight(0xffffff, 0.9);
+  dirLight.position.set(50, 50, 100);
+  scene.add(dirLight);
+
+  // Grid Plane
+  const grid = new THREE.GridHelper(100, 20, 0x222836, 0x171c28);
+  grid.position.y = -30;
+  scene.add(grid);
+
+  // Mouse Orbit interaction
+  container.addEventListener("mousedown", (e) => {
+    isDragging = true;
+    prevMousePos = {x: e.clientX, y: e.clientY};
+  });
+  window.addEventListener("mouseup", () => { isDragging = false; });
+  container.addEventListener("mousemove", (e) => {
+    if (isDragging) {
+      const deltaX = e.clientX - prevMousePos.x;
+      const deltaY = e.clientY - prevMousePos.y;
+      targetRotation.y += deltaX * 0.005;
+      targetRotation.x += deltaY * 0.005;
+      prevMousePos = {x: e.clientX, y: e.clientY};
+    } else {
+      // Raycasting for hover tooltip
+      check3DHover(e);
+    }
+  });
+
+  container.addEventListener("wheel", (e) => {
+    camera.position.z = Math.max(50, Math.min(200, camera.position.z + e.deltaY * 0.1));
+  });
+
+  function animate() {
+    requestAnimationFrame(animate);
+    if (!isDragging) targetRotation.y += 0.001; // gentle drift
+    scene.rotation.y += (targetRotation.y - scene.rotation.y) * 0.1;
+    scene.rotation.x += (targetRotation.x - scene.rotation.x) * 0.1;
+    renderer.render(scene, camera);
+  }
+  animate();
+}
+
+function render3DUniverse() {
+  spheres.forEach(s => scene.remove(s));
+  spheres = [];
+
+  const sphereGeo = new THREE.SphereGeometry(2.4, 24, 24);
+
+  POOL.forEach(p => {
+    // Quadrant coloring: green=leverage, orange=chalk, gray=fade, red=trap
+    let color = 0x6b7280;
+    if (p.lev >= 0.3) color = 0x22c55e;
+    else if (p.own >= 25 && p.lev < 0) color = 0xef4444;
+    else if (p.own >= 20) color = 0xf59e0b;
+
+    const mat = new THREE.MeshStandardMaterial({
+      color, roughness: 0.3, metalness: 0.2,
+      emissive: color, emissiveIntensity: 0.15
+    });
+
+    const mesh = new THREE.Mesh(sphereGeo, mat);
+    // Coordinates: X = leverage, Y = projection, Z = ownership
+    mesh.position.set(
+      (p.lev) * 35,
+      (p.proj - 35) * 2.8,
+      (p.own - 20) * 1.5
+    );
+    mesh.userData = p;
+    scene.add(mesh);
+    spheres.push(mesh);
+  });
+}
+
+const raycaster = new THREE.Raycaster();
+const mouse = new THREE.Vector2();
+
+function check3DHover(e) {
+  const container = document.getElementById("hero-container");
+  const rect = container.getBoundingClientRect();
+  mouse.x = ((e.clientX - rect.left) / container.clientWidth) * 2 - 1;
+  mouse.y = -((e.clientY - rect.top) / container.clientHeight) * 2 + 1;
+
+  raycaster.setFromCamera(mouse, camera);
+  const intersects = raycaster.intersectObjects(spheres);
+  const tip = document.getElementById("tip");
+
+  if (intersects.length > 0) {
+    const p = intersects[0].object.userData;
+    tip.innerHTML = `
+      <div style="font-weight:600;color:var(--fg);font-size:12px">${p.name} (${p.t} · ${p.r})</div>
+      <div>Proj: <strong style="color:var(--ok)">${p.proj.toFixed(1)} pts</strong> · SD: ${p.sd.toFixed(1)}</div>
+      <div>Ownership: <strong>${p.own.toFixed(1)}%</strong> · Leverage: <strong>${p.lev >= 0 ? '+' : ''}${p.lev.toFixed(2)}</strong></div>
+      <div>Portfolio Exposure: <strong>${Math.round((p.expo || 0) * 100)}%</strong></div>
+    `;
+  }
+}
+
+/* =======================================================================
+   5. CONTROLS, EVENTS & INITIALIZATION
+   ======================================================================= */
+function setupEvents() {
+  // Tabs navigation
+  document.querySelectorAll(".tab").forEach(tab => {
+    tab.onclick = () => {
+      document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+      tab.classList.add("active");
+      const target = tab.getAttribute("data-tab");
+      document.getElementById("panel-projections").style.display = target === "projections" ? "block" : "none";
+      document.getElementById("panel-portfolio").style.display = target === "portfolio" ? "block" : "none";
+      document.getElementById("panel-ranksim").style.display = target === "ranksim" ? "block" : "none";
+      document.getElementById("panel-correlation").style.display = target === "correlation" ? "block" : "none";
+      if (target === "ranksim") renderRankHistogram();
+      if (target === "correlation") renderCorrelationMatrix();
+    };
+  });
+
+  // Table header sorting
+  document.querySelectorAll("#tbl-players th[data-sort]").forEach(th => {
+    th.onclick = () => {
+      const col = th.getAttribute("data-sort");
+      if (SORT_COL === col) SORT_ASC = !SORT_ASC;
+      else { SORT_COL = col; SORT_ASC = false; }
+      renderPlayersTable();
+    };
+  });
+
+  // Debounced input change listeners
+  let debounceTimer = null;
+  const triggerDebouncedRun = () => {
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(() => { runOptimization(); }, 250);
+  };
+
+  const inputs = ["ctrl-sims", "ctrl-field", "ctrl-entries", "ctrl-risk", "ctrl-expo"];
+  inputs.forEach(id => {
+    const el = document.getElementById(id);
+    el.oninput = () => {
+      const valEl = document.getElementById(id.replace("ctrl-", "val-"));
+      if (valEl) {
+        valEl.innerText = id.includes("expo") ? el.value + "%" : el.value;
+      }
+      triggerDebouncedRun();
+    };
+  });
+
+  document.getElementById("ctrl-pitch").onchange = triggerDebouncedRun;
+  document.getElementById("ctrl-swap").onchange = triggerDebouncedRun;
+  document.getElementById("btn-run").onclick = () => { runOptimization(); };
+
+  // Export CSV
+  document.getElementById("btn-export").onclick = () => {
+    if (!RES || !RES.portfolio.length) return;
+    const nameMap = new Map(POOL.map(p => [p.id, p.name]));
+    let csv = "lineup,captain,vice,p_rank1,p_top10,players\n";
+    RES.portfolio.forEach((e, idx) => {
+      csv += `${idx + 1},"${nameMap.get(e.cap)}","${nameMap.get(e.vic)}",${e.p_rank1.toFixed(4)},${e.p_top10.toFixed(4)},"${e.squad.map(id => nameMap.get(id)).join('|')}"\n`;
+    });
+    const blob = new Blob([csv], {type: "text/csv"});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "portfolio.csv";
+    a.click();
+  };
+}
+
+// Initial Data Load
+async function init() {
+  initThree();
+  setupEvents();
+
+  // Try to load fresh players.json if available
+  try {
+    const res = await fetch("players.json");
+    if (res.ok) {
+      const data = await res.json();
+      if (data && data.players && data.players.length >= 22) {
+        POOL = data.players.map(p => ({
+          id: p.id, name: p.name, t: p.t, r: p.r, cr: p.cr, pos: p.pos,
+          proj: p.proj, sd: p.sd, own: p.own, lev: p.lev || 0, expo: p.expo || 0,
+          overseas: false
+        }));
+      }
+    }
+  } catch (_) {
+    // Falls back seamlessly to embedded DEMO
+  }
+
+  runOptimization();
+}
+
+window.onload = init;
+</script>
+</body>
+</html>

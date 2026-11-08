@@ -1,0 +1,539 @@
+[
+  {
+    "cricinfo_id": 70132,
+    "cricinfo_object_id": 597806,
+    "name": "S Mandhana",
+    "long_name": "Smriti Mandhana",
+    "slug": "smriti-mandhana",
+    "team": "IND-W",
+    "playing_roles": [
+      "opening batter"
+    ],
+    "batting_styles": [
+      "lhb"
+    ],
+    "bowling_styles": [
+      "rm"
+    ],
+    "gender": "F"
+  },
+  {
+    "cricinfo_id": 105213,
+    "cricinfo_object_id": 1182523,
+    "name": "Shafali Verma",
+    "long_name": "Shafali Verma",
+    "slug": "shafali-verma",
+    "team": "IND-W",
+    "playing_roles": [
+      "allrounder"
+    ],
+    "batting_styles": [
+      "rhb"
+    ],
+    "bowling_styles": [
+      "ob"
+    ],
+    "gender": "F"
+  },
+  {
+    "cricinfo_id": 119155,
+    "cricinfo_object_id": 1464471,
+    "name": "K Gaud",
+    "long_name": "Kranti Gaud",
+    "slug": "kranti-gaud",
+    "team": "IND-W",
+    "playing_roles": [
+      "bowler"
+    ],
+    "batting_styles": [
+      "rhb"
+    ],
+    "bowling_styles": [
+      "rmf"
+    ],
+    "gender": "F"
+  },
+  {
+    "cricinfo_id": 107319,
+    "cricinfo_object_id": 1212830,
+    "name": "RM Ghosh",
+    "long_name": "Richa Ghosh",
+    "slug": "richa-ghosh",
+    "team": "IND-W",
+    "playing_roles": [
+      "wicketkeeper batter"
+    ],
+    "batting_styles": [
+      "rhb"
+    ],
+    "bowling_styles": [
+      "rm"
+    ],
+    "gender": "F"
+  },
+  {
+    "cricinfo_id": 108859,
+    "cricinfo_object_id": 1255387,
+    "name": "JN Kalita",
+    "long_name": "Jintimani Kalita",
+    "slug": "jintimani-kalita",
+    "team": "IND-W",
+    "playing_roles": [
+      "bowler"
+    ],
+    "batting_styles": [
+      "lhb"
+    ],
+    "bowling_styles": [
+      "rmf"
+    ],
+    "gender": "F"
+  },
+  {
+    "cricinfo_id": 117238,
+    "cricinfo_object_id": 1427355,
+    "name": "G Kamalini",
+    "long_name": "Gunalan Kamalini",
+    "slug": "gunalan-kamalini",
+    "team": "IND-W",
+    "playing_roles": [
+      "wicketkeeper batter"
+    ],
+    "batting_styles": [
+      "lhb"
+    ],
+    "bowling_styles": [
+      "lb"
+    ],
+    "gender": "F"
+  },
+  {
+    "cricinfo_id": 58198,
+    "cricinfo_object_id": 372317,
+    "name": "H Kaur",
+    "long_name": "Harmanpreet Kaur",
+    "slug": "harmanpreet-kaur",
+    "team": "IND-W",
+    "playing_roles": [
+      "batting allrounder"
+    ],
+    "batting_styles": [
+      "rhb"
+    ],
+    "bowling_styles": [
+      "ob"
+    ],
+    "gender": "F"
+  },
+  {
+    "cricinfo_id": 89447,
+    "cricinfo_object_id": 960949,
+    "name": "M Mani",
+    "long_name": "Minnu Mani",
+    "slug": "minnu-mani",
+    "team": "IND-W",
+    "playing_roles": [
+      "bowler"
+    ],
+    "batting_styles": [
+      "lhb"
+    ],
+    "bowling_styles": [
+      "ob"
+    ],
+    "gender": "F"
+  },
+  {
+    "cricinfo_id": 108969,
+    "cricinfo_object_id": 1255497,
+    "name": "NS Prasad",
+    "long_name": "Niki Prasad",
+    "slug": "niki-prasad",
+    "team": "IND-W",
+    "playing_roles": [
+      "batter"
+    ],
+    "batting_styles": [
+      "rhb"
+    ],
+    "bowling_styles": [
+      "ob"
+    ],
+    "gender": "F"
+  },
+  {
+    "cricinfo_id": 119147,
+    "cricinfo_object_id": 1464463,
+    "name": "P Rawat",
+    "long_name": "Prema Rawat",
+    "slug": "prema-rawat",
+    "team": "IND-W",
+    "playing_roles": [
+      "bowler"
+    ],
+    "batting_styles": [
+      "rhb"
+    ],
+    "bowling_styles": [
+      "lb"
+    ],
+    "gender": "F"
+  },
+  {
+    "cricinfo_id": 89365,
+    "cricinfo_object_id": 960867,
+    "name": "A Reddy",
+    "long_name": "Arundhati Reddy",
+    "slug": "arundhati-reddy",
+    "team": "IND-W",
+    "playing_roles": [
+      "bowler"
+    ],
+    "batting_styles": [
+      "rhb"
+    ],
+    "bowling_styles": [
+      "rmf"
+    ],
+    "gender": "F"
+  },
+  {
+    "cricinfo_id": 70137,
+    "cricinfo_object_id": 597811,
+    "name": "DB Sharma",
+    "long_name": "Deepti Sharma",
+    "slug": "deepti-sharma",
+    "team": "IND-W",
+    "playing_roles": [
+      "allrounder"
+    ],
+    "batting_styles": [
+      "lhb"
+    ],
+    "bowling_styles": [
+      "ob"
+    ],
+    "gender": "F"
+  },
+  {
+    "cricinfo_id": 110721,
+    "cricinfo_object_id": 1289676,
+    "name": "NSS Sharma",
+    "long_name": "Nandani Sharma",
+    "slug": "nandani-sharma",
+    "team": "IND-W",
+    "playing_roles": [
+      "bowler"
+    ],
+    "batting_styles": [
+      "rhb"
+    ],
+    "bowling_styles": [
+      "rfm"
+    ],
+    "gender": "F"
+  },
+  {
+    "cricinfo_id": 108982,
+    "cricinfo_object_id": 1255510,
+    "name": "AB Sharma",
+    "long_name": "Anushka Sharma",
+    "slug": "anushka-sharma",
+    "team": "IND-W",
+    "playing_roles": [
+      "allrounder"
+    ],
+    "batting_styles": [
+      "rhb"
+    ],
+    "bowling_styles": [
+      "ob"
+    ],
+    "gender": "F"
+  },
+  {
+    "cricinfo_id": 119145,
+    "cricinfo_object_id": 1464461,
+    "name": "N Shree Charani",
+    "long_name": "Shree Charani",
+    "slug": "shree-charani",
+    "team": "IND-W",
+    "playing_roles": [
+      "bowler"
+    ],
+    "batting_styles": [
+      "lhb"
+    ],
+    "bowling_styles": [
+      "sla"
+    ],
+    "gender": "F"
+  },
+  {
+    "cricinfo_id": 71221,
+    "cricinfo_object_id": 638256,
+    "name": "JN Nkomo",
+    "long_name": "Josephine Nkomo",
+    "slug": "josephine-nkomo",
+    "team": "ZIM-W",
+    "playing_roles": [
+      "allrounder"
+    ],
+    "batting_styles": [
+      "rhb"
+    ],
+    "bowling_styles": [
+      "rmf"
+    ],
+    "gender": "F"
+  },
+  {
+    "cricinfo_id": 111468,
+    "cricinfo_object_id": 1302686,
+    "name": "B Biza",
+    "long_name": "Beloved Biza",
+    "slug": "beloved-biza",
+    "team": "ZIM-W",
+    "playing_roles": [
+      "allrounder"
+    ],
+    "batting_styles": [
+      "rhb"
+    ],
+    "bowling_styles": [
+      "ob"
+    ],
+    "gender": "F"
+  },
+  {
+    "cricinfo_id": 111474,
+    "cricinfo_object_id": 1302697,
+    "name": "O Chare",
+    "long_name": "Olinder Chare",
+    "slug": "olinder-chare",
+    "team": "ZIM-W",
+    "playing_roles": [
+      "bowler"
+    ],
+    "batting_styles": [
+      "rhb"
+    ],
+    "bowling_styles": [
+      "lb"
+    ],
+    "gender": "F"
+  },
+  {
+    "cricinfo_id": 111432,
+    "cricinfo_object_id": 1302575,
+    "name": "K Chigora",
+    "long_name": "Kudzai Chigora",
+    "slug": "kudzai-chigora",
+    "team": "ZIM-W",
+    "playing_roles": [
+      "bowler"
+    ],
+    "batting_styles": [
+      "rhb"
+    ],
+    "bowling_styles": [
+      "rfm"
+    ],
+    "gender": "F"
+  },
+  {
+    "cricinfo_id": 100887,
+    "cricinfo_object_id": 1119417,
+    "name": "F Chipare",
+    "long_name": "Francisca Chipare",
+    "slug": "francisca-chipare",
+    "team": "ZIM-W",
+    "playing_roles": [
+      "bowler"
+    ],
+    "batting_styles": [
+      "rhb"
+    ],
+    "bowling_styles": [
+      "rm"
+    ],
+    "gender": "M"
+  },
+  {
+    "cricinfo_id": 97187,
+    "cricinfo_object_id": 1094714,
+    "name": "CT Dhururu",
+    "long_name": "Chiedza Dhururu",
+    "slug": "chiedza-dhururu",
+    "team": "ZIM-W",
+    "playing_roles": [
+      "wicketkeeper"
+    ],
+    "batting_styles": [
+      "rhb"
+    ],
+    "bowling_styles": [],
+    "gender": "M"
+  },
+  {
+    "cricinfo_id": 84915,
+    "cricinfo_object_id": 922491,
+    "name": "N Gwanzura",
+    "long_name": "Nyasha Gwanzura",
+    "slug": "nyasha-gwanzura",
+    "team": "ZIM-W",
+    "playing_roles": [
+      "allrounder"
+    ],
+    "batting_styles": [
+      "rhb"
+    ],
+    "bowling_styles": [
+      "ob"
+    ],
+    "gender": "F"
+  },
+  {
+    "cricinfo_id": 118021,
+    "cricinfo_object_id": 1446941,
+    "name": "T Makusha",
+    "long_name": "Tendai Makusha",
+    "slug": "tendai-makusha",
+    "team": "ZIM-W",
+    "playing_roles": [
+      "bowler"
+    ],
+    "batting_styles": [
+      "rhb"
+    ],
+    "bowling_styles": [
+      "rm"
+    ],
+    "gender": "F"
+  },
+  {
+    "cricinfo_id": 109862,
+    "cricinfo_object_id": 1273947,
+    "name": "M Mavunga",
+    "long_name": "Michelle Mavunga",
+    "slug": "michelle-mavunga",
+    "team": "ZIM-W",
+    "playing_roles": [
+      "bowling allrounder"
+    ],
+    "batting_styles": [
+      "rhb"
+    ],
+    "bowling_styles": [
+      "rmf"
+    ],
+    "gender": "F"
+  },
+  {
+    "cricinfo_id": 53525,
+    "cricinfo_object_id": 317144,
+    "name": "SM Mayers",
+    "long_name": "Sharne Mayers",
+    "slug": "sharne-mayers",
+    "team": "ZIM-W",
+    "playing_roles": [
+      "middle-order batter"
+    ],
+    "batting_styles": [
+      "rhb"
+    ],
+    "bowling_styles": [
+      "ob"
+    ],
+    "gender": "F"
+  },
+  {
+    "cricinfo_id": 53527,
+    "cricinfo_object_id": 317148,
+    "name": "CS Mugeri",
+    "long_name": "Chipo Mugeri-Tiripano",
+    "slug": "chipo-mugeri-tiripano",
+    "team": "ZIM-W",
+    "playing_roles": [
+      "allrounder"
+    ],
+    "batting_styles": [
+      "lhb"
+    ],
+    "bowling_styles": [
+      "rm"
+    ],
+    "gender": "M"
+  },
+  {
+    "cricinfo_id": 66816,
+    "cricinfo_object_id": 538591,
+    "name": "M Mupachikwa",
+    "long_name": "Modester Mupachikwa",
+    "slug": "modester-mupachikwa",
+    "team": "ZIM-W",
+    "playing_roles": [
+      "wicketkeeper batter"
+    ],
+    "batting_styles": [
+      "rhb"
+    ],
+    "bowling_styles": [],
+    "gender": "F"
+  },
+  {
+    "cricinfo_id": 108584,
+    "cricinfo_object_id": 1250707,
+    "name": "KT Ndhlovu",
+    "long_name": "Kelis Ndhlovu",
+    "slug": "kelis-ndhlovu",
+    "team": "ZIM-W",
+    "playing_roles": [
+      "allrounder"
+    ],
+    "batting_styles": [
+      "lhb"
+    ],
+    "bowling_styles": [
+      "sla",
+      "sla"
+    ],
+    "gender": "F"
+  },
+  {
+    "cricinfo_id": 101846,
+    "cricinfo_object_id": 1135025,
+    "name": "L Phiri",
+    "long_name": "Loryn Phiri",
+    "slug": "loryn-phiri",
+    "team": "ZIM-W",
+    "playing_roles": [
+      "bowler"
+    ],
+    "batting_styles": [
+      "rhb"
+    ],
+    "bowling_styles": [
+      "ob"
+    ],
+    "gender": "F"
+  },
+  {
+    "cricinfo_id": 96440,
+    "cricinfo_object_id": 1080012,
+    "name": "N Sibanda",
+    "long_name": "Nomvelo Sibanda",
+    "slug": "nomvelo-sibanda",
+    "team": "ZIM-W",
+    "playing_roles": [
+      "bowler"
+    ],
+    "batting_styles": [
+      "lhb"
+    ],
+    "bowling_styles": [
+      "lm"
+    ],
+    "gender": "F"
+  }
+]
