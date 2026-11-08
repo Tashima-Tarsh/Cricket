@@ -1,0 +1,86 @@
+{
+  "MCG": {
+    "name": "Melbourne Cricket Ground",
+    "city": "Melbourne",
+    "boundary_dimensions": {"straight": 75, "square": 82},
+    "pitch_type": "slow",
+    "pace_friendly": false,
+    "spin_friendly": true,
+    "dew_factor": 0.7,
+    "avg_first_innings_score": 165,
+    "avg_second_innings_score": 158,
+    "toss_advantage": "bat_first"
+  },
+  "Perth_Stadium": {
+    "name": "Optus Stadium",
+    "city": "Perth",
+    "boundary_dimensions": {"straight": 78, "square": 75},
+    "pitch_type": "bouncy",
+    "pace_friendly": true,
+    "spin_friendly": false,
+    "dew_factor": 0.3,
+    "avg_first_innings_score": 170,
+    "avg_second_innings_score": 162,
+    "toss_advantage": "bowl_first"
+  },
+  "Adelaide_Oval": {
+    "name": "Adelaide Oval",
+    "city": "Adelaide",
+    "boundary_dimensions": {"straight": 70, "square": 68},
+    "pitch_type": "worn",
+    "pace_friendly": false,
+    "spin_friendly": true,
+    "dew_factor": 0.5,
+    "avg_first_innings_score": 160,
+    "avg_second_innings_score": 165,
+    "toss_advantage": "chase"
+  },
+  "SCG": {
+    "name": "Sydney Cricket Ground",
+    "city": "Sydney",
+    "boundary_dimensions": {"straight": 72, "square": 70},
+    "pitch_type": "spin",
+    "pace_friendly": false,
+    "spin_friendly": true,
+    "dew_factor": 0.6,
+    "avg_first_innings_score": 175,
+    "avg_second_innings_score": 168,
+    "toss_advantage": "bat_first"
+  },
+  "Gabba": {
+    "name": "The Gabba",
+    "city": "Brisbane",
+    "boundary_dimensions": {"straight": 74, "square": 72},
+    "pitch_type": "pace",
+    "pace_friendly": true,
+    "spin_friendly": false,
+    "dew_factor": 0.4,
+    "avg_first_innings_score": 168,
+    "avg_second_innings_score": 160,
+    "toss_advantage": "bowl_first"
+  },
+  "Marvel_Stadium": {
+    "name": "Marvel Stadium",
+    "city": "Melbourne",
+    "boundary_dimensions": {"straight": 60, "square": 65},
+    "pitch_type": "flat",
+    "pace_friendly": true,
+    "spin_friendly": true,
+    "dew_factor": 0.8,
+    "avg_first_innings_score": 180,
+    "avg_second_innings_score": 175,
+    "toss_advantage": "chase"
+  },
+  "North_Sydney_Oval": {
+    "name": "North Sydney Oval",
+    "city": "Sydney",
+    "boundary_dimensions": {"straight": 62, "square": 64},
+    "pitch_type": "balanced",
+    "pace_friendly": false,
+    "spin_friendly": true,
+    "dew_factor": 0.5,
+    "avg_first_innings_score": 152,
+    "avg_second_innings_score": 148,
+    "toss_advantage": "chase"
+  }
+}
