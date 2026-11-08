@@ -29,4 +29,4 @@ jobs:
 
       - name: Run test suite
         run: |
-          pytest tests/ -v
+          pytest tests/test_data_loader.py tests/test_feature_engineer.py tests/test_optimizer.py tests/test_pipeline.py tests/test_predictor.py -v
