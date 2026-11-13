@@ -62,13 +62,20 @@
     const content = text(row);
     const explicitCredit = row.getAttribute("data-player-credit")
       || text(row.querySelector('[data-testid*="credit"], [class*="credit"], [class*="Credit"]'));
-    const creditMatch = (explicitCredit || content).match(/\b(\d{1,2}(?:\.\d+)?)\s*(?:cr(?:edits?)?)\b/i);
+    const creditMatch = explicitCredit
+      ? explicitCredit.match(/^\s*(\d{1,2}(?:\.\d+)?)\s*(?:cr(?:edits?)?)?\s*$/i)
+      : content.match(/\b(\d{1,2}(?:\.\d+)?)\s*(?:cr(?:edits?)?)\b/i);
     if (!name || !team || !role || !creditMatch) return null;
 
     const credits = Number(creditMatch[1]);
     if (!(credits > 0 && credits <= 20)) return null;
-    const selectionText = row.getAttribute("data-selected-by") || content;
-    const selectedMatch = selectionText.match(/(?:selected\s*by|selected|picked\s*by)\s*:?\s*(\d{1,3}(?:\.\d+)?)\s*%/i);
+    const ownNode = row.querySelector('[data-testid*="selected"], [class*="selectedBy"], [class*="SelectedBy"], [class*="pickPercentage"]');
+    const ownText = row.getAttribute("data-selected-by") || text(ownNode);
+    const selectionText = ownText || content;
+    const selectedMatch = ownText
+      ? selectionText.match(/(\d{1,3}(?:\.\d+)?)\s*%/)
+      : selectionText.match(/(?:selected\s*by|selected|picked\s*by)\s*:?\s*(\d{1,3}(?:\.\d+)?)\s*%/i)
+        || selectionText.match(/(\d{1,3}(?:\.\d+)?)\s*%\s*(?:selected|picked)/i);
     const selected = selectedMatch ? Number(selectedMatch[1]) : null;
     if (selected !== null && (selected < 0 || selected > 100)) return null;
     // Local stable ID: not a Dream11-issued player identifier.
