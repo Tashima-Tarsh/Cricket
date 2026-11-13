@@ -69,7 +69,7 @@ class LiveTossLineupTrigger:
             self._states[match_id] = {
                 "match_id": match_id,
                 "state": "SCHEDULED",
-                "t_minus_minutes": 35,
+                "t_minus_minutes": None,  # Unknown until an actual lock deadline is supplied
                 "toss_winner": None,
                 "toss_decision": None,
                 "lineup_confirmed": False,
@@ -113,18 +113,21 @@ class LiveTossLineupTrigger:
 
             # Check T-15 alert condition (Fail loud)
             t_minus = state.get("t_minus_minutes", 30)
-            if t_minus <= 15 and not state.get("lineup_confirmed", False):
+            if t_minus is not None and t_minus <= 15 and not state.get("lineup_confirmed", False):
                 state["alert"] = f"CRITICAL ALERT: Lineup not confirmed at T-{t_minus}m! Retrying live API poll..."
             else:
                 state["alert"] = None
 
             # 1. Check Toss
             if toss_info.get("completed", False) and state["state"] in ["SCHEDULED", "TOSS_PENDING"]:
-                self.handle_toss_detected(
-                    match_id=match_id,
-                    toss_winner=toss_info.get("winner", "Home"),
-                    toss_decision=toss_info.get("decision", "bat")
-                )
+                winner = toss_info.get("winner")
+                decision = toss_info.get("decision")
+                if winner and decision in ("bat", "bowl"):
+                    self.handle_toss_detected(
+                        match_id=match_id, toss_winner=winner, toss_decision=decision
+                    )
+                else:
+                    state["alert"] = "Toss reported without a valid winner or decision; no update applied"
 
             # 2. Check Confirmed Lineups (22 players marked confirmed)
             confirmed_players = [p for p in players if p.get("is_confirmed_xi", False)]
@@ -154,6 +157,9 @@ class LiveTossLineupTrigger:
         engine = get_universal_engine()
         unified = engine.get_unified_state(match_id)
         players = unified.get("players", [])
+        teams = {p.get("team") for p in players if isinstance(p, dict)}
+        if toss_winner not in teams or toss_decision not in ("bat", "bowl"):
+            raise HTTPException(422, "Toss outcome does not match this fixture's known teams")
 
         # Score pre-toss pool with toss outcome
         pool_df = data_fusion_pipeline.score_player_pool(
@@ -168,7 +174,7 @@ class LiveTossLineupTrigger:
             "toss_winner": toss_winner,
             "toss_decision": toss_decision,
             "toss_detected_at_utc": datetime.now(timezone.utc).isoformat(),
-            "t_minus_minutes": 28
+            "t_minus_minutes": None  # No inferred time-to-deadline
         })
 
         return self.get_state(match_id)
@@ -204,14 +210,20 @@ class LiveTossLineupTrigger:
         if not supplied.issubset(expected):
             raise HTTPException(422, "Confirmed XI contains players outside the selected fixture's roster")
 
-        # 1. Export locked player pool to parquet
+        # Require an observed fixture-bound toss; never invent Home/bat defaults.
+        teams = {p.get("team") for p in confirmed_players}
+        winner, decision = curr.get("toss_winner"), curr.get("toss_decision")
+        if winner not in teams or decision not in ("bat", "bowl"):
+            raise HTTPException(422, "A valid fixture-bound toss is required")
         pool_df = data_fusion_pipeline.score_player_pool(
             match_id=match_id,
             players=confirmed_players,
             toss_completed=True,
-            toss_winner=curr.get("toss_winner") or "Home",
-            toss_decision=curr.get("toss_decision") or "bat"
+            toss_winner=winner,
+            toss_decision=decision
         )
+        locked_pool_path = PROCESSED_DIR / f"player_pool_{match_id}_locked.parquet"
+        pool_df.to_parquet(locked_pool_path, index=False)
 
         # 2. Fire Uniqueness Optimizer (7 teams, contrarian level 8)
         teams = unique_team_engine.generate_unique_teams(
@@ -241,9 +253,9 @@ class LiveTossLineupTrigger:
             "confirmed_player_count": len(confirmed_players),
             "teams_generated_count": len(teams),
             "teams_artifact": str(teams_file),
-            "locked_pool_artifact": str(PROCESSED_DIR / f"player_pool_{match_id}_locked.parquet"),
+            "locked_pool_artifact": str(locked_pool_path),
             "lineup_locked_at_utc": datetime.now(timezone.utc).isoformat(),
-            "t_minus_minutes": 25
+            "t_minus_minutes": None  # Exact deadline must come from fixture metadata
         })
 
         return self.get_state(match_id)
@@ -251,8 +263,9 @@ class LiveTossLineupTrigger:
     def advance_to_live_soon(self, match_id: str):
         """Hard cutoff at T-5 min: final lock, state = LIVE_SOON -> LIVE."""
         self.set_state(match_id, "LIVE_SOON", {
-            "t_minus_minutes": 5,
-            "final_locked_utc": datetime.now(timezone.utc).isoformat()
+            "t_minus_minutes": None,
+            "final_locked_utc": datetime.now(timezone.utc).isoformat(),
+            "cutoff_source": "explicit_admin_action_no_external_deadline_attested"
         })
 
 

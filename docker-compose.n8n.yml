@@ -1,0 +1,32 @@
+# Start with: docker compose -f docker-compose.yml -f docker-compose.n8n.yml up -d --build
+# n8n listens ONLY on localhost; do not expose these unauthenticated webhooks to the internet.
+services:
+  strike-os:
+    environment:
+      CRICKET_FREE_DATA_DB: /app/var/free_match_intake.sqlite3
+      CRICKET_WBBL_DB: /app/var/wbbl.duckdb
+      CRICKET_OPEN_METEO_NONCOMMERCIAL_ACK: ${CRICKET_OPEN_METEO_NONCOMMERCIAL_ACK:-0}
+
+  n8n:
+    image: docker.n8n.io/n8nio/n8n:stable
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:5678:5678"
+    environment:
+      N8N_HOST: localhost
+      N8N_PROTOCOL: http
+      N8N_PORT: 5678
+      WEBHOOK_URL: http://127.0.0.1:5678/
+      N8N_SECURE_COOKIE: "false"
+      N8N_DIAGNOSTICS_ENABLED: "false"
+      N8N_BLOCK_ENV_ACCESS_IN_NODE: "false"
+      CRICKET_ADMIN_TOKEN: ${CRICKET_ADMIN_TOKEN:?Set CRICKET_ADMIN_TOKEN in your .env file}
+      N8N_ENCRYPTION_KEY: ${N8N_ENCRYPTION_KEY:?Set N8N_ENCRYPTION_KEY in your .env file}
+      WBBL_FIXTURE_MAP: '${WBBL_FIXTURE_MAP:-{}}'
+    volumes:
+      - n8n_data:/home/node/.n8n
+    depends_on:
+      - strike-os
+
+volumes:
+  n8n_data:

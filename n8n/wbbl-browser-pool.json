@@ -1,0 +1,96 @@
+{
+  "name": "WBBL - Browser Dream11 read-only intake (free)",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "wbbl-dream11-browser",
+        "responseMode": "onReceived",
+        "options": {}
+      },
+      "name": "Receive visible Dream11 players",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        260,
+        260
+      ],
+      "id": "receive-visible-dream11-players"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const v=$input.first().json.body ?? $input.first().json;\nif(!v || !v.match_id || !Array.isArray(v.players) || !v.players.length) throw new Error('Missing match_id or player data');\nif(!/^https:\\/\\/(www\\.)?dream11\\.com\\//i.test(v.page_url || '')) throw new Error('Not a Dream11 page');\nreturn [{json:v}];"
+      },
+      "name": "Validate browser snapshot",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        520,
+        260
+      ],
+      "id": "validate-browser-snapshot"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://strike-os:8000/api/v1/free/browser-pool",
+        "options": {
+          "timeout": 12000
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "={{ 'Bearer ' + $env.CRICKET_ADMIN_TOKEN }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json) }}"
+      },
+      "name": "Store read-only browser data",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        780,
+        260
+      ],
+      "id": "store-read-only-browser-data"
+    }
+  ],
+  "connections": {
+    "Receive visible Dream11 players": {
+      "main": [
+        [
+          {
+            "node": "Validate browser snapshot",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate browser snapshot": {
+      "main": [
+        [
+          {
+            "node": "Store read-only browser data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "active": false,
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "tags": []
+}

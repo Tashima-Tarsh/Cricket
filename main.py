@@ -319,4 +319,12 @@ def _print_team(team: Dict) -> None:
 
 
 if __name__ == "__main__":
+    # A multi-team, hardcoded men's roster is retained only as a regression demo.
+    # It must never be presented as the current WBBL player pool.
+    import os
+    if os.getenv("CRICKET_DEMO_MODE") != "1":
+        raise SystemExit(
+            "Demo-only pipeline disabled by default. Set CRICKET_DEMO_MODE=1 "
+            "for explicitly synthetic runs; use the verified fixture API for real matches."
+        )
     run_pipeline()

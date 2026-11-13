@@ -1,0 +1,71 @@
+{
+  "name": "WBBL - Daily free licensed Cricsheet sync",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "days",
+              "daysInterval": 1,
+              "triggerAtHour": 2,
+              "triggerAtMinute": 15
+            }
+          ]
+        }
+      },
+      "name": "Refresh licensed WBBL history every day",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        230,
+        280
+      ],
+      "id": "refresh-licensed-wbbl-history-every-day"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://strike-os:8000/api/v1/free/wbbl/sync",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "={{ 'Bearer ' + $env.CRICKET_ADMIN_TOKEN }}"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 300000
+        }
+      },
+      "name": "Download and index WBBL Cricsheet",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        510,
+        280
+      ],
+      "id": "download-and-index-wbbl-cricsheet"
+    }
+  ],
+  "connections": {
+    "Refresh licensed WBBL history every day": {
+      "main": [
+        [
+          {
+            "node": "Download and index WBBL Cricsheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "active": false,
+  "tags": []
+}

@@ -36,8 +36,8 @@ pip install -r requirements.txt
 ## Usage
 
 ```bash
-# Full automated pipeline (tries Cricsheet, falls back to synthetic)
-python main.py
+# Explicit DEMO ONLY (contains historical/synthetic fallback and sample rosters)
+CRICKET_DEMO_MODE=1 python main.py
 
 # Synthetic data only (offline / no network)
 python -c "
@@ -82,3 +82,11 @@ fantasy_cricket_engine/
   30 minutes before deadline
 - Schedule `main.py` daily via cron / Airflow / GitHub Actions to retrain on new Cricsheet data
 - Add a Flask/FastAPI API around `predictor.predict()` + `optimizer.optimize()` for team generation
+
+
+## Free-only WBBL n8n integration (development)
+
+See [Free WBBL n8n setup](docs/FREE_WBBL_N8N.md). The new implementation
+accepts browser-visible Dream11 player data and WBBL match observations
+without paid API keys. It fails closed on incomplete playing-XI evidence;
+**this is not yet a certified autonomous post-toss fantasy system**.

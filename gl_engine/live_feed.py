@@ -10,6 +10,7 @@ import json
 import re
 import time
 from typing import List, Dict, Any, Optional
+from datetime import datetime, timezone
 
 _CACHED_MATCHES: List[Dict[str, Any]] = []
 _CACHE_TIMESTAMP: float = 0.0
@@ -61,14 +62,17 @@ def _fetch_from_cricdata_sdk() -> List[Dict[str, Any]]:
             # Real toss extraction
             toss_winner_id = m.get("tossWinnerTeamId")
             toss_choice = m.get("tossWinnerChoice") # 1 = bat, 2 = bowl
-            if toss_winner_id:
-                choice_str = "bat" if toss_choice == 1 else "bowl"
-                winner_name = home_name if home_info.get("id") == toss_winner_id else (away_name if away_info.get("id") == toss_winner_id else "Winner")
-                toss_str = f"{winner_name} won toss & elected to {choice_str} first"
-            elif any(w in status_text.lower() for w in ["delay", "rain", "wet outfield", "inspection"]):
-                toss_str = f"Toss delayed: {status_text} (Cutoff: 9:41 PM IST for 5-over match)"
-            else:
-                toss_str = "Toss scheduled at 6:30 PM IST (Chasing Win Equity: 68.2%)"
+            toss_winner = None
+            toss_decision = None
+            if toss_choice in (1, 2):
+                if str(home_info.get("id")) == str(toss_winner_id):
+                    toss_winner = home_name
+                elif str(away_info.get("id")) == str(toss_winner_id):
+                    toss_winner = away_name
+                if toss_winner:
+                    toss_decision = "bat" if toss_choice == 1 else "bowl"
+            toss_str = (f"{toss_winner} won toss & elected to {toss_decision} first"
+                        if toss_winner and toss_decision else None)
 
             series_name = m.get("series", {}).get("name") or "International Cricket"
             match_title = f"{home_name} vs {away_name}"
@@ -91,7 +95,7 @@ def _fetch_from_cricdata_sdk() -> List[Dict[str, Any]]:
 
             formatted.append({
                 "id": f"cricdata_{m.get('objectId') or idx + 1}",
-                "match_date": "2026-10-18",
+                "match_date": m.get("startDate") or m.get("date"),
                 "category": category,
                 "category_label": cat_label,
                 "series_name": series_name,
@@ -106,8 +110,11 @@ def _fetch_from_cricdata_sdk() -> List[Dict[str, Any]]:
                 "data_provenance": "LIVE_CRICDATA_SDK",
                 "details": f"{series_name} • {status_text}",
                 "link": f"https://www.espncricinfo.com/series/{m.get('series', {}).get('slug', 'cricket')}/{m.get('slug', 'match')}-{m.get('objectId', '')}/live-cricket-score",
-                "pitch_report": f"Live Venue: {venue_display}",
+                "pitch_report": None,
                 "toss": toss_str,
+                "toss_winner": toss_winner,
+                "toss_decision": toss_decision,
+                "observed_at_utc": datetime.now(timezone.utc).isoformat(),
                 "venue": venue_display,
                 "format": m.get("format") or "T20"
             })
@@ -194,11 +201,14 @@ def _fetch_from_espn_rss() -> List[Dict[str, Any]]:
                     "curtailed_overs": curtailed_overs,
                     "is_rain_affected": curtailed_overs < 20,
                     "provider": "ESPN Cricinfo RSS",
-                    "data_provenance": "VERIFIED_LIVE_RSS",
+                    "data_provenance": "ESPN_RSS_REFERENCE_UNVERIFIED",
                     "details": description,
                     "link": link,
-                    "pitch_report": f"Rain Curtailed ({curtailed_overs} ov)" if curtailed_overs < 20 else "Standard international pitch telemetry",
-                    "toss": "Awaiting toss declaration"
+                    "pitch_report": None,
+                    "toss": None,
+                    "toss_winner": None,
+                    "toss_decision": None,
+                    "observed_at_utc": datetime.now(timezone.utc).isoformat()
                 })
     except Exception as e:
         print(f"[LiveFeed] ESPN live RSS note: {e}")

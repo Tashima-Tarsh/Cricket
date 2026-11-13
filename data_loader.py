@@ -1,8 +1,8 @@
 """
 Cricsheet BBL/WBBL data loader.
 Attempts to download real ball-by-ball CSV data from Cricsheet.org,
-caches it locally, and falls back to synthetic data when offline
-or when the Cricsheet download path is unavailable.
+caches it locally, and can generate explicit DEMO-ONLY synthetic data when
+use_synthetic_fallback=True. Missing live data never silently becomes invented.
 """
 import glob
 import logging
@@ -186,7 +186,7 @@ class CricsheetLoader:
     def load_bbl_data(
         self,
         max_matches: Optional[int] = None,
-        use_synthetic_fallback: bool = True,
+        use_synthetic_fallback: bool = False,
     ) -> pd.DataFrame:
         zip_path = self.fetch_zip()
         if zip_path:

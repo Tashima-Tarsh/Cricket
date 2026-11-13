@@ -15,6 +15,8 @@ def make_training_df(n_rows: int = 60) -> pd.DataFrame:
         "opposition_strength": rng.uniform(50, 90, n_rows),
         "phase_strike_rate": rng.uniform(110, 180, n_rows),
         "economy_rate": rng.uniform(6.0, 10.5, n_rows),
+        "venue_factor": rng.uniform(0.9, 1.1, n_rows),
+        "travel_fatigue": rng.uniform(0, 0.1, n_rows),
         "fantasy_points": rng.uniform(0, 80, n_rows),
     })
 
@@ -38,6 +40,8 @@ def test_pipeline_train_and_load_latest(tmp_path):
         "opposition_strength": [70.0],
         "phase_strike_rate": [140.0],
         "economy_rate": [9.0],
+        "venue_factor": [1.0],
+        "travel_fatigue": [0.0],
     })
     out = pipe.predictor.predict(upcoming)
     assert "expected_points" in out.columns

@@ -1,0 +1,156 @@
+{
+  "name": "WBBL - Automatic post-toss provisional fantasy report",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 1
+            }
+          ]
+        }
+      },
+      "id": "wbbl-schedule",
+      "name": "Monitor registered WBBL fixtures",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        220,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "http://strike-os:8000/api/v1/free/watchlist",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "={{ 'Bearer ' + $env.CRICKET_ADMIN_TOKEN }}"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 10000
+        }
+      },
+      "id": "wbbl-watchlist",
+      "name": "Fetch registered active fixtures",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        470,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const data=$input.first().json;\nreturn (data.matches || []).filter(m=>m.registration_status === 'USER_REGISTERED_UNVERIFIED' && /^[a-zA-Z0-9_-]{1,128}$/.test(m.match_id)).map(m=>({json:{match_id:m.match_id}}));"
+      },
+      "id": "wbbl-only",
+      "name": "One item per active match",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        710,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ 'http://strike-os:8000/api/v1/free/matches/' + $json.match_id + '/generate?teams=3&max_overlap=8' }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "={{ 'Bearer ' + $env.CRICKET_ADMIN_TOKEN }}"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 120000
+        }
+      },
+      "id": "wbbl-generate",
+      "name": "Calculate and persist provisional report",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        980,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const v=$json;\nreturn {json:{match_id:v.report?.match_id,status:v.report?.status,reason:v.report?.reason,teams_generated:v.report?.lineups?.length||0,digest:v.saved?.report_digest,official_verified:false}};"
+      },
+      "id": "wbbl-log",
+      "name": "Status and reason (no fabricated certainty)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1240,
+        300
+      ]
+    }
+  ],
+  "connections": {
+    "Monitor registered WBBL fixtures": {
+      "main": [
+        [
+          {
+            "node": "Fetch registered active fixtures",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch registered active fixtures": {
+      "main": [
+        [
+          {
+            "node": "One item per active match",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "One item per active match": {
+      "main": [
+        [
+          {
+            "node": "Calculate and persist provisional report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calculate and persist provisional report": {
+      "main": [
+        [
+          {
+            "node": "Status and reason (no fabricated certainty)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "active": false,
+  "tags": []
+}
