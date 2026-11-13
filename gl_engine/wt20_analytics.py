@@ -1,6 +1,8 @@
-"""Ball-by-Ball Analytics Engine and Matchup Matrix for IND-W vs ZIM-W.
-Connects directly to DuckDB (134,722 Women's T20 deliveries) to calculate delivery-level metrics,
-phase splits (Powerplay, Middle, Death), spin vs pace splits, and batter-bowler H2H battles.
+"""Historical women's T20 ball-by-ball research.
+
+Legacy metrics count recorded deliveries (including illegal balls): economic
+rates and strike rates are proxies, not official scorecard rates. Exact-name
+matching prevents partial-name collisions, but external ID resolution is needed.
 """
 
 from typing import Dict, Any, List, Optional, Tuple
@@ -29,7 +31,7 @@ class WT20AnalyticsEngine:
             FROM deliveries
             WHERE batter ILIKE ?
         """
-        row = self.con.execute(sql_overall, [f"%{batter_name}%"]).fetchone()
+        row = self.con.execute(sql_overall, [batter_name]).fetchone()
         balls = row[0] or 0
         runs = row[1] or 0
         dots = row[2] or 0
@@ -37,9 +39,9 @@ class WT20AnalyticsEngine:
         sixes = row[4] or 0
         dismissals = row[5] or 0
 
-        sr = round((runs / balls * 100), 1) if balls > 0 else 115.0
-        dot_pct = round((dots / balls * 100), 1) if balls > 0 else 42.0
-        bnd_pct = round(((fours + sixes) / balls * 100), 1) if balls > 0 else 14.5
+        sr = round((runs / balls * 100), 1) if balls > 0 else None
+        dot_pct = round((dots / balls * 100), 1) if balls > 0 else None
+        bnd_pct = round(((fours + sixes) / balls * 100), 1) if balls > 0 else None
         avg = round(runs / dismissals, 1) if dismissals > 0 else float(runs)
 
         # Phase breakdown: Powerplay (0-5), Middle (6-14), Death (15-19)
@@ -57,7 +59,7 @@ class WT20AnalyticsEngine:
             WHERE batter ILIKE ?
             GROUP BY 1
         """
-        phase_rows = self.con.execute(phase_sql, [f"%{batter_name}%"]).fetchall()
+        phase_rows = self.con.execute(phase_sql, [batter_name]).fetchall()
         phases = {}
         for pr in phase_rows:
             p_name = pr[0]
@@ -71,12 +73,13 @@ class WT20AnalyticsEngine:
         return {
             "batter": batter_name,
             "sample_balls": balls,
+            "measurement_basis": "RECORDED_DELIVERIES_INCLUDING_EXTRAS",
             "runs": runs,
             "strike_rate": sr,
             "batting_avg": avg,
             "dot_ball_pct": dot_pct,
             "boundary_pct": bnd_pct,
-            "dismissal_prob_per_ball": round(dismissals / balls, 4) if balls > 0 else 0.035,
+            "dismissal_prob_per_ball": round(dismissals / balls, 4) if balls > 0 else None,
             "phases": phases
         }
 
@@ -92,7 +95,7 @@ class WT20AnalyticsEngine:
             FROM deliveries
             WHERE bowler ILIKE ?
         """
-        row = self.con.execute(sql_overall, [f"%{bowler_name}%"]).fetchone()
+        row = self.con.execute(sql_overall, [bowler_name]).fetchone()
         balls = row[0] or 0
         runs = row[1] or 0
         dots = row[2] or 0
@@ -100,9 +103,9 @@ class WT20AnalyticsEngine:
         wickets = row[4] or 0
 
         overs = balls / 6.0
-        econ = round(runs / overs, 2) if overs > 0 else 6.80
-        dot_pct = round((dots / balls * 100), 1) if balls > 0 else 44.0
-        wkt_per_4_ov = round((wickets / overs * 4.0), 2) if overs > 0 else 1.25
+        econ = round(runs / overs, 2) if overs > 0 else None
+        dot_pct = round((dots / balls * 100), 1) if balls > 0 else None
+        wkt_per_4_ov = round((wickets / overs * 4.0), 2) if overs > 0 else None
 
         # Phase breakdown
         phase_sql = """
@@ -119,7 +122,7 @@ class WT20AnalyticsEngine:
             WHERE bowler ILIKE ?
             GROUP BY 1
         """
-        phase_rows = self.con.execute(phase_sql, [f"%{bowler_name}%"]).fetchall()
+        phase_rows = self.con.execute(phase_sql, [bowler_name]).fetchall()
         phases = {}
         for pr in phase_rows:
             p_name = pr[0]
@@ -128,16 +131,18 @@ class WT20AnalyticsEngine:
             p_runs = pr[2] or 0
             phases[p_name] = {
                 "balls": p_balls, "overs": round(p_overs, 1), "wickets": pr[3] or 0,
-                "economy": round(p_runs / p_overs, 2) if p_overs > 0 else 6.5
+                "economy": round(p_runs / p_overs, 2) if p_overs > 0 else None
             }
 
         return {
             "bowler": bowler_name,
             "sample_balls": balls,
-            "overs_bowled": round(overs, 1),
+            "measurement_basis": "RECORDED_DELIVERIES_INCLUDING_EXTRAS",
+            "recorded_delivery_equivalent_overs": round(overs, 1),
             "wickets": wickets,
             "economy": econ,
             "dot_ball_pct": dot_pct,
+            "expected_wkts_per_4_recorded_overs": wkt_per_4_ov,
             "expected_wkts_per_4ov": wkt_per_4_ov,
             "phases": phases
         }
@@ -156,7 +161,7 @@ class WT20AnalyticsEngine:
             FROM deliveries
             WHERE batter ILIKE ? AND bowler ILIKE ?
         """
-        row = self.con.execute(sql, [f"%{batter_name}%", f"%{bowler_name}%"]).fetchone()
+        row = self.con.execute(sql, [batter_name, bowler_name]).fetchone()
         balls = row[0] or 0
         runs = row[1] or 0
         dismissals = row[2] or 0
@@ -180,7 +185,7 @@ class WT20AnalyticsEngine:
                 "strike_rate": sr,
                 "dot_pct": dot_pct,
                 "boundaries_pct": bnd_pct,
-                "wicket_probability": wkt_prob,
+                "observed_dismissals_per_recorded_delivery": wkt_prob,
                 "tactical_advantage": advantage,
                 "confidence": "HIGH" if balls >= 18 else "MODERATE",
                 "ci_90": [round(max(60.0, sr - 25.0), 1), round(sr + 25.0, 1)]
@@ -193,7 +198,18 @@ class WT20AnalyticsEngine:
             b_stats = self.query_batter_telemetry(batter_name)
             bw_stats = self.query_bowler_telemetry(bowler_name)
 
-            # Prior Bayesian synthesis
+            # Do not extrapolate archetype priors when a player has no sample.
+            # The stored delivery corpus does not identify all illegal balls.
+            if not b_stats["sample_balls"] or not bw_stats["sample_balls"]:
+                return {
+                    "batter": batter_name, "bowler": bowler_name,
+                    "provenance": "INSUFFICIENT_PLAYER_HISTORY",
+                    "balls_faced": balls, "runs_scored": runs,
+                    "dismissals": dismissals, "strike_rate": None,
+                    "wicket_probability": None, "tactical_advantage": None,
+                    "confidence": "UNAVAILABLE", "ci_90": None,
+                }
+            # Historical estimates from *recorded* deliveries, not exact legal balls.
             prior_sr = b_stats["strike_rate"]
             prior_econ = bw_stats["economy"]
             prior_wkt_rate = bw_stats["expected_wkts_per_4ov"] / 24.0

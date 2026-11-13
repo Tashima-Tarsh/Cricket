@@ -27,7 +27,7 @@ def pool(match_id: str) -> pd.DataFrame:
             "player_id": p["player_id"], "name": p["name"],
             "team": p["team"], "role": p["role"],
             "credit": p["credits"], "own_pct": p["selected_by_pct"],
-            "overseas": False,  # Not asserted: legacy field is non-evidentiary.
+            "overseas": None,   # Unknown from browser page; do not infer nationality.
             "is_xi": False,     # Browser pool is NOT a confirmed playing XI.
             "bat_pos": None, "bowl_style": None,
         })
