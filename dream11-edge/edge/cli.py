@@ -33,8 +33,15 @@ def cmd_build(args):
     settings().ensure_dirs()
     db.init()
     demo = args.demo or args.match_id == "demo"
+    if not demo:
+        # The historical CLI has no authenticated XI or verified pitch binding yet.
+        # It must NEVER substitute its IPL demo when given a real fixture ID.
+        raise RuntimeError(
+            "Real-match build blocked: use the free research intake and complete "
+            "XI verification before constructing a fantasy portfolio."
+        )
     roster = demo_roster()
-    match = dict(match_id="demo", venue="Wankhede Stadium, Mumbai", team_a="MUM",
+    match = dict(match_id="demo", venue="DEMO_UNVERIFIED", team_a="MUM",
                  team_b="CHE", pitch_class=args.pitch, fmt="T20")
 
     n_field = args.field or (20000 if demo else None)
@@ -72,7 +79,7 @@ def cmd_watch(args):
     con.print(f"[green]toss: {info['toss']['winner']} chose to "
               f"{info['toss']['decision']} · pitch {info['pitch_class']}[/]")
     args.pitch = info["pitch_class"]
-    args.demo = True
+    args.demo = False
     cmd_build(args)
 
 
