@@ -198,3 +198,31 @@ def out_of_time_model_evaluation():
 def evaluation():
     from .capabilities.c19_backtesting import CricketBacktesting
     return CricketBacktesting().execute()
+
+
+# Free-only research intake: browser data and source-reported match observations
+# are deliberately NOT a replacement for official XI verification.
+from .free_intake import (
+    BrowserPoolSnapshot, TossObservation, XIObservation,
+    save_snapshot, get_match_state,
+)
+
+
+@router.post("/free/browser-pool")
+def free_browser_pool(snapshot: BrowserPoolSnapshot, _admin: None = Depends(require_admin)):
+    return save_snapshot("browser", snapshot)
+
+
+@router.post("/free/toss-observations")
+def free_toss_observation(snapshot: TossObservation, _admin: None = Depends(require_admin)):
+    return save_snapshot("toss", snapshot)
+
+
+@router.post("/free/xi-observations")
+def free_xi_observation(snapshot: XIObservation, _admin: None = Depends(require_admin)):
+    return save_snapshot("xi", snapshot)
+
+
+@router.get("/free/matches/{match_id}")
+def free_match_research(match_id: str, _admin: None = Depends(require_admin)):
+    return get_match_state(match_id)
