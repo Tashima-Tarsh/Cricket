@@ -7,7 +7,7 @@ import os
 
 import duckdb
 
-from gl_engine.wbbl_fantasy import historical_proxy, recommend, _solve_one
+from gl_engine.wbbl_fantasy import historical_proxy, recommend, _solve_one, canonical_team
 from gl_engine.free_intake import BrowserPoolSnapshot, XIObservation, TossObservation, save_snapshot
 
 
@@ -99,3 +99,10 @@ def test_incomplete_toss_blocks():
         "CRICKET_FREE_DATA_DB": tmp + "/none.sqlite3"}):
         r = recommend("no-source", date(2026, 11, 13))
         assert r["status"] == "BLOCKED" and r["reason"] == "TOSS_NOT_OBSERVED"
+
+
+def test_explicit_wbbl_team_name_aliases():
+    assert canonical_team('SS-W') == 'sydney sixers'
+    assert canonical_team('Sydney Sixers Women') == 'sydney sixers'
+    assert canonical_team('THU') == 'sydney thunder'
+    assert canonical_team('Sydney Thunder') == 'sydney thunder'

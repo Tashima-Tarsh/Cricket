@@ -248,7 +248,7 @@ from datetime import datetime, timezone
 from .free_intake import (
     RegisteredFixture, register_fixture, get_registered_fixture, list_active_fixtures,
 )
-from .wbbl_fantasy import canonical_name, recommend as wbbl_recommend
+from .wbbl_fantasy import canonical_team, recommend as wbbl_recommend
 from .free_reports import save_report, latest_report
 
 
@@ -275,8 +275,8 @@ def _generate_registered_report(match_id: str, teams: int, max_overlap: int) -> 
     state = get_match_state(match_id)
     reports = state["xi_evidence"].get("reports") or []
     if reports:
-        announced = {canonical_name(reports[0]["team_a"]), canonical_name(reports[0]["team_b"])}
-        registered = {canonical_name(fixture["team_a"]), canonical_name(fixture["team_b"])}
+        announced = {canonical_team(reports[0]["team_a"]), canonical_team(reports[0]["team_b"])}
+        registered = {canonical_team(fixture["team_a"]), canonical_team(fixture["team_b"])}
         if announced != registered:
             return {"status": "BLOCKED", "reason": "REGISTERED_TEAM_IDENTITY_MISMATCH",
                     "match_id": match_id, "lineups": []}

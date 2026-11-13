@@ -26,6 +26,28 @@ def canonical_name(raw: str) -> str:
     return " ".join("".join(c if c.isalnum() else " " for c in raw.casefold()).split())
 
 
+WBBL_TEAM_ALIASES = {
+    "ss": "sydney sixers", "six": "sydney sixers", "sys": "sydney sixers",
+    "st": "sydney thunder", "thu": "sydney thunder", "syt": "sydney thunder",
+    "ms": "melbourne stars", "sta": "melbourne stars",
+    "mr": "melbourne renegades", "ren": "melbourne renegades",
+    "bh": "brisbane heat", "hea": "brisbane heat",
+    "ps": "perth scorchers", "sco": "perth scorchers",
+    "as": "adelaide strikers", "str": "adelaide strikers",
+    "hh": "hobart hurricanes", "hur": "hobart hurricanes",
+}
+
+
+def canonical_team(raw: str) -> str:
+    """Normalize explicit WBBL franchise names and recognized team codes."""
+    key = canonical_name(raw)
+    for suffix in (" womens", " women", " w"):
+        if key.endswith(suffix):
+            key = key[:-len(suffix)].strip()
+            break
+    return WBBL_TEAM_ALIASES.get(key, key)
+
+
 def historical_proxy(names: list[str], before: date, database: str | Path = DB_DEFAULT) -> dict:
     """Compute pre-date, WBBL-only score proxies, combining batting and bowling.
 
@@ -118,9 +140,9 @@ def _solve_one(players: list[dict], scores: list[float], prior: list[list[int]],
         subset = [chosen[i] for i, p in enumerate(players) if p["role"] == role]
         model.add(sum(subset) >= lo)
         model.add(sum(subset) <= hi)
-    for team in {p["team"] for p in players}:
+    for team in {canonical_team(p["team"]) for p in players}:
         model.add(sum(chosen[i] for i, p in enumerate(players)
-                      if p["team"] == team) <= 7)
+                      if canonical_team(p["team"]) == team) <= 7)
     for previously_selected in prior:
         model.add(sum(chosen[i] for i in previously_selected) <= max_overlap)
     # Highest uncalibrated expected partial points. Captain 2x, vice 1.5x.
@@ -167,7 +189,7 @@ def recommend(match_id: str, before: date, teams: int = 3,
     if not reports:
         return {**result, "reason": "CONFIRMED_SOURCE_PLAYER_NAMES_NOT_AVAILABLE"}
     report = reports[0]
-    required = {canonical_name(name): team.casefold().strip()
+    required = {canonical_name(name): canonical_team(team)
                 for team, names in ((report["team_a"], report["players_a"]),
                                     (report["team_b"], report["players_b"]))
                 for name in names}
@@ -178,7 +200,7 @@ def recommend(match_id: str, before: date, teams: int = 3,
     selected = []
     problems = []
     for name, team in required.items():
-        possibilities = [p for p in by_name.get(name, []) if p["team"].casefold().strip() == team]
+        possibilities = [p for p in by_name.get(name, []) if canonical_team(p["team"]) == team]
         if len(possibilities) != 1:
             problems.append({"player": name, "reason": "MISSING_OR_AMBIGUOUS_DREAM11_PLAYER"})
         elif possibilities[0]["selected_by_pct"] is None:
@@ -191,8 +213,8 @@ def recommend(match_id: str, before: date, teams: int = 3,
     if len(selected) != 22 or len({p["player_id"] for p in selected}) != 22:
         return {**result, "reason": "XI_IDENTITY_COLLISION"}
     # Evidence must be for the same two teams as the source-reported toss.
-    if canonical_name(state["toss"]["toss_winner"]) not in {
-        canonical_name(report["team_a"]), canonical_name(report["team_b"])
+    if canonical_team(state["toss"]["toss_winner"]) not in {
+        canonical_team(report["team_a"]), canonical_team(report["team_b"])
     }:
         return {**result, "reason": "TOSS_TEAM_MISMATCH"}
     projections = historical_proxy([p["name"] for p in selected], before, database)
