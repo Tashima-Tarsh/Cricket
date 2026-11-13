@@ -8,11 +8,12 @@ from __future__ import annotations
 
 from datetime import date
 from pathlib import Path
+import os
 from typing import Optional
 import duckdb
 
 
-DB_DEFAULT = Path(__file__).resolve().parents[1] / "data" / "cricsheet_wt20.duckdb"
+DB_DEFAULT = Path(os.getenv("CRICKET_WBBL_DB", str(Path(__file__).resolve().parents[1] / "data" / "cricsheet_wt20.duckdb")))
 TEAMS = (
     "sydney sixers", "sydney thunder", "melbourne stars",
     "melbourne renegades", "brisbane heat", "perth scorchers",
