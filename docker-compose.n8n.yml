@@ -4,6 +4,7 @@ services:
   strike-os:
     environment:
       CRICKET_FREE_DATA_DB: /app/var/free_match_intake.sqlite3
+      CRICKET_WBBL_DB: /app/var/wbbl.duckdb
 
   n8n:
     image: docker.n8n.io/n8nio/n8n:stable

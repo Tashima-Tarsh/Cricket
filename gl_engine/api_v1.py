@@ -301,3 +301,16 @@ def free_generate_and_store(match_id: str, teams: int = 3, max_overlap: int = 8,
 @router.get("/free/matches/{match_id}/latest-report")
 def free_latest_report(match_id: str, _admin: None = Depends(require_admin)):
     return latest_report(match_id)
+
+
+@router.post("/free/wbbl/sync")
+def free_sync_wbbl_archive(_admin: None = Depends(require_admin)):
+    """Download open, attributed historical WBBL data; never live match facts."""
+    from .wbbl_archive import sync_wbbl_archive
+    try:
+        return sync_wbbl_archive()
+    except Exception as exc:
+        # The previous successful archive remains usable.
+        raise HTTPException(
+            503, f"Cricsheet WBBL archive sync failed; last archive retained: {type(exc).__name__}"
+        ) from exc

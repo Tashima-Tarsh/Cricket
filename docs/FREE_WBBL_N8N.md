@@ -66,3 +66,13 @@ no more than seven players from either team, different captain/vice-captain
 and diversity between lineups. They use pre-date WBBL historical partial scoring
 proxies rather than official Dream11 point predictions or guaranteed ranks.
 The workflow does not enter paid contests or edit Dream11 team selections.
+
+## Automatic historical archive refresh
+
+Import n8n/wbbl-sync-archive.json. The workflow refreshes WBBL-only records
+from https://cricsheet.org/downloads/wbb_json.zip each day, without a paid key.
+The backend writes a new DuckDB archive atomically to the persisted /app/var
+volume, retaining the previous good snapshot if download or validation fails.
+Cricsheet's ODC Attribution license applies (https://cricsheet.org/licensing/).
+The archive is historical; it cannot confirm today's toss, XI or pitch.
+Run the sync once in n8n after deployment to populate the archive.

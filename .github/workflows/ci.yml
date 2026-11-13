@@ -30,7 +30,7 @@ jobs:
 
       - name: Run test suite
         run: |
-          pytest tests/test_config.py tests/test_correlation_matrix.py tests/test_chaos_intelligence.py tests/test_optimizer.py tests/test_predictor.py tests/test_scenario_generator.py tests/test_free_intake.py tests/test_live_feed_no_fabrication.py tests/test_free_wbbl_historical.py tests/test_wt20_no_fabrication.py tests/test_wbbl_fantasy.py tests/test_free_fixture_registration.py tests/test_n8n_workflows.py -v
+          pytest tests/test_config.py tests/test_correlation_matrix.py tests/test_chaos_intelligence.py tests/test_optimizer.py tests/test_predictor.py tests/test_scenario_generator.py tests/test_free_intake.py tests/test_live_feed_no_fabrication.py tests/test_free_wbbl_historical.py tests/test_wt20_no_fabrication.py tests/test_wbbl_fantasy.py tests/test_free_fixture_registration.py tests/test_n8n_workflows.py tests/test_wbbl_archive.py -v
 
       - name: Compile Python production modules
         run: python -m compileall -q gl_engine dream11-edge/edge
