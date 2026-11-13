@@ -46,3 +46,23 @@ These report recorded ball-by-ball statistics from matches where both teams belo
 to the WBBL franchise list. Results are **not** Dream11 points or a claim of legal
 ball counts. Empty data are explicitly marked unavailable rather than replaced with
 assumed numbers.
+
+## Automated pre-lock recommendations
+
+The fourth workflow, **n8n/wbbl-auto-recommendations.json**, checks registered
+WBBL fixtures every minute until fantasy lock. It persists a blocked reason
+or a provisional lineup so results remain available after the match.
+
+1. Register a WBBL match at POST /api/v1/free/fixtures with the admin token.
+   Provide match_id (same as browser), competition WBBL, team_a, team_b,
+   scheduled_start_utc and fantasy_lock_utc as ISO-8601 timezone-aware values.
+2. Activate the imported workflows and read all four Dream11 role tabs.
+3. Feed two independently published XI observations from permitted sources.
+   Two submitted URLs are **unattested agreement**, not official verification.
+4. Read GET /api/v1/free/matches/{match_id}/latest-report with admin token.
+
+Recommendations enforce 11 distinct players, role constraints, <=100 credits,
+no more than seven players from either team, different captain/vice-captain
+and diversity between lineups. They use pre-date WBBL historical partial scoring
+proxies rather than official Dream11 point predictions or guaranteed ranks.
+The workflow does not enter paid contests or edit Dream11 team selections.
