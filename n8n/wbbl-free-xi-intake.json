@@ -1,0 +1,93 @@
+{
+  "name": "WBBL - Permitted free announced-XI source intake",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "wbbl-source-xi",
+        "responseMode": "onReceived",
+        "options": {}
+      },
+      "name": "Receive source-announced playing XIs",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        260,
+        220
+      ],
+      "id": "receive-source-announced-playing-xis"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const v=$input.first().json.body ?? $input.first().json;\nif (!v || !v.match_id || v.announcement_type !== 'ANNOUNCED_PLAYING_XI') throw new Error('Only explicit announced playing XIs accepted');\nif (!Array.isArray(v.players_a) || !Array.isArray(v.players_b) || v.players_a.length !== 11 || v.players_b.length !== 11) throw new Error('Exactly 11 per team required');\nreturn [{json:v}];"
+      },
+      "name": "Validate source-reported XIs",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        520,
+        220
+      ],
+      "id": "validate-source-reported-xis"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://strike-os:8000/api/v1/free/xi-observations",
+        "options": {
+          "timeout": 12000
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "={{ 'Bearer ' + $env.CRICKET_ADMIN_TOKEN }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json) }}"
+      },
+      "name": "Record XI evidence as unauthenticated",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        780,
+        220
+      ],
+      "id": "record-xi-evidence-as-unauthenticated"
+    }
+  ],
+  "connections": {
+    "Receive source-announced playing XIs": {
+      "main": [
+        [
+          {
+            "node": "Validate source-reported XIs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate source-reported XIs": {
+      "main": [
+        [
+          {
+            "node": "Record XI evidence as unauthenticated",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "active": false,
+  "tags": []
+}

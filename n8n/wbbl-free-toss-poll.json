@@ -1,0 +1,125 @@
+{
+  "name": "WBBL - Free source toss poll (no invented XIs)",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 1
+            }
+          ]
+        }
+      },
+      "name": "Check free match references",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        220,
+        250
+      ],
+      "id": "check-free-match-references"
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "http://strike-os:8000/api/live/matches",
+        "options": {
+          "timeout": 12000
+        }
+      },
+      "name": "Fetch live reference feed",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        460,
+        250
+      ],
+      "id": "fetch-live-reference-feed"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const data = $input.first().json;\nlet fixtureMap = {};\ntry { fixtureMap = JSON.parse($env.WBBL_FIXTURE_MAP || '{}'); } catch (error) { throw new Error('WBBL_FIXTURE_MAP must be JSON'); }\nconst out = [];\nfor (const m of (data.matches || [])) {\n  if (!/\\bWBBL\\b|women.?s big bash/i.test(m.series_name || '')) continue;\n  const matchId = fixtureMap[String(m.id)];\n  if (!matchId || !m.toss_winner || !['bat','bowl'].includes(m.toss_decision)) continue;\n  if (typeof m.link !== 'string' || !m.link.startsWith('https://')) continue;\n  out.push({json:{\n    match_id:matchId,\n    source_url:m.link,\n    source_type:'ESPN_REFERENCE',\n    observed_at_utc:m.observed_at_utc || new Date().toISOString(),\n    toss_winner:m.toss_winner,\n    toss_decision:m.toss_decision,\n    pitch_report_text:null\n  }});\n}\nreturn out;"
+      },
+      "name": "Filter WBBL confirmed toss fields",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        700,
+        250
+      ],
+      "id": "filter-wbbl-confirmed-toss-fields"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://strike-os:8000/api/v1/free/toss-observations",
+        "options": {
+          "timeout": 12000
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "={{ 'Bearer ' + $env.CRICKET_ADMIN_TOKEN }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json) }}"
+      },
+      "name": "Record source-reported toss",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        950,
+        250
+      ],
+      "id": "record-source-reported-toss"
+    }
+  ],
+  "connections": {
+    "Check free match references": {
+      "main": [
+        [
+          {
+            "node": "Fetch live reference feed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch live reference feed": {
+      "main": [
+        [
+          {
+            "node": "Filter WBBL confirmed toss fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter WBBL confirmed toss fields": {
+      "main": [
+        [
+          {
+            "node": "Record source-reported toss",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "active": false,
+  "tags": []
+}
