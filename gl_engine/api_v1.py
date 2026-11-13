@@ -281,7 +281,17 @@ def _generate_registered_report(match_id: str, teams: int, max_overlap: int) -> 
             return {"status": "BLOCKED", "reason": "REGISTERED_TEAM_IDENTITY_MISMATCH",
                     "match_id": match_id, "lineups": []}
     target_date = datetime.fromisoformat(fixture["scheduled_start_utc"]).date()
-    return wbbl_recommend(match_id, target_date, teams, max_overlap)
+    report = wbbl_recommend(match_id, target_date, teams, max_overlap)
+    from .wbbl_weather import venue_forecast
+    report["weather"] = venue_forecast(fixture)
+    # The pitch can only be a source-reported observation. Forecast is separate.
+    report["pitch_observation"] = {
+        "status": "SOURCE_REPORTED_UNVERIFIED" if state.get("toss") and
+                  state["toss"].get("pitch_report_text") else "NOT_AVAILABLE",
+        "text": state["toss"].get("pitch_report_text") if state.get("toss") else None,
+        "source": state["toss"].get("source_url") if state.get("toss") else None,
+    }
+    return report
 
 
 @router.get("/free/matches/{match_id}/recommendations")
