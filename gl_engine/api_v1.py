@@ -226,3 +226,18 @@ def free_xi_observation(snapshot: XIObservation, _admin: None = Depends(require_
 @router.get("/free/matches/{match_id}")
 def free_match_research(match_id: str, _admin: None = Depends(require_admin)):
     return get_match_state(match_id)
+
+
+# WBBL-only historical records. Explicit cutoff prevents same-day lookahead.
+from datetime import date
+from .wbbl_historical import WBBLHistorical
+
+
+@router.get("/free/wbbl-history/{player_name}")
+def free_wbbl_history(player_name: str, before: date):
+    return WBBLHistorical().player(player_name, before)
+
+
+@router.get("/free/wbbl-matchup")
+def free_wbbl_matchup(batter: str, bowler: str, before: date):
+    return WBBLHistorical().matchup(batter, bowler, before)

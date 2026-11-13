@@ -33,3 +33,16 @@ pytest tests/test_free_intake.py tests/test_live_feed_no_fabrication.py -q
 2. Test browser parsing against the real Dream11 web application and handle dynamic DOM changes without inventing values.
 3. Add canonical fixture ID mapping in the application (rather than the environment JSON), full XI-to-Dream11 player mapping, confirmed XI readiness and legitimate fantasy-score optimization.
 4. Reconcile legacy scoring and models; validate WBBL-only accuracy and test all full workflows against real matches before promoting them to production.
+
+## WBBL historical API (no paid provider)
+
+The source-filtered DuckDB analytics endpoints accept an explicit date cutoff to
+prevent target-day result leakage:
+
+- `GET /api/v1/free/wbbl-history/{player_name}?before=YYYY-MM-DD`
+- `GET /api/v1/free/wbbl-matchup?batter=...&bowler=...&before=YYYY-MM-DD`
+
+These report recorded ball-by-ball statistics from matches where both teams belong
+to the WBBL franchise list. Results are **not** Dream11 points or a claim of legal
+ball counts. Empty data are explicitly marked unavailable rather than replaced with
+assumed numbers.
