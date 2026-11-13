@@ -172,7 +172,7 @@ def _recent(kind: str, match_id: str, minutes: int = 120, limit: int = 120) -> l
     if not match_id or len(match_id) > 128:
         raise ValueError("Valid match_id required")
     cutoff = (_utc_now() - timedelta(minutes=minutes)).isoformat()
-    with _connect() as db:
+    with closing(_connect()) as db:
         rows = db.execute("""SELECT payload FROM free_snapshots
             WHERE kind=? AND match_id=? AND observed_at>=?
             ORDER BY observed_at DESC LIMIT ?""",
@@ -199,6 +199,7 @@ def get_match_state(match_id: str) -> dict:
     tosses = _recent("toss", match_id)
     xis = _recent("xi", match_id)
     agreement = None
+    agreed_reports = []
     for a in xis:
         for b in xis:
             if a is b:
@@ -213,6 +214,7 @@ def get_match_state(match_id: str) -> dict:
                 agreement = {"status": "TWO_SOURCES_AGREE_UNATTESTED",
                              "source_urls": [a["source_url"], b["source_url"]],
                              "teams": sorted(a_teams)}
+                agreed_reports = [a, b]
                 break
         if agreement:
             break
@@ -231,7 +233,92 @@ def get_match_state(match_id: str) -> dict:
                  if tosses else None),
         "xi_evidence": {"source_count": len({_url_host(x["source_url"]) for x in xis}),
                         "agreement": agreement,
+                        "reports": agreed_reports,
                         "official_status": "NOT_INDEPENDENTLY_AUTHENTICATED"},
         "optimization_ready": False,
         "readiness_reason": "A complete browser pool and independently authenticated announced XIs are required; no paid-provider gate was bypassed.",
     }
+
+
+class RegisteredFixture(BaseModel):
+    """User-registered WBBL match identity and official fantasy cutoff.
+
+    A registration is not evidence of a fixture, playing XI or toss.
+    """
+    model_config = ConfigDict(extra="forbid")
+    match_id: str = Field(min_length=1, max_length=128)
+    competition: Literal["WBBL"]
+    team_a: str = Field(min_length=2, max_length=120)
+    team_b: str = Field(min_length=2, max_length=120)
+    scheduled_start_utc: datetime
+    fantasy_lock_utc: datetime
+    venue: str | None = Field(default=None, max_length=150)
+    latitude: float | None = Field(default=None, ge=-90, le=90)
+    longitude: float | None = Field(default=None, ge=-180, le=180)
+
+    @model_validator(mode="after")
+    def validate_fixture(self):
+        if self.team_a.strip().casefold() == self.team_b.strip().casefold():
+            raise ValueError("Two distinct teams required")
+        if not self.team_a.strip() or not self.team_b.strip():
+            raise ValueError("Team names must be nonblank")
+        if self.scheduled_start_utc.tzinfo is None or self.fantasy_lock_utc.tzinfo is None:
+            raise ValueError("Fixture times require explicit timezones")
+        if self.fantasy_lock_utc > self.scheduled_start_utc:
+            raise ValueError("Fantasy lock must not be after match start")
+        if self.fantasy_lock_utc < self.scheduled_start_utc - timedelta(hours=12):
+            raise ValueError("Fantasy lock is implausibly early for the match")
+        if (self.latitude is None) != (self.longitude is None):
+            raise ValueError("Latitude and longitude must both be supplied")
+        return self
+
+
+def register_fixture(fixture: RegisteredFixture) -> dict:
+    """Idempotently persist operator-supplied match metadata, never verify it."""
+    with closing(_connect()) as db, db:
+        db.execute("""CREATE TABLE IF NOT EXISTS free_fixtures (
+             match_id TEXT PRIMARY KEY, payload TEXT NOT NULL,
+             updated_utc TEXT NOT NULL
+        )""")
+        db.execute("""INSERT INTO free_fixtures(match_id,payload,updated_utc)
+             VALUES (?,?,?)
+             ON CONFLICT(match_id) DO UPDATE SET payload=excluded.payload,
+                 updated_utc=excluded.updated_utc""", (
+            fixture.match_id, fixture.model_dump_json(), _utc_now().isoformat()))
+    return {"status": "REGISTERED_UNVERIFIED", "match_id": fixture.match_id}
+
+
+def get_registered_fixture(match_id: str) -> dict | None:
+    if not match_id or len(match_id) > 128:
+        raise ValueError("Valid match_id required")
+    with closing(_connect()) as db:
+        db.execute("""CREATE TABLE IF NOT EXISTS free_fixtures (
+             match_id TEXT PRIMARY KEY, payload TEXT NOT NULL,
+             updated_utc TEXT NOT NULL
+        )""")
+        row = db.execute("SELECT payload FROM free_fixtures WHERE match_id=?", (match_id,)).fetchone()
+    return json.loads(row[0]) if row else None
+
+
+def list_active_fixtures() -> list[dict]:
+    """List only registered WBBL fixtures near their start/lock window."""
+    with closing(_connect()) as db:
+        db.execute("""CREATE TABLE IF NOT EXISTS free_fixtures (
+             match_id TEXT PRIMARY KEY, payload TEXT NOT NULL,
+             updated_utc TEXT NOT NULL
+        )""")
+        rows = db.execute("SELECT payload FROM free_fixtures ORDER BY match_id").fetchall()
+    now = _utc_now()
+    result = []
+    for (payload,) in rows:
+        fixture = json.loads(payload)
+        start = datetime.fromisoformat(fixture["scheduled_start_utc"])
+        lock = datetime.fromisoformat(fixture["fantasy_lock_utc"])
+        if now <= lock and start - timedelta(days=2) <= now:
+            result.append({
+                "match_id": fixture["match_id"],
+                "scheduled_start_utc": fixture["scheduled_start_utc"],
+                "fantasy_lock_utc": fixture["fantasy_lock_utc"],
+                "registration_status": "USER_REGISTERED_UNVERIFIED",
+            })
+    return result
