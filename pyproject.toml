@@ -39,7 +39,7 @@ include = ["gl_engine*", "edgeforge*"]
 gl_engine = ["data/*.json", "templates/*.html"]
 
 [tool.pytest.ini_options]
-pythonpath = [".", "dream11-edge"]
+pythonpath = [".", "dream11-edge", "tests"]
 testpaths = ["tests", "dream11-edge/tests", "edgeforge"]
 python_files = ["test_*.py"]
 addopts = "-q"

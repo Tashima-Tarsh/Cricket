@@ -1,37 +1,29 @@
-"""
-Unit tests for data_loader.py
-"""
+"""Current data-loader behavior: explicit synthetic demo vs fail-closed real data."""
+from tempfile import TemporaryDirectory
 import pandas as pd
-from data_loader import generate_sample_historical_data, load_upcoming_match_players
+from unittest.mock import patch
+from data_loader import CricsheetLoader, generate_sample_bbl_data
 
 
-def test_generate_sample_historical_data_shape():
-    df = generate_sample_historical_data(n_matches=10)
-    assert len(df) == 150  # 10 matches * 15 players
-    expected_cols = {
-        "match_id", "player", "role", "team", "venue", "skill_rating",
-        "recent_form_last_5", "opposition_strength", "phase_strike_rate",
-        "economy_rate", "fantasy_points",
-    }
-    assert expected_cols.issubset(set(df.columns))
-    assert (df["fantasy_points"] >= 0).all()
+def test_explicit_demo_data_is_repeatable():
+    a = generate_sample_bbl_data(n_matches=3)
+    b = generate_sample_bbl_data(n_matches=3)
+    assert not a.empty
+    pd.testing.assert_frame_equal(a,b)
+    assert {"match_id","batter","bowler","runs_batter","is_wicket"}.issubset(a.columns)
 
 
-def test_generate_sample_deterministic():
-    df1 = generate_sample_historical_data(n_matches=5)
-    df2 = generate_sample_historical_data(n_matches=5)
-    pd.testing.assert_frame_equal(df1, df2)
+def test_real_data_loader_never_falls_back_to_demo():
+    with TemporaryDirectory() as tmp:
+        loader=CricsheetLoader(cache_dir=tmp)
+        with patch.object(loader,"fetch_zip",return_value=None):
+            result=loader.load_bbl_data()
+        assert result.empty
 
 
-def test_load_upcoming_match_players_count():
-    players = load_upcoming_match_players()
-    assert len(players) == 23
-    roles = {p["role"] for p in players}
-    assert {"BAT", "BOWL", "AR", "WK"} <= roles
-    teams = {p["team"] for p in players}
-    assert {"MI", "RCB"} <= teams
-    for p in players:
-        assert "credit" in p
-        assert "projected_sel_pct" in p
-        assert 0 < p["credit"] <= 12
-        assert 0 <= p["projected_sel_pct"] <= 100
+def test_only_explicit_opt_in_allows_demo():
+    with TemporaryDirectory() as tmp:
+        loader=CricsheetLoader(cache_dir=tmp)
+        with patch.object(loader,"fetch_zip",return_value=None):
+            result=loader.load_bbl_data(max_matches=2,use_synthetic_fallback=True)
+        assert not result.empty
