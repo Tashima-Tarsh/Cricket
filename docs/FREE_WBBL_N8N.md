@@ -76,3 +76,12 @@ volume, retaining the previous good snapshot if download or validation fails.
 Cricsheet's ODC Attribution license applies (https://cricsheet.org/licensing/).
 The archive is historical; it cannot confirm today's toss, XI or pitch.
 Run the sync once in n8n after deployment to populate the archive.
+
+## Optional no-key forecast (not pitch)
+
+To include weather in generated research reports, register the venue latitude
+and longitude with your fixture and set CRICKET_OPEN_METEO_NONCOMMERCIAL_ACK=1
+only when you meet Open-Meteo free-tier noncommercial terms. Forecast
+temperature, humidity, rain probability and wind are always labelled
+FORECAST_ONLY_NOT_ACTUAL_PITCH. Missing coordinates, unavailable data or
+license restrictions never produce fabricated weather or pitch figures.
