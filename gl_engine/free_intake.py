@@ -10,6 +10,7 @@ import json
 import os
 import sqlite3
 from datetime import datetime, timezone, timedelta
+from contextlib import closing
 from pathlib import Path
 from typing import Literal
 from urllib.parse import urlsplit
@@ -36,7 +37,7 @@ def _url_host(value: str) -> str:
     parsed = urlsplit(value)
     if parsed.scheme != "https" or not parsed.hostname or parsed.username or parsed.password:
         raise ValueError("An HTTPS source URL without embedded credentials is required")
-    return parsed.hostname.lower()
+    return parsed.hostname.lower().removeprefix("www.")
 
 
 class BrowserPlayer(BaseModel):
@@ -110,6 +111,8 @@ class XIObservation(BaseModel):
     def check_xi(self):
         _url_host(self.source_url)
         _validate_observed_at(self.observed_at_utc)
+        if not self.team_a.strip() or not self.team_b.strip():
+            raise ValueError("Nonblank team names required")
         if self.team_a.strip().casefold() == self.team_b.strip().casefold():
             raise ValueError("Two distinct teams required")
         names = [n.strip().casefold() for n in self.players_a + self.players_b]
@@ -154,7 +157,7 @@ def save_snapshot(kind: Literal["browser", "toss", "xi"],
     packed = json.dumps(payload, sort_keys=True, separators=(",", ":"))
     digest = hashlib.sha256(json.dumps(facts, sort_keys=True).encode("utf-8")).hexdigest()
     host = _url_host(payload.get("page_url") or payload.get("source_url"))
-    with _connect() as db:
+    with closing(_connect()) as db, db:
         db.execute("""INSERT INTO free_snapshots
             (kind, match_id, digest, observed_at, source_host, payload)
             VALUES (?, ?, ?, ?, ?, ?)

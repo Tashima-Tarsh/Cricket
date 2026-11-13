@@ -31,3 +31,38 @@ jobs:
       - name: Run test suite
         run: |
           pytest tests/test_config.py tests/test_correlation_matrix.py tests/test_chaos_intelligence.py tests/test_optimizer.py tests/test_predictor.py tests/test_scenario_generator.py tests/test_free_intake.py tests/test_live_feed_no_fabrication.py tests/test_free_wbbl_historical.py tests/test_wt20_no_fabrication.py -v
+
+      - name: Compile Python production modules
+        run: python -m compileall -q gl_engine dream11-edge/edge
+
+  api-smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+      - name: Install backend with test extras
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+      - name: Exercise authenticated API and legacy guards
+        run: |
+          pytest tests/test_free_intake_api.py tests/test_v1_api.py tests/test_live_xi_verification.py -q
+
+  frontend-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: "npm"
+          cache-dependency-path: frontend/package-lock.json
+      - name: Build and lint frontend
+        run: |
+          cd frontend
+          npm ci
+          npm run build
+          npm run lint
