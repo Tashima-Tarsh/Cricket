@@ -241,3 +241,63 @@ def free_wbbl_history(player_name: str, before: date):
 @router.get("/free/wbbl-matchup")
 def free_wbbl_matchup(batter: str, bowler: str, before: date):
     return WBBLHistorical().matchup(batter, bowler, before)
+
+
+# Canonical free WBBL fixture registration and conservative lineups.
+from datetime import datetime, timezone
+from .free_intake import (
+    RegisteredFixture, register_fixture, get_registered_fixture, list_active_fixtures,
+)
+from .wbbl_fantasy import canonical_name, recommend as wbbl_recommend
+from .free_reports import save_report, latest_report
+
+
+@router.post("/free/fixtures")
+def free_register_fixture(fixture: RegisteredFixture, _admin: None = Depends(require_admin)):
+    return register_fixture(fixture)
+
+
+@router.get("/free/watchlist")
+def free_watchlist(_admin: None = Depends(require_admin)):
+    return {"status": "USER_REGISTERED_UNVERIFIED", "matches": list_active_fixtures()}
+
+
+def _generate_registered_report(match_id: str, teams: int, max_overlap: int) -> dict:
+    if not 1 <= teams <= 5 or not 0 <= max_overlap <= 10:
+        raise HTTPException(422, "Invalid team count or overlap")
+    fixture = get_registered_fixture(match_id)
+    if fixture is None:
+        return {"status": "BLOCKED", "reason": "REGISTERED_FIXTURE_NOT_FOUND",
+                "match_id": match_id, "lineups": []}
+    if datetime.now(timezone.utc) >= datetime.fromisoformat(fixture["fantasy_lock_utc"]):
+        return {"status": "BLOCKED", "reason": "FANTASY_LOCK_ALREADY_PASSED",
+                "match_id": match_id, "lineups": []}
+    state = get_match_state(match_id)
+    reports = state["xi_evidence"].get("reports") or []
+    if reports:
+        announced = {canonical_name(reports[0]["team_a"]), canonical_name(reports[0]["team_b"])}
+        registered = {canonical_name(fixture["team_a"]), canonical_name(fixture["team_b"])}
+        if announced != registered:
+            return {"status": "BLOCKED", "reason": "REGISTERED_TEAM_IDENTITY_MISMATCH",
+                    "match_id": match_id, "lineups": []}
+    target_date = datetime.fromisoformat(fixture["scheduled_start_utc"]).date()
+    return wbbl_recommend(match_id, target_date, teams, max_overlap)
+
+
+@router.get("/free/matches/{match_id}/recommendations")
+def free_recommendations(match_id: str, teams: int = 3, max_overlap: int = 8,
+                         _admin: None = Depends(require_admin)):
+    return _generate_registered_report(match_id, teams, max_overlap)
+
+
+@router.post("/free/matches/{match_id}/generate")
+def free_generate_and_store(match_id: str, teams: int = 3, max_overlap: int = 8,
+                            _admin: None = Depends(require_admin)):
+    report = _generate_registered_report(match_id, teams, max_overlap)
+    stored = save_report(match_id, report)
+    return {"report": report, "saved": stored}
+
+
+@router.get("/free/matches/{match_id}/latest-report")
+def free_latest_report(match_id: str, _admin: None = Depends(require_admin)):
+    return latest_report(match_id)
